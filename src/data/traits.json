@@ -130,16 +130,6 @@
     "Recommended for": "Warchiefs, Victory Point Defenders"
   },
   {
-    "Picker": "Picker_BaseStrength_Defender",
-    "Game visual title": "Defender Base",
-    "Utility": "Shield protection archetype, front-facing invulnerability, and shield charge knockbacks.",
-    "Offensive bonus": "Pushes through defend points with frontal shield armor.",
-    "Defensive bonus": "Blocks frontline player damage and funnel points effectively.",
-    "Class trait": "Defender",
-    "Tribe trait": "",
-    "Recommended for": "Victory Point Defenders, Overlord"
-  },
-  {
     "Picker": "Picker_BaseStrength_Destroyer",
     "Game visual title": "Destroyer Base",
     "Utility": "Bomb throwing, explosive charge plants, and explosive death scaling.",
@@ -368,16 +358,6 @@
     "Class trait": "Marksman",
     "Tribe trait": "",
     "Recommended for": "Throne Room Bodyguards, Wall Defense Warchiefs"
-  },
-  {
-    "Picker": "Picker_DodgeMelee",
-    "Game visual title": "Evasive Footwork",
-    "Utility": "Grants the ability to sidestep or backflip away from incoming melee strikes.",
-    "Offensive bonus": "N/A.",
-    "Defensive bonus": "Helps the Marksman maintain spacing against aggressive brawlers who manage to reach the ledge.",
-    "Class trait": "",
-    "Tribe trait": "",
-    "Recommended for": "Throne Room Bodyguards"
   },
   {
     "Picker": "Picker_EagleEye",

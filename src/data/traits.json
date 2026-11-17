@@ -1318,5 +1318,65 @@
     "Class trait": "",
     "Tribe trait": "",
     "Recommended for": "Pre-Siege Hacked Overlord Cleanup"
+  },
+  {
+    "Picker": "Picker_InspiringPresence",
+    "Game visual title": "Inspiring Presence",
+    "Utility": "Projects an active morale and attack speed aura around the Captain to keep allied grunts fighting fiercely.",
+    "Offensive bonus": "Increases damage output and attack aggression of surrounding defender squads.",
+    "Defensive bonus": "Prevents grunts from breaking or fleeing under heavy player assault.",
+    "Class trait": "Commander",
+    "Tribe trait": "",
+    "Recommended for": "Overlord, Victory Point Defenders, Throne Room Bodyguards"
+  },
+  {
+    "Picker": "Picker_ET_TeamDamageBoostOnFireEnemies",
+    "Game visual title": "Team Damage Boost (Burning)",
+    "Utility": "Grants a passive damage multiplier to the Captain and all nearby allied grunts whenever attacking burning targets.",
+    "Offensive bonus": "Massively scales squad DPS against enemies caught in fire weapon or explosive chain reactions.",
+    "Defensive bonus": "N/A",
+    "Class trait": "",
+    "Tribe trait": "",
+    "Recommended for": "Fire-Focused Builds, Fortress Defenders"
+  },
+  {
+    "Picker": "Picker_ET_TeamDamageBoostExploitedEnemies",
+    "Game visual title": "Team Damage Boost (Exploited/Stunned)",
+    "Utility": "Amplifies damage dealt by the Captain and surrounding squad against dazed, staggered, frozen, or downed enemies.",
+    "Offensive bonus": "Turns player-side crowd control (like Elven Light stuns) into an instant execution window for the entire defender squad.",
+    "Defensive bonus": "N/A",
+    "Class trait": "",
+    "Tribe trait": "",
+    "Recommended for": "Siege Defense Anchors, Heavy CC Compositions"
+  },
+  {
+    "Picker": "Picker_InspiringPresence",
+    "Game visual title": "Inspiring Presence",
+    "Utility": "Projects an active morale and attack speed aura around the Captain to keep allied grunts fighting fiercely.",
+    "Offensive bonus": "Increases damage output and attack aggression of surrounding defender squads.",
+    "Defensive bonus": "Prevents grunts from breaking or fleeing under heavy player assault.",
+    "Class trait": "Commander",
+    "Tribe trait": "",
+    "Recommended for": "Overlord, Victory Point Defenders, Throne Room Bodyguards"
+  },
+  {
+    "Picker": "Picker_ET_TeamDamageBoostOnFireEnemies",
+    "Game visual title": "Team Damage Boost (Burning)",
+    "Utility": "Grants a passive damage multiplier to the Captain and all nearby allied grunts whenever attacking burning targets.",
+    "Offensive bonus": "Massively scales squad DPS against enemies caught in fire weapon or explosive chain reactions.",
+    "Defensive bonus": "N/A",
+    "Class trait": "",
+    "Tribe trait": "",
+    "Recommended for": "Fire-Focused Builds, Fortress Defenders"
+  },
+  {
+    "Picker": "Picker_ET_TeamDamageBoostExploitedEnemies",
+    "Game visual title": "Team Damage Boost (Exploited/Stunned)",
+    "Utility": "Amplifies damage dealt by the Captain and surrounding squad against dazed, staggered, frozen, or downed enemies.",
+    "Offensive bonus": "Turns player-side crowd control (like Elven Light stuns) into an instant execution window for the entire defender squad.",
+    "Defensive bonus": "N/A",
+    "Class trait": "",
+    "Tribe trait": "",
+    "Recommended for": "Siege Defense Anchors, Heavy CC Compositions"
   }
 ]

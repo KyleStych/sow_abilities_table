@@ -1,0 +1,150 @@
+Category,Property/Slot,Name,HexValue
+Identity,Name,Pûg,
+Identity,Level,80,79
+Additional Properties,AI,AI_Archer_Tough,0000000055A4FA70
+Additional Properties,Trait Level Offset,TraitLevelOffset_-2,00000000567E9BE0
+Additional Properties,Tribe,TribeDef_Slaughter,0000000055A23FB0
+Additional Properties,Role (second part of name),Role_Sadistic,0000000056726538
+Additional Properties,Class,Orc_Archer_Tough,00000000566E4548
+Additional Properties,Personality,Orc_Twisted2,000000005624F490
+Additional Properties,Orc Rarity (visual),OrcRarity_Legendary,
+Equipment - Tags,tag 01,Tag_Archer,00000000568CBD50
+Equipment - Tags,tag 02,Tag_RedEyes,00000000568CBAD0
+Equipment - Tags,tag 03,Tag_Slim,00000000568CB9E0
+Equipment - Tags,tag 04,Tag_Orc,00000000568CB918
+Equipment - Tags,tag 05,Tag_Head01,00000000568CBDF0
+Equipment - Tags,tag 06,Tag_I_HAS_HAIR,00000000568CBB20
+Equipment - Tags,tag 07,IHasMask,00000000568CBE68
+Equipment - Tags,tag 08,<Unresolved>,00000000C6171AB0
+Equipment - Wounds,entry 01,I_Am_Undead_Appearance,000000005631F2D0
+Equipment - Wounds,entry 02,<Unresolved>,0000000004FA00A8
+Equipment - Colors (ARGB),body color,FF6DA9E8,FF6DA9E8
+Equipment - Colors (ARGB),Eye Color,FFF2F600,FFF2F600
+Equipment - Colors (ARGB),hair color,FF787878,FF787878
+Equipment - Colors (ARGB),tattoo color,00000000,00000000
+Equipment - Colors (ARGB),Body Paint Color,00000000,00000000
+Equipment - Colors (ARGB),? color,FFA09590,FFA09590
+Equipment - Colors (ARGB),? color,FFAFAAA3,FFAFAAA3
+Equipment - Colors (ARGB),? color,FF606656,FF606656
+Equipment - Colors (ARGB),? color,FFC8B094,FFC8B094
+Equipment - Colors (ARGB),? color,FFA09590,FFA09590
+Equipment - Colors (ARGB),? color,00000000,00000000
+Equipment - Colors (ARGB),? color,00000000,00000000
+Equipment - Colors (ARGB),? color,FFB4583C,FFB4583C
+Equipment - Colors (ARGB),? color,00000000,00000000
+Equipment - Colors (ARGB),? color,00000000,00000000
+Equipment - Colors (ARGB),? color,00000000,00000000
+Equipment - Colors (ARGB),? color,00000000,00000000
+Equipment and Looks,base model,orc_anim_base,00000000564112C0
+Equipment and Looks,body model base,Orc_Slim_Body_LOD,0000000055A39118
+Equipment and Looks,body model,Orc_Slim_Body001,0000000055A39668
+Equipment and Looks,head model base,<None>,0000000000000000
+Equipment and Looks,head model,Orc_Slim_Head01_C01,0000000055A409B8
+Equipment and Looks,hair model,Orc_Slim_WarriorTopKnot_Hair_A,0000000055A3FAE0
+Equipment and Looks,body,IT_Orc_Body_LOD,0000000056320220
+Equipment and Looks,body (appearance),AD_Orc_Body_LOD,000000005622CCE8
+Equipment and Looks,special body,<Invalid>,??
+Equipment and Looks,special body (appearance),<Invalid>,??
+Equipment and Looks,special head,<Invalid>,??
+Equipment and Looks,special head (appearance),<Invalid>,??
+Equipment and Looks,weapon 1H left,<Invalid>,??
+Equipment and Looks,weapon 1H left (appearance),<Invalid>,??
+Equipment and Looks,weapon 1H right,Orc_2HR_Skullbow,000000005634ACA0
+Equipment and Looks,weapon 1H right (appearance),Orc_2HR_Skullbow,0000000056C63AA0
+Equipment and Looks,weapon 2H,<Invalid>,??
+Equipment and Looks,weapon 2H (appearance),<Invalid>,??
+Equipment and Looks,helmet,Slaver_Helmet,000000005631F208
+Equipment and Looks,helmet model,Orc_Slim_Slaver_Helmet_Head01,0000000055A3F540
+Equipment and Looks,helmet (appearance),AD_Slaver_Helmet,00000000562270B8
+Equipment and Looks,shoulders,Trickster_Shoulders,000000005633DA78
+Equipment and Looks,shoulders model,Smp_Empty_Set,0000000055A376B0
+Equipment and Looks,shoulders (appearance),AD_empty_shoulders,0000000056229368
+Equipment and Looks,chest,Trickster_Chest,000000005634F1B0
+Equipment and Looks,chest model,Orc_Slim_Trickster_Chest,0000000055A38588
+Equipment and Looks,chest (appearance),AD_Trickster_Chest,0000000056232C38
+Equipment and Looks,arms,Scavenger_Arms,000000005633C560
+Equipment and Looks,arms model,Orc_Slim_Scavenger_Arms,0000000055A34CA8
+Equipment and Looks,arms (appearance),AD_Scavenger_Arms,0000000056228D00
+Equipment and Looks,pants,Trickster_Pants,000000005633D9D8
+Equipment and Looks,pants model,Orc_Slim_Trickster_Pants,0000000055A445E0
+Equipment and Looks,pants (appearance),AD_Trickster_Pants,000000005622EB88
+Equipment and Looks,legs,Black_Legs,000000005633B610
+Equipment and Looks,legs model,Orc_Slim_Black_Legs,0000000055A3B7B0
+Equipment and Looks,legs (appearance),AD_Black_Legs,0000000056230A78
+Equipment and Looks,quiver,Mystic_Quiver,000000005633AA08
+Equipment and Looks,quiver model,Orc_Arrow_Quiver,0000000055A373B8
+Equipment and Looks,quiver (appearance),AD_Archer_Quiver,000000005622DE68
+Equipment and Looks,accessory,<Invalid>,??
+Equipment and Looks,accessory model,<None>,0000000000000000
+Equipment and Looks,accessory (appearance),<Invalid>,??
+Marker Abilities,entry 01,Marker_Potential_VeryLow,000000005628F450
+Marker Abilities,entry 02,Marker_LearnSpeed_VerySlow,000000005628EFC8
+Marker Abilities,entry 03,PersonalityMarker_Twisted2,000000005628DBC8
+Marker Abilities,entry 04,ClassMarker_Archer,000000005628D510
+Marker Abilities,entry 05,Marker_AppearanceTag_Slim,000000005628E9B0
+Marker Abilities,entry 06,Marker_OrcRarity_Legendary,000000005628E460
+Marker Abilities,entry 07,Marker_Specialization_Marksman,000000005628E870
+Marker Abilities,entry 08,Marker_NeverMounted,000000005628D6A0
+Marker Abilities,entry 09,Marker_NoMannerisms,000000005628D9E8
+Marker Abilities,entry 10,Marker_NeverHumiliator,000000005628ED70
+Marker Abilities,entry 11,Marker_NoTerrors,000000005628EC58
+Marker Abilities,entry 12,Marker_NotUnstable,000000005628DF88
+Marker Abilities,entry 13,ET_CanRemove_MasterCurse,000000005628D538
+Marker Abilities,entry 14,Marker_StatusEffect_Curse,000000005628D8A8
+Marker Abilities,entry 15,Quirk_Adaptable_Slowly,0000000055A5B6F0
+Marker Abilities,entry 16,<Unresolved>,0000000000000088
+Picker Abilities,entry 01,Picker_ET_EliteGang,000000005594FB78
+Picker Abilities,entry 02,Picker_ContractReward_Gang,0000000055952940
+Picker Abilities,entry 03,Picker_Resist_Combat_Immune,0000000055950E60
+Picker Abilities,entry 04,Picker_Resist_Frost_Immune,00000000559511A8
+Picker Abilities,entry 06,Picker_Resist_Beast_Immune,0000000055951BD0
+Picker Abilities,entry 07,Picker_Resist_Fire_Immune,0000000055953250
+Picker Abilities,entry 08,Picker_Resist_Curse_Immune,00000000559521E8
+Picker Abilities,entry 09,Picker_Resist_Grab,0000000055952AF8
+Picker Abilities,entry 10,Picker_Resist_Stealth_Immune,00000000559538E0
+Picker Abilities,entry 11,Picker_Resist_Ranged_Immune,0000000055950B68
+Picker Abilities,entry 12,Picker_Resist_GroundTakedown,0000000055950F50
+Picker Abilities,entry 13,Picker_HasGang_Archer,00000000559511D0
+Picker Abilities,entry 14,Picker_NoLastChance,00000000559544E8
+Picker Abilities,entry 15,Picker_AttacksFaster,0000000055954358
+Picker Abilities,entry 16,Picker_AntiJumpOver,0000000055953278
+Picker Abilities,entry 17,Picker_Deadly,000000005594FD80
+Picker Abilities,entry 18,Picker_Deadly_Rage,0000000055950348
+Picker Abilities,entry 19,Picker_QuickThrow,0000000055950CA8
+Picker Abilities,entry 20,Picker_BaseStrength_Archer,0000000055951978
+Picker Abilities,entry 21,Picker_BaseStrength_Marksman,00000000559512E8
+Picker Abilities,entry 22,Picker_OrcRarity_Legendary,00000000559505C8
+Picker Abilities,entry 23,Picker_Poison_Weapon,0000000055950C30
+Picker Abilities,entry 24,Picker_ET_PoisonMaster,0000000055954830
+Picker Abilities,entry 25,Picker_OrcRarity_Legendary,00000000559505C8
+Picker Abilities,entry 26,Picker_TribeAttack_Slaughter,00000000559524B8
+Picker Abilities,entry 27,Picker_ET_MightyArchers,0000000055951838
+Picker Abilities,entry 28,Picker_Hate_EnragedOrcs,00000000559533E0
+Picker Abilities,entry 29,Picker_PlantsMines_Poison,0000000055953CF0
+Picker Abilities,entry 30,Picker_Summoner_Gang,0000000055953E08
+Picker Abilities,entry 31,Picker_ET_GreatToughness,00000000559501B8
+Picker Abilities,entry 32,Picker_ET_GreatStrength,0000000055954100
+Picker Abilities,entry 33,Picker_ET_HealthOnKill,0000000055952DF0
+Picker Abilities,entry 34,Picker_ET_DamageBoostSelfHealthLow,00000000559516F8
+Picker Abilities,entry 35,Picker_ET_DamageBoostEnemyHealthLow,0000000055952238
+Picker Abilities,entry 36,Picker_ET_DamageBoostSelfHealthHigh,0000000055953F48
+Picker Abilities,entry 37,Picker_ET_DefenseBoostSelfHealthHigh,0000000055952008
+Picker Abilities,entry 38,Picker_InspiringPresence,0000000055952760
+Picker Abilities,entry 39,Picker_SlowAdapt,00000000559509B0
+Picker Abilities,entry 40,Picker_SecondWind,0000000055952440
+Picker Abilities,entry 41,Picker_GetsUpQuickly,0000000055953F98
+Picker Abilities,entry 42,Picker_FastRunner,0000000055953C78
+Picker Abilities,entry 43,Picker_DodgeMelee,00000000559508C0
+Picker Abilities,entry 44,Picker_LifeSteal,0000000055953520
+Picker Abilities,entry 45,Picker_Explosive_Shot,00000000559535E8
+Picker Abilities,entry 46,Picker_PowerShot,0000000055950FF0
+Picker Abilities,entry 47,Picker_QuickShot,0000000055952C38
+Picker Abilities,entry 48,Picker_ET_ChampionMarksman,0000000055952800
+Picker Abilities,entry 49,Picker_DLC3_SniperShot,000000005594FCE0
+Picker Abilities,entry 50,Picker_EagleEye,0000000055951EC8
+Picker Abilities,entry 51,Picker_BonusHealth,0000000055952C88
+Picker Abilities,entry 52,Picker_Hate_Injury,00000000559543A8
+Picker Abilities,entry 53,<None>,0000000000000000
+Picker Abilities,entry 54,<None>,0000000000000000
+Picker Abilities,entry 55,<None>,0000000000000000
+Picker Abilities,entry 56,<None>,0000000000000000

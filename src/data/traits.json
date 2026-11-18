@@ -130,6 +130,16 @@
     "Recommended for": "Warchiefs, Victory Point Defenders"
   },
   {
+    "Picker": "Picker_BaseStrength_Defender",
+    "Game visual title": "Defender Base",
+    "Utility": "Heavy shield-and-spear archetype providing frontal melee/ranged blocking and physical choke-point anchoring.",
+    "Offensive bonus": "Pushes frontline engagements forward while blocking frontal arrow volleys.",
+    "Defensive bonus": "Forces invading players to waste time vaulting or breaking guards on victory points and throne room doors.",
+    "Class trait": "Defender",
+    "Tribe trait": "",
+    "Recommended for": "Overlord, Victory Point Defenders, Throne Room Bodyguards"
+  },
+  {
     "Picker": "Picker_BaseStrength_Destroyer",
     "Game visual title": "Destroyer Base",
     "Utility": "Bomb throwing, explosive charge plants, and explosive death scaling.",
@@ -360,6 +370,26 @@
     "Recommended for": "Throne Room Bodyguards, Wall Defense Warchiefs"
   },
   {
+    "Picker": "Picker_DodgeMelee",
+    "Game visual title": "Agile / Melee Dodge",
+    "Utility": "Enables reactive sidestep dodges against incoming melee swings without abandoning the current combat zone.",
+    "Offensive bonus": "Maintains close-quarters pressure without getting staggered by heavy swings.",
+    "Defensive bonus": "Superior alternative to Reposition for Commanders and Tanks, keeping them anchored on the victory point.",
+    "Class trait": "",
+    "Tribe trait": "",
+    "Recommended for": "Commanders, Victory Point Defenders, Throne Room Bodyguards"
+  },
+  {
+    "Picker": "Picker_DyingCommand",
+    "Game visual title": "Dying Command / Final Curse",
+    "Utility": "Triggers a final battle-cry/curse event upon death that marks the killer and shocks surrounding units.",
+    "Offensive bonus": "Forces surviving assault allies to fixate on and enrage against the defending killer.",
+    "Defensive bonus": "Triggers cascading Enraged by Witnessing Death buffs across surviving throne room bodyguards and grunts.",
+    "Class trait": "",
+    "Tribe trait": "",
+    "Recommended for": "Throne Room Bodyguards, Warchiefs"
+  },
+  {
     "Picker": "Picker_EagleEye",
     "Game visual title": "Eagle Eye",
     "Utility": "Extends maximum ranged target acquisition distance and long-range crosshair tracking (negligible value indoors).",
@@ -388,6 +418,36 @@
     "Class trait": "",
     "Tribe trait": "",
     "Recommended for": "Overlord, Throne Room Bodyguards"
+  },
+  {
+    "Picker": "Picker_Epic_CurseWarder",
+    "Game visual title": "Curse Warder",
+    "Utility": "Projects a passive damage-reduction aura protecting the Captain and nearby allies from Curse damage and terror drain.",
+    "Offensive bonus": "Prevents assault squads from breaking or losing Might/Wrath against Mystic defenders.",
+    "Defensive bonus": "Hardens defending squads against player curse builds and terror chains.",
+    "Class trait": "",
+    "Tribe trait": "",
+    "Recommended for": "Commanders, Victory Point Defenders"
+  },
+  {
+    "Picker": "Picker_Epic_Determination",
+    "Game visual title": "Determination",
+    "Utility": "Tank class signature ability allowing the Captain to pause and rapidly regenerate a massive portion of their health bar.",
+    "Offensive bonus": "Sustains prolonged frontline brawls without needing external healing.",
+    "Defensive bonus": "Major time-stall mechanic in Online Conquests, forcing attackers to repeatedly burn down a massive health pool.",
+    "Class trait": "Tank",
+    "Tribe trait": "",
+    "Recommended for": "Overlord, Victory Point Defenders"
+  },
+  {
+    "Picker": "Picker_Epic_FireWarder",
+    "Game visual title": "Fire Warder",
+    "Utility": "Projects a passive damage-reduction aura protecting the Captain and all nearby allied grunts from fire damage.",
+    "Offensive bonus": "Protects assaulting grunt waves from wall siege drakes and burning oil traps.",
+    "Defensive bonus": "Keeps defending grunt swarms alive through player fire-bomb and dragon-song spam.",
+    "Class trait": "",
+    "Tribe trait": "",
+    "Recommended for": "Commanders, Victory Point Defenders"
   },
   {
     "Picker": "Picker_ET_ChampionMarksman",
@@ -550,6 +610,26 @@
     "Recommended for": "Victory Point Defenders"
   },
   {
+    "Picker": "Picker_ET_TeamDamageBoostExploitedEnemies",
+    "Game visual title": "Team Damage Boost (Exploited/Stunned)",
+    "Utility": "Amplifies damage dealt by the Captain and surrounding squad against dazed, staggered, frozen, or downed enemies.",
+    "Offensive bonus": "Turns player-side crowd control (like Elven Light stuns) into an instant execution window for the entire defender squad.",
+    "Defensive bonus": "N/A",
+    "Class trait": "",
+    "Tribe trait": "",
+    "Recommended for": "Siege Defense Anchors, Heavy CC Compositions"
+  },
+  {
+    "Picker": "Picker_ET_TeamDamageBoostOnFireEnemies",
+    "Game visual title": "Team Damage Boost (Burning)",
+    "Utility": "Grants a passive damage multiplier to the Captain and all nearby allied grunts whenever attacking burning targets.",
+    "Offensive bonus": "Massively scales squad DPS against enemies caught in fire weapon or explosive chain reactions.",
+    "Defensive bonus": "N/A",
+    "Class trait": "",
+    "Tribe trait": "",
+    "Recommended for": "Fire-Focused Builds, Fortress Defenders"
+  },
+  {
     "Picker": "Picker_ExplodesOnDeath_Curse",
     "Game visual title": "Curse Death Explosion",
     "Utility": "Triggers a high-yield Cursed blast upon death, damaging and cursing all nearby units.",
@@ -608,6 +688,16 @@
     "Class trait": "Berserker / Slayer",
     "Tribe trait": "",
     "Recommended for": "Assault Leaders, Overlord, Throne Room Bodyguards"
+  },
+  {
+    "Picker": "Picker_Gang_Defenders",
+    "Game visual title": "Gang of Defenders",
+    "Utility": "Assigns a squad of shield-bearing Defender grunts to accompany the Captain.",
+    "Offensive bonus": "Provides durable frontline screening during courtyard pushes.",
+    "Defensive bonus": "Forms a physical shield wall around Commanders and Tanks, disrupting player combo flow and Might generation.",
+    "Class trait": "",
+    "Tribe trait": "",
+    "Recommended for": "Commanders, Overlord, Victory Point Defenders"
   },
   {
     "Picker": "Picker_GetsUpQuickly",
@@ -1100,6 +1190,16 @@
     "Recommended for": "Overlord, Warchiefs, Victory Point Defenders"
   },
   {
+    "Picker": "Picker_Tribe_Mystic",
+    "Game visual title": "Mystic Tribe",
+    "Utility": "Grants unblockable Mystic Blade shadow-teleport ambushes and enables natural Necromancer/totem resurrection synergies.",
+    "Offensive bonus": "Closes distance instantly on kiting targets with shadow-step strikes.",
+    "Defensive bonus": "Offsets slow Defender movement with teleportation and reanimates fallen allied grunts into undead shield walls.",
+    "Class trait": "",
+    "Tribe trait": "Mystic",
+    "Recommended for": "Overlord, Victory Point Defenders, Commanders"
+  },
+  {
     "Picker": "Picker_TribeAttack_Dark",
     "Game visual title": "Dark Strike / Dark Tribe Attack",
     "Utility": "Tribe special ability executing rapid dual-blade dark poison combo strikes.",
@@ -1210,6 +1310,16 @@
     "Recommended for": "Victory Point Defenders, Overlord"
   },
   {
+    "Picker": "Picker_WeakMaster",
+    "Game visual title": "Weak Master / Fragile",
+    "Utility": "Strips away staggered resistance thresholds so any elemental or ranged hit immediately triggers a dazed/vulnerable state.",
+    "Offensive bonus": "N/A.",
+    "Defensive bonus": "Used via Cheat Engine to neutralize hacked or broken Overlords for instant single-hit siege completions.",
+    "Class trait": "",
+    "Tribe trait": "",
+    "Recommended for": "Pre-Siege Hacked Overlord Cleanup"
+  },
+  {
     "Picker": "Picker_WraithStunBlock",
     "Game visual title": "Frost Proof / Wraith-Shield",
     "Utility": "Blocks and counters Wraith Flash, Elven Light (Frost), and Ice Stun attempts.",
@@ -1228,155 +1338,5 @@
     "Class trait": "Defender",
     "Tribe trait": "",
     "Recommended for": "Victory Point Defenders, Assault Leaders"
-  },
-  {
-    "Picker": "Picker_BaseStrength_Defender",
-    "Game visual title": "Defender Base",
-    "Utility": "Heavy shield-and-spear archetype providing frontal melee/ranged blocking and physical choke-point anchoring.",
-    "Offensive bonus": "Pushes frontline engagements forward while blocking frontal arrow volleys.",
-    "Defensive bonus": "Forces invading players to waste time vaulting or breaking guards on victory points and throne room doors.",
-    "Class trait": "Defender",
-    "Tribe trait": "",
-    "Recommended for": "Overlord, Victory Point Defenders, Throne Room Bodyguards"
-  },
-  {
-    "Picker": "Picker_Tribe_Mystic",
-    "Game visual title": "Mystic Tribe",
-    "Utility": "Grants unblockable Mystic Blade shadow-teleport ambushes and enables natural Necromancer/totem resurrection synergies.",
-    "Offensive bonus": "Closes distance instantly on kiting targets with shadow-step strikes.",
-    "Defensive bonus": "Offsets slow Defender movement with teleportation and reanimates fallen allied grunts into undead shield walls.",
-    "Class trait": "",
-    "Tribe trait": "Mystic",
-    "Recommended for": "Overlord, Victory Point Defenders, Commanders"
-  },
-  {
-    "Picker": "Picker_Gang_Defenders",
-    "Game visual title": "Gang of Defenders",
-    "Utility": "Assigns a squad of shield-bearing Defender grunts to accompany the Captain.",
-    "Offensive bonus": "Provides durable frontline screening during courtyard pushes.",
-    "Defensive bonus": "Forms a physical shield wall around Commanders and Tanks, disrupting player combo flow and Might generation.",
-    "Class trait": "",
-    "Tribe trait": "",
-    "Recommended for": "Commanders, Overlord, Victory Point Defenders"
-  },
-  {
-    "Picker": "Picker_Epic_Determination",
-    "Game visual title": "Determination",
-    "Utility": "Tank class signature ability allowing the Captain to pause and rapidly regenerate a massive portion of their health bar.",
-    "Offensive bonus": "Sustains prolonged frontline brawls without needing external healing.",
-    "Defensive bonus": "Major time-stall mechanic in Online Conquests, forcing attackers to repeatedly burn down a massive health pool.",
-    "Class trait": "Tank",
-    "Tribe trait": "",
-    "Recommended for": "Overlord, Victory Point Defenders"
-  },
-  {
-    "Picker": "Picker_Epic_FireWarder",
-    "Game visual title": "Fire Warder",
-    "Utility": "Projects a passive damage-reduction aura protecting the Captain and all nearby allied grunts from fire damage.",
-    "Offensive bonus": "Protects assaulting grunt waves from wall siege drakes and burning oil traps.",
-    "Defensive bonus": "Keeps defending grunt swarms alive through player fire-bomb and dragon-song spam.",
-    "Class trait": "",
-    "Tribe trait": "",
-    "Recommended for": "Commanders, Victory Point Defenders"
-  },
-  {
-    "Picker": "Picker_Epic_CurseWarder",
-    "Game visual title": "Curse Warder",
-    "Utility": "Projects a passive damage-reduction aura protecting the Captain and nearby allies from Curse damage and terror drain.",
-    "Offensive bonus": "Prevents assault squads from breaking or losing Might/Wrath against Mystic defenders.",
-    "Defensive bonus": "Hardens defending squads against player curse builds and terror chains.",
-    "Class trait": "",
-    "Tribe trait": "",
-    "Recommended for": "Commanders, Victory Point Defenders"
-  },
-  {
-    "Picker": "Picker_DyingCommand",
-    "Game visual title": "Dying Command / Final Curse",
-    "Utility": "Triggers a final battle-cry/curse event upon death that marks the killer and shocks surrounding units.",
-    "Offensive bonus": "Forces surviving assault allies to fixate on and enrage against the defending killer.",
-    "Defensive bonus": "Triggers cascading Enraged by Witnessing Death buffs across surviving throne room bodyguards and grunts.",
-    "Class trait": "",
-    "Tribe trait": "",
-    "Recommended for": "Throne Room Bodyguards, Warchiefs"
-  },
-  {
-    "Picker": "Picker_DodgeMelee",
-    "Game visual title": "Agile / Melee Dodge",
-    "Utility": "Enables reactive sidestep dodges against incoming melee swings without abandoning the current combat zone.",
-    "Offensive bonus": "Maintains close-quarters pressure without getting staggered by heavy swings.",
-    "Defensive bonus": "Superior alternative to Reposition for Commanders and Tanks, keeping them anchored on the victory point.",
-    "Class trait": "",
-    "Tribe trait": "",
-    "Recommended for": "Commanders, Victory Point Defenders, Throne Room Bodyguards"
-  },
-  {
-    "Picker": "Picker_WeakMaster",
-    "Game visual title": "Weak Master / Fragile",
-    "Utility": "Strips away staggered resistance thresholds so any elemental or ranged hit immediately triggers a dazed/vulnerable state.",
-    "Offensive bonus": "N/A.",
-    "Defensive bonus": "Used via Cheat Engine to neutralize hacked or broken Overlords for instant single-hit siege completions.",
-    "Class trait": "",
-    "Tribe trait": "",
-    "Recommended for": "Pre-Siege Hacked Overlord Cleanup"
-  },
-  {
-    "Picker": "Picker_InspiringPresence",
-    "Game visual title": "Inspiring Presence",
-    "Utility": "Projects an active morale and attack speed aura around the Captain to keep allied grunts fighting fiercely.",
-    "Offensive bonus": "Increases damage output and attack aggression of surrounding defender squads.",
-    "Defensive bonus": "Prevents grunts from breaking or fleeing under heavy player assault.",
-    "Class trait": "Commander",
-    "Tribe trait": "",
-    "Recommended for": "Overlord, Victory Point Defenders, Throne Room Bodyguards"
-  },
-  {
-    "Picker": "Picker_ET_TeamDamageBoostOnFireEnemies",
-    "Game visual title": "Team Damage Boost (Burning)",
-    "Utility": "Grants a passive damage multiplier to the Captain and all nearby allied grunts whenever attacking burning targets.",
-    "Offensive bonus": "Massively scales squad DPS against enemies caught in fire weapon or explosive chain reactions.",
-    "Defensive bonus": "N/A",
-    "Class trait": "",
-    "Tribe trait": "",
-    "Recommended for": "Fire-Focused Builds, Fortress Defenders"
-  },
-  {
-    "Picker": "Picker_ET_TeamDamageBoostExploitedEnemies",
-    "Game visual title": "Team Damage Boost (Exploited/Stunned)",
-    "Utility": "Amplifies damage dealt by the Captain and surrounding squad against dazed, staggered, frozen, or downed enemies.",
-    "Offensive bonus": "Turns player-side crowd control (like Elven Light stuns) into an instant execution window for the entire defender squad.",
-    "Defensive bonus": "N/A",
-    "Class trait": "",
-    "Tribe trait": "",
-    "Recommended for": "Siege Defense Anchors, Heavy CC Compositions"
-  },
-  {
-    "Picker": "Picker_InspiringPresence",
-    "Game visual title": "Inspiring Presence",
-    "Utility": "Projects an active morale and attack speed aura around the Captain to keep allied grunts fighting fiercely.",
-    "Offensive bonus": "Increases damage output and attack aggression of surrounding defender squads.",
-    "Defensive bonus": "Prevents grunts from breaking or fleeing under heavy player assault.",
-    "Class trait": "Commander",
-    "Tribe trait": "",
-    "Recommended for": "Overlord, Victory Point Defenders, Throne Room Bodyguards"
-  },
-  {
-    "Picker": "Picker_ET_TeamDamageBoostOnFireEnemies",
-    "Game visual title": "Team Damage Boost (Burning)",
-    "Utility": "Grants a passive damage multiplier to the Captain and all nearby allied grunts whenever attacking burning targets.",
-    "Offensive bonus": "Massively scales squad DPS against enemies caught in fire weapon or explosive chain reactions.",
-    "Defensive bonus": "N/A",
-    "Class trait": "",
-    "Tribe trait": "",
-    "Recommended for": "Fire-Focused Builds, Fortress Defenders"
-  },
-  {
-    "Picker": "Picker_ET_TeamDamageBoostExploitedEnemies",
-    "Game visual title": "Team Damage Boost (Exploited/Stunned)",
-    "Utility": "Amplifies damage dealt by the Captain and surrounding squad against dazed, staggered, frozen, or downed enemies.",
-    "Offensive bonus": "Turns player-side crowd control (like Elven Light stuns) into an instant execution window for the entire defender squad.",
-    "Defensive bonus": "N/A",
-    "Class trait": "",
-    "Tribe trait": "",
-    "Recommended for": "Siege Defense Anchors, Heavy CC Compositions"
   }
 ]

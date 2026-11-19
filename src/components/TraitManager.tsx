@@ -16,6 +16,7 @@ import {
   type CeHealth,
 } from "@/lib/ce-bridge";
 import { parseOrcCsv } from "@/lib/orc-csv";
+import { displayValue, traitRoles } from "@/lib/traits";
 import type { Trait } from "@/types/trait";
 
 type ManagedSlot = {
@@ -113,6 +114,8 @@ export function TraitManager({ traits }: TraitManagerProps) {
     () => new Set(),
   );
   const [insertAt, setInsertAt] = useState<number | null>(null);
+  /** Slot id whose trait definition panel is open (one at a time). */
+  const [detailSlotId, setDetailSlotId] = useState<string | null>(null);
   const [pickerOpenFor, setPickerOpenFor] = useState<number | null>(null);
   const [pickerQuery, setPickerQuery] = useState("");
   const [csvRows, setCsvRows] = useState<CsvImportRow[]>([]);
@@ -182,6 +185,7 @@ export function TraitManager({ traits }: TraitManagerProps) {
     setSlots(next);
     setSelectedIds(new Set());
     setSelectionAnchorId(null);
+    setDetailSlotId(null);
     setMaxLength(data.max_length || 56);
     setBaseline(
       JSON.stringify(next.map((s) => ({ name: s.name, address: s.address }))),
@@ -270,6 +274,7 @@ export function TraitManager({ traits }: TraitManagerProps) {
         return next;
       });
       if (selectionAnchorId === id) setSelectionAnchorId(null);
+      if (detailSlotId === id) setDetailSlotId(null);
     }
   }
 
@@ -308,6 +313,12 @@ export function TraitManager({ traits }: TraitManagerProps) {
       return;
     }
 
+    // Plain click: select + toggle definition panel (one open at a time).
+    if (detailSlotId === slot.id) {
+      setDetailSlotId(null);
+    } else {
+      setDetailSlotId(slot.id);
+    }
     setSelectedIds(new Set([slot.id]));
     setSelectionAnchorId(slot.id);
   }
@@ -384,6 +395,9 @@ export function TraitManager({ traits }: TraitManagerProps) {
     });
     if (selectionAnchorId && removedIds.has(selectionAnchorId)) {
       setSelectionAnchorId(null);
+    }
+    if (detailSlotId && removedIds.has(detailSlotId)) {
+      setDetailSlotId(null);
     }
     setStatus(
       `Removed ${removed} duplicate trait(s); kept the first of each name.`,
@@ -465,6 +479,7 @@ export function TraitManager({ traits }: TraitManagerProps) {
       setSlots(mapped);
       setSelectedIds(new Set());
       setSelectionAnchorId(null);
+      setDetailSlotId(null);
       setStatus(
         truncated > 0
           ? `Loaded ${mapped.length} trait(s) from CSV (trimmed ${truncated} over the ${slotCap}-slot cap). Click Apply to Game to write.`
@@ -816,6 +831,8 @@ export function TraitManager({ traits }: TraitManagerProps) {
         {slots.map((slot, index) => {
           const isSelected = selectedIds.has(slot.id);
           const isDragging = draggingIds.has(slot.id);
+          const detailOpen = detailSlotId === slot.id;
+          const definition = slot.name ? byPicker.get(slot.name) : undefined;
           return (
             <li key={slot.id} className="relative">
               {draggingIds.size > 0 && insertAt === index ? (
@@ -827,113 +844,128 @@ export function TraitManager({ traits }: TraitManagerProps) {
                 <div className="h-1" aria-hidden />
               )}
               <div
-                draggable
-                aria-selected={isSelected}
-                onClick={(e) => {
-                  // Ignore clicks on action buttons
-                  const target = e.target as HTMLElement;
-                  if (target.closest("button")) return;
-                  selectSlot(index, e);
-                }}
-                onDragStart={(e) => {
-                  let ids = selectedIds;
-                  if (!ids.has(slot.id)) {
-                    ids = new Set([slot.id]);
-                    setSelectedIds(ids);
-                    setSelectionAnchorId(slot.id);
-                  }
-                  setDraggingIds(new Set(ids));
-                  setInsertAt(null);
-                  e.dataTransfer.effectAllowed = "move";
-                  try {
-                    e.dataTransfer.setData(
-                      "text/plain",
-                      [...ids].join(","),
-                    );
-                  } catch {
-                    /* ignore */
-                  }
-                }}
-                onDragEnd={() => {
-                  setDraggingIds(new Set());
-                  setInsertAt(null);
-                }}
-                onDragOver={(e) => {
-                  e.preventDefault();
-                  e.stopPropagation();
-                  updateInsertFromPoint(index, e);
-                }}
-                onDrop={(e) => {
-                  e.preventDefault();
-                  e.stopPropagation();
-                  const rect = (
-                    e.currentTarget as HTMLElement
-                  ).getBoundingClientRect();
-                  const fallback =
-                    e.clientY < rect.top + rect.height / 2
-                      ? index
-                      : index + 1;
-                  commitDrop(insertAt !== null ? insertAt : fallback);
-                }}
                 className={
-                  isDragging
-                    ? "flex cursor-grabbing items-start gap-3 rounded-lg border border-ember bg-raised px-3 py-3 opacity-40 select-none"
-                    : isSelected
-                      ? "flex cursor-grab items-start gap-3 rounded-lg border border-ember bg-ember/10 px-3 py-3 transition-colors select-none"
-                      : "flex cursor-grab items-start gap-3 rounded-lg border border-line bg-raised/70 px-3 py-3 transition-colors hover:border-ember/40 select-none"
+                  detailOpen || isSelected
+                    ? "overflow-hidden rounded-lg border border-ember bg-raised/70"
+                    : "overflow-hidden rounded-lg border border-line bg-raised/70"
                 }
               >
-                <span
-                  className="mt-1 select-none font-mono text-xs text-muted"
-                  aria-hidden
+                <div
+                  draggable
+                  aria-selected={isSelected}
+                  aria-expanded={detailOpen}
+                  onClick={(e) => {
+                    // Ignore clicks on action buttons
+                    const target = e.target as HTMLElement;
+                    if (target.closest("button")) return;
+                    selectSlot(index, e);
+                  }}
+                  onDragStart={(e) => {
+                    let ids = selectedIds;
+                    if (!ids.has(slot.id)) {
+                      ids = new Set([slot.id]);
+                      setSelectedIds(ids);
+                      setSelectionAnchorId(slot.id);
+                    }
+                    setDraggingIds(new Set(ids));
+                    setInsertAt(null);
+                    e.dataTransfer.effectAllowed = "move";
+                    try {
+                      e.dataTransfer.setData(
+                        "text/plain",
+                        [...ids].join(","),
+                      );
+                    } catch {
+                      /* ignore */
+                    }
+                  }}
+                  onDragEnd={() => {
+                    setDraggingIds(new Set());
+                    setInsertAt(null);
+                  }}
+                  onDragOver={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    updateInsertFromPoint(index, e);
+                  }}
+                  onDrop={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    const rect = (
+                      e.currentTarget as HTMLElement
+                    ).getBoundingClientRect();
+                    const fallback =
+                      e.clientY < rect.top + rect.height / 2
+                        ? index
+                        : index + 1;
+                    commitDrop(insertAt !== null ? insertAt : fallback);
+                  }}
+                  className={
+                    isDragging
+                      ? "flex cursor-grabbing items-start gap-3 px-3 py-3 opacity-40 select-none"
+                      : isSelected
+                        ? "flex cursor-grab items-start gap-3 bg-ember/10 px-3 py-3 transition-colors select-none"
+                        : "flex cursor-grab items-start gap-3 px-3 py-3 transition-colors hover:bg-ember/5 select-none"
+                  }
                 >
-                  ⋮⋮
-                </span>
-                <div className="min-w-0 flex-1">
-                  <p className="font-medium text-foreground">{slot.title}</p>
-                  <p className="truncate font-mono text-xs text-muted">
-                    {slot.name || "(none)"} · {slot.address}
-                  </p>
-                  {pickerOpenFor === index ? (
-                    <PickerPanel
-                      query={pickerQuery}
-                      onQueryChange={setPickerQuery}
-                      items={filteredCatalog}
-                      byPicker={byPicker}
-                      onPick={(t) => setSlotTrait(index, t)}
-                      onClose={() => {
-                        setPickerOpenFor(null);
+                  <span
+                    className="mt-1 select-none font-mono text-xs text-muted"
+                    aria-hidden
+                  >
+                    ⋮⋮
+                  </span>
+                  <div className="min-w-0 flex-1">
+                    <p className="font-medium text-foreground">{slot.title}</p>
+                    <p className="truncate font-mono text-xs text-muted">
+                      {slot.name || "(none)"} · {slot.address}
+                    </p>
+                    {pickerOpenFor === index ? (
+                      <PickerPanel
+                        query={pickerQuery}
+                        onQueryChange={setPickerQuery}
+                        items={filteredCatalog}
+                        byPicker={byPicker}
+                        onPick={(t) => setSlotTrait(index, t)}
+                        onClose={() => {
+                          setPickerOpenFor(null);
+                          setPickerQuery("");
+                        }}
+                      />
+                    ) : null}
+                  </div>
+                  <div className="flex shrink-0 flex-col gap-1 sm:flex-row">
+                    <button
+                      type="button"
+                      className="rounded px-2 py-1 text-xs text-muted hover:bg-ink/40 hover:text-foreground"
+                      onClick={() => {
+                        setPickerOpenFor(index);
                         setPickerQuery("");
                       }}
-                    />
-                  ) : null}
+                    >
+                      Change
+                    </button>
+                    <button
+                      type="button"
+                      className="rounded px-2 py-1 text-xs text-muted hover:bg-ink/40 hover:text-foreground"
+                      onClick={() => clearSlot(index)}
+                    >
+                      Clear
+                    </button>
+                    <button
+                      type="button"
+                      className="rounded px-2 py-1 text-xs text-muted hover:bg-ink/40 hover:text-foreground"
+                      onClick={() => removeSlot(index)}
+                    >
+                      Remove
+                    </button>
+                  </div>
                 </div>
-                <div className="flex shrink-0 flex-col gap-1 sm:flex-row">
-                  <button
-                    type="button"
-                    className="rounded px-2 py-1 text-xs text-muted hover:bg-ink/40 hover:text-foreground"
-                    onClick={() => {
-                      setPickerOpenFor(index);
-                      setPickerQuery("");
-                    }}
-                  >
-                    Change
-                  </button>
-                  <button
-                    type="button"
-                    className="rounded px-2 py-1 text-xs text-muted hover:bg-ink/40 hover:text-foreground"
-                    onClick={() => clearSlot(index)}
-                  >
-                    Clear
-                  </button>
-                  <button
-                    type="button"
-                    className="rounded px-2 py-1 text-xs text-muted hover:bg-ink/40 hover:text-foreground"
-                    onClick={() => removeSlot(index)}
-                  >
-                    Remove
-                  </button>
-                </div>
+                {detailOpen ? (
+                  <TraitDefinitionPanel
+                    trait={definition}
+                    pickerName={slot.name}
+                  />
+                ) : null}
               </div>
               {index === slots.length - 1 &&
               draggingIds.size > 0 &&
@@ -947,6 +979,96 @@ export function TraitManager({ traits }: TraitManagerProps) {
           );
         })}
       </ul>
+    </div>
+  );
+}
+
+function TraitDefinitionPanel({
+  trait,
+  pickerName,
+}: {
+  trait: Trait | undefined;
+  pickerName: string | null;
+}) {
+  if (!pickerName) {
+    return (
+      <div className="border-t border-line px-3 py-3 text-sm text-muted">
+        Empty slot — no trait definition.
+      </div>
+    );
+  }
+  if (!trait) {
+    return (
+      <div className="border-t border-line px-3 py-3 text-sm text-muted">
+        No local definition for{" "}
+        <span className="font-mono text-foreground">{pickerName}</span> in
+        traits.json.
+      </div>
+    );
+  }
+
+  const roles = traitRoles(trait);
+  return (
+    <div className="border-t border-line px-3 py-4">
+      <dl className="space-y-4">
+        <div>
+          <dt className="text-xs font-medium tracking-wide text-ember uppercase">
+            Utility
+          </dt>
+          <dd className="mt-1 text-[15px] leading-relaxed text-foreground">
+            {trait.Utility}
+          </dd>
+        </div>
+        <div>
+          <dt className="text-xs font-medium tracking-wide text-ember uppercase">
+            Offensive bonus
+          </dt>
+          <dd className="mt-1 text-[15px] leading-relaxed text-foreground">
+            {trait["Offensive bonus"]}
+          </dd>
+        </div>
+        <div>
+          <dt className="text-xs font-medium tracking-wide text-ember uppercase">
+            Defensive bonus
+          </dt>
+          <dd className="mt-1 text-[15px] leading-relaxed text-foreground">
+            {trait["Defensive bonus"]}
+          </dd>
+        </div>
+      </dl>
+      <dl className="mt-4 grid gap-3 border-t border-line pt-4 sm:grid-cols-3">
+        <div>
+          <dt className="text-xs font-medium tracking-wide text-muted uppercase">
+            Class trait
+          </dt>
+          <dd className="mt-1 text-sm text-foreground">
+            {displayValue(trait["Class trait"])}
+          </dd>
+        </div>
+        <div>
+          <dt className="text-xs font-medium tracking-wide text-muted uppercase">
+            Tribe trait
+          </dt>
+          <dd className="mt-1 text-sm text-foreground">
+            {displayValue(trait["Tribe trait"])}
+          </dd>
+        </div>
+        <div>
+          <dt className="text-xs font-medium tracking-wide text-muted uppercase">
+            Recommended for
+          </dt>
+          <dd className="mt-1 flex flex-wrap gap-1.5">
+            {roles.map((role) => (
+              <span
+                key={role}
+                className="rounded-full border border-line px-2 py-0.5 text-xs text-foreground"
+              >
+                {role}
+              </span>
+            ))}
+          </dd>
+        </div>
+      </dl>
     </div>
   );
 }

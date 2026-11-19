@@ -1,0 +1,72 @@
+import { NextRequest, NextResponse } from "next/server";
+
+const CE_ORIGIN = "http://127.0.0.1:8080";
+
+async function proxy(req: NextRequest, pathParts: string[]) {
+  const path = "/" + pathParts.join("/");
+  const url = `${CE_ORIGIN}${path}`;
+
+  try {
+    const init: RequestInit = {
+      method: req.method,
+      cache: "no-store",
+      headers: {
+        Accept: "application/json",
+      },
+      signal: AbortSignal.timeout(8000),
+    };
+
+    if (req.method !== "GET" && req.method !== "HEAD") {
+      const body = await req.text();
+      init.body = body;
+      init.headers = {
+        ...init.headers,
+        "Content-Type": req.headers.get("content-type") || "application/json",
+      };
+    }
+
+    const upstream = await fetch(url, init);
+    const text = await upstream.text();
+
+    return new NextResponse(text, {
+      status: upstream.status,
+      headers: {
+        "Content-Type":
+          upstream.headers.get("content-type") || "application/json",
+        "Cache-Control": "no-store",
+      },
+    });
+  } catch (err) {
+    const message =
+      err instanceof Error ? err.message : "Failed to reach CE bridge";
+    return NextResponse.json(
+      {
+        error: `Cannot reach Cheat Engine bridge at 127.0.0.1:8080 (${message}). Is ce_bridge.lua running?`,
+      },
+      { status: 502 },
+    );
+  }
+}
+
+type RouteCtx = { params: Promise<{ path: string[] }> };
+
+export async function GET(req: NextRequest, ctx: RouteCtx) {
+  const { path } = await ctx.params;
+  return proxy(req, path);
+}
+
+export async function POST(req: NextRequest, ctx: RouteCtx) {
+  const { path } = await ctx.params;
+  return proxy(req, path);
+}
+
+export async function OPTIONS() {
+  return new NextResponse(null, {
+    status: 204,
+    headers: {
+      "Access-Control-Allow-Origin": "*",
+      "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
+      "Access-Control-Allow-Headers": "Content-Type",
+    },
+  });
+}

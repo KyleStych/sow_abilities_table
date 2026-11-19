@@ -1190,16 +1190,6 @@
     "Recommended for": "Overlord, Warchiefs, Victory Point Defenders"
   },
   {
-    "Picker": "Picker_Tribe_Mystic",
-    "Game visual title": "Mystic Tribe",
-    "Utility": "Grants unblockable Mystic Blade shadow-teleport ambushes and enables natural Necromancer/totem resurrection synergies.",
-    "Offensive bonus": "Closes distance instantly on kiting targets with shadow-step strikes.",
-    "Defensive bonus": "Offsets slow Defender movement with teleportation and reanimates fallen allied grunts into undead shield walls.",
-    "Class trait": "",
-    "Tribe trait": "Mystic",
-    "Recommended for": "Overlord, Victory Point Defenders, Commanders"
-  },
-  {
     "Picker": "Picker_TribeAttack_Dark",
     "Game visual title": "Dark Strike / Dark Tribe Attack",
     "Utility": "Tribe special ability executing rapid dual-blade dark poison combo strikes.",

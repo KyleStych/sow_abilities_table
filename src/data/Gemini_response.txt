@@ -1,0 +1,17 @@
+<<This is the server log:
+
+`GET /api/ce/catalog 502 in 8.0s (next.js: 7ms, application-code: 8.0s)
+
+GET /api/ce/health 502 in 21ms (next.js: 11ms, application-code: 10ms)
+
+GET /api/ce/traits 502 in 9ms (next.js: 1.4ms, application-code: 8ms)`
+
+
+
+And this is PowerShell's response:
+
+`PS C:\Users\lurch> curl.exe -i http://127.0.0.1:8080/health
+
+curl: (7) Failed to connect to 127.0.0.1 port 8080 after 2561 ms: Could not connect to server`>>
+
+```curl: (7) Failed to connect to 127.0.0.1 port 8080 completely narrows it down—Next.js isn't the culprit at all, and there isn't even a listener accepting TCP connections on 127.0.0.1:8080 when curl hits it. Notice also that /catalog took 8.0s before returning 502 (matching the 8-second AbortSignal.timeout(8000) in route.ts), while /health and /traits failed in ~8–10ms.   Two things stand out in ce_bridge.lua that easily explain why port 8080 isn't accepting connections or why the thread bails:createSocketServer isn't a built-in CE Lua API in standard Cheat Engine builds (CE exposes createSocket / Socket client objects, whereas server sockets in CE Lua typically either don't exist under createSocketServer or behave differently depending on CE version/build—notice the script itself has a if type(createSocketServer) ~= "function" guard).   Thread lifetime / blocking behavior: In serve_loop, server.acceptConnection(true) is called inside createThread. If createSocketServer returns nil or errors on the first call, or if a previous thread/socket is in a weird state, nothing stays bound to 8080.   Rather than fighting createSocketServer inside Cheat Engine's Lua thread, there are two much cleaner ways to get your Next.js app talking to Cheat Engine without a socket server inside CE at all:Option A (File/JSON drop or Lua file-watcher loop): Have your Next.js route drop a command/request JSON file (e.g., C:\Temp\ce_cmd.json) and read back a response JSON file (C:\Temp\ce_res.json), while a lightweight timer in CE Lua (createTimer / setInterval) polls for ce_cmd.json every ~100ms, executes the memory read/write on CE's main/Lua state, and writes ce_res.json. Zero TCP/socket quirks in CE, no thread synchronization headaches, and super easy to debug.Option B (Rewrite the Lua socket script): Try a cleaner CE socket implementation (or Socket / luacom / PowerShell helper) if you specifically want HTTP over 127.0.0.1:8080.```

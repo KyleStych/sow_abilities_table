@@ -8,18 +8,17 @@
     4. Table → Execute Lua Script… (or Lua Engine) and run this file
     5. Smoke-test:  curl http://127.0.0.1:8080/health
 
-  Listens on 127.0.0.1:8080 only.
+  Listens on TCP port 8080 via CE's built-in createSocketServer (no LuaSocket).
   Endpoints:
     GET  /health
     GET  /catalog
     GET  /traits
     POST /traits   body: { "traits": [ { "address": "0x..." } | { "name": "..." } | null ] }
 
-  Requires LuaSocket (bundled with most CE installs as socket / socket.core).
   Re-run this script to restart the server (previous listener is stopped).
+  Requires a recent Cheat Engine build that exposes createSocketServer.
 ]]
 
-local HOST = "127.0.0.1"
 local PORT = 8080
 local SLOT_STRIDE = 0x20
 local MAX_SLOTS = 56
@@ -508,127 +507,298 @@ local function route_request(method, path, body)
 end
 
 -- ---------------------------------------------------------------------------
--- TCP server (LuaSocket)
+-- TCP server (Cheat Engine createSocketServer)
+--
+-- Notes:
+--  * Handle each client on the accept thread (CE sockets are not reliably
+--    usable from nested createThread workers — that left ESTABLISHED hangs).
+--  * Run memory read/write handlers via synchronize() on the CE main thread.
 -- ---------------------------------------------------------------------------
-local function load_socket()
-  local ok, sock = pcall(require, "socket")
-  if ok and sock then
-    return sock
+local function bytes_to_string(bytes)
+  if bytes == nil then
+    return ""
   end
-  ok, sock = pcall(require, "socket.core")
-  if ok and sock then
-    return sock
+  if type(bytes) == "string" then
+    return bytes
   end
-  return nil
+  if type(bytes) == "table" and #bytes == 0 then
+    return ""
+  end
+  if byteTableToString then
+    local ok, s = pcall(byteTableToString, bytes)
+    if ok and s then
+      return s
+    end
+  end
+  local chars = {}
+  for i = 1, #bytes do
+    chars[i] = string.char((bytes[i] or 0) % 256)
+  end
+  return table.concat(chars)
+end
+
+-- CE class methods: prefer colon calls (obj:method). Dot form is also tried
+-- because some CE builds bind self automatically.
+local function call_method(obj, name, ...)
+  local args = { ... }
+  local ok, a, b, c = pcall(function()
+    local fn = obj[name]
+    if type(fn) ~= "function" then
+      error("no method " .. tostring(name))
+    end
+    return fn(obj, table.unpack(args))
+  end)
+  if ok then
+    return true, a, b, c
+  end
+  ok, a, b, c = pcall(function()
+    local fn = obj[name]
+    if type(fn) ~= "function" then
+      error("no method " .. tostring(name))
+    end
+    return fn(table.unpack(args))
+  end)
+  if ok then
+    return true, a, b, c
+  end
+  return false, a
+end
+
+local function client_read_bytes(client, min_count)
+  min_count = min_count or 1
+  local ok, chunk = call_method(client, "readBytesMin", min_count)
+  if not ok then
+    return nil
+  end
+  return chunk
+end
+
+local function client_write_string(client, s)
+  call_method(client, "lock")
+  local ok = call_method(client, "writeString", s)
+  call_method(client, "unlock")
+  return ok
+end
+
+local function client_destroy(client)
+  call_method(client, "destroy")
+end
+
+local function server_accept(server, wait)
+  local ok, client = call_method(server, "acceptConnection", wait)
+  if not ok then
+    return nil, client
+  end
+  return client, nil
+end
+
+local function server_destroy(server)
+  call_method(server, "destroy")
+end
+
+local function find_header_end(buf)
+  local a = buf:find("\r\n\r\n", 1, true)
+  if a then
+    return a, 4
+  end
+  local b = buf:find("\n\n", 1, true)
+  if b then
+    return b, 2
+  end
+  return nil, nil
 end
 
 local function read_http_request(client)
-  client:settimeout(5)
-  local chunks = {}
-  local header_data = ""
+  local buf = ""
+  local header_end, sep_len
+
   while true do
-    local line, err = client:receive("*l")
-    if not line then
-      return nil, err or "receive failed"
+    local chunk = client_read_bytes(client, 1)
+    if chunk == nil then
+      return nil, "connection closed before headers"
     end
-    header_data = header_data .. line .. "\n"
-    chunks[#chunks + 1] = line
-    if line == "" then
+    local piece = bytes_to_string(chunk)
+    if piece == "" then
+      return nil, "empty read while waiting for headers"
+    end
+    buf = buf .. piece
+    header_end, sep_len = find_header_end(buf)
+    if header_end then
       break
+    end
+    if #buf > 65536 then
+      return nil, "headers too large"
     end
   end
 
-  local request_line = chunks[1] or ""
+  local header_text = buf:sub(1, header_end - 1)
+  local leftover = buf:sub(header_end + sep_len)
+  local lines = {}
+  for line in (header_text .. "\n"):gmatch("(.-)\r?\n") do
+    lines[#lines + 1] = line
+  end
+
+  local request_line = lines[1] or ""
   local method, path = request_line:match("^(%w+)%s+(%S+)")
   if not method or not path then
-    return nil, "bad request line"
+    return nil, "bad request line: " .. tostring(request_line)
   end
 
   local content_length = 0
-  for i = 2, #chunks do
-    local cl = chunks[i]:match("^[Cc][Oo][Nn][Tt][Ee][Nn][Tt]%-[Ll][Ee][Nn][Gg][Tt][Hh]%s*:%s*(%d+)")
+  for i = 2, #lines do
+    local cl = lines[i]:match("^[Cc][Oo][Nn][Tt][Ee][Nn][Tt]%-[Ll][Ee][Nn][Gg][Tt][Hh]%s*:%s*(%d+)")
     if cl then
       content_length = tonumber(cl) or 0
       break
     end
   end
 
-  local body = ""
+  local body = leftover
+  while #body < content_length do
+    local chunk = client_read_bytes(client, 1)
+    if chunk == nil then
+      break
+    end
+    body = body .. bytes_to_string(chunk)
+  end
   if content_length > 0 then
-    body = client:receive(content_length) or ""
+    body = body:sub(1, content_length)
+  else
+    body = ""
   end
 
   return { method = method:upper(), path = path, body = body }, nil
 end
 
-local function serve_loop(server)
+local function run_on_main(fn)
+  if synchronize then
+    local result
+    synchronize(function()
+      result = fn()
+    end)
+    return result
+  end
+  return fn()
+end
+
+local function handle_client(client)
+  local ok, req_or_err = pcall(read_http_request, client)
+  if not ok then
+    print("[sow_trait_bridge] read error: " .. tostring(req_or_err))
+    client_destroy(client)
+    return
+  end
+
+  local req = req_or_err
+  if not req or not req.method then
+    print("[sow_trait_bridge] bad/empty request")
+    client_destroy(client)
+    return
+  end
+
+  print(string.format("[sow_trait_bridge] %s %s", req.method, req.path))
+
+  local response = run_on_main(function()
+    local ok2, result = pcall(route_request, req.method, req.path, req.body)
+    if not ok2 then
+      return http_response(
+        "500 Internal Server Error",
+        string.format('{"error":%s}', json_string(tostring(result)))
+      )
+    end
+    return result
+  end)
+
+  client_write_string(
+    client,
+    response or http_response("500 Internal Server Error", '{"error":"no response"}')
+  )
+  client_destroy(client)
+end
+
+local function serve_loop(thread)
+  -- IMPORTANT: create the socket server inside this thread.
+  -- CE class userdata created on the main thread often becomes bare userdata
+  -- (no metamethods) when used from createThread — which caused:
+  --   attempt to index a userdata value (local 'server')
+  local server = createSocketServer(PORT)
+  if server == nil then
+    print(string.format("[sow_trait_bridge] ERROR: createSocketServer(%d) failed", PORT))
+    bridge.running = false
+    return
+  end
+
+  bridge.server = server
+  print(string.format("[sow_trait_bridge] listening on http://127.0.0.1:%d (createSocketServer)", PORT))
+  print("  GET /health  GET /catalog  GET /traits  POST /traits")
+
   while bridge.running do
-    local client = server:accept()
-    if client then
-      client:settimeout(5)
-      local ok, req_or_err = pcall(read_http_request, client)
-      if ok and req_or_err and req_or_err.method then
-        local req = req_or_err
-        local ok2, response = pcall(route_request, req.method, req.path, req.body)
-        if not ok2 then
-          response = http_response(
-            "500 Internal Server Error",
-            string.format('{"error":%s}', json_string(tostring(response)))
-          )
-        end
-        pcall(function()
-          client:send(response)
-        end)
+    if thread and thread.Terminated then
+      break
+    end
+
+    -- false = do not block forever so bridge.stop() can flip running and
+    -- this thread can destroy the server on the same thread that created it.
+    local client, err = server_accept(server, false)
+    if err and client == nil and bridge.running then
+      -- Some CE builds only support blocking accept(true). Fall back once.
+      client, err = server_accept(server, true)
+      if err and client == nil then
+        print("[sow_trait_bridge] accept error: " .. tostring(err))
+        break
       end
-      pcall(function()
-        client:close()
-      end)
+    end
+
+    if client then
+      local okh, herr = pcall(handle_client, client)
+      if not okh then
+        print("[sow_trait_bridge] handler error: " .. tostring(herr))
+        client_destroy(client)
+      end
+    elseif sleep then
+      sleep(50)
     end
   end
+
+  bridge.server = nil
+  server_destroy(server)
+  print("[sow_trait_bridge] server thread exited")
 end
 
 local function start_server()
-  local socket = load_socket()
-  if not socket then
-    print("[sow_trait_bridge] ERROR: LuaSocket not found.")
-    print("  Install/enable socket.lua + socket.core (usually under CE/autorun or CE/lua).")
-    print("  Alternative: copy LuaSocket into CE's Lua path, then re-run this script.")
+  if type(createSocketServer) ~= "function" then
+    print("[sow_trait_bridge] ERROR: createSocketServer is not available.")
+    print("  Update Cheat Engine to a build that includes createSocketServer, then re-run.")
     return false
   end
 
-  local server, err = socket.bind(HOST, PORT)
-  if not server then
-    print(string.format("[sow_trait_bridge] ERROR: bind %s:%d failed: %s", HOST, PORT, tostring(err)))
-    return false
-  end
-  server:settimeout(0.5)
-  bridge.server = server
   bridge.running = true
 
   if createThread then
-    bridge.thread = createThread(function()
-      serve_loop(server)
+    bridge.thread = createThread(function(t)
+      serve_loop(t)
     end)
   else
-    -- Fallback: blocking loop (freezes CE UI — prefer createThread builds)
     print("[sow_trait_bridge] WARNING: createThread missing; running blocking accept loop.")
-    serve_loop(server)
+    serve_loop(nil)
   end
 
-  print(string.format("[sow_trait_bridge] listening on http://%s:%d", HOST, PORT))
-  print("  GET /health  GET /catalog  GET /traits  POST /traits")
   return true
 end
 
 function bridge.stop()
+  -- Signal the server thread; it owns the socket and will destroy it.
   bridge.running = false
-  if bridge.server then
-    pcall(function()
-      bridge.server:close()
-    end)
-    bridge.server = nil
+  -- If accept is blocked, poke the port so the thread can wake and exit.
+  pcall(function()
+    if getInternet then
+      getInternet().getURL("http://127.0.0.1:" .. tostring(PORT) .. "/health")
+    end
+  end)
+  if sleep then
+    sleep(100)
   end
-  print("[sow_trait_bridge] stopped")
+  print("[sow_trait_bridge] stop requested")
 end
 
 start_server()

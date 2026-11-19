@@ -17,11 +17,11 @@ Open http://localhost:3000 for the trait browser, or http://localhost:3000/manag
 docker compose up --build
 ```
 
-The site is served at http://localhost:3000. The browser still calls the host Cheat Engine bridge at `127.0.0.1:8080`.
+The site is served at http://localhost:3000. The Next.js app proxies `/api/ce/*` to the host Cheat Engine bridge at `127.0.0.1:8080` (Docker: ensure the container can reach the host, or run `npm run dev` on the host for the manager).
 
 ## Trait Manager (Cheat Engine bridge)
 
-The manager page reads and writes the selected orc’s **Picker abilities** list through a small Lua HTTP server inside Cheat Engine.
+The manager page reads and writes the selected orc’s **Picker abilities** list through a small Lua HTTP server inside Cheat Engine. The browser calls `/api/ce/...`; Next.js forwards to CE.
 
 ### Prerequisites
 
@@ -32,16 +32,25 @@ The manager page reads and writes the selected orc’s **Picker abilities** list
 
 ### Start the bridge
 
-1. In Cheat Engine: **Table → Execute Lua Script…** (or open Lua Engine).
-2. Load and run [`ce_bridge.lua`](ce_bridge.lua) from this repo.
-3. Confirm the CE console prints that it is listening on `http://127.0.0.1:8080`.
-4. Optional smoke test:
+1. In Cheat Engine: open **Lua Engine**.
+2. Load and **Execute** [`src/helpers/ce_bridge.lua`](src/helpers/ce_bridge.lua).
+3. Confirm it prints that it is listening on port `8080`.
+4. Optional smoke tests:
 
 ```bash
 curl http://127.0.0.1:8080/health
+curl http://localhost:3000/api/ce/health
 ```
 
-Requires LuaSocket (`socket` / `socket.core`), which ships with most Cheat Engine installs.
+### Stop / restart the bridge
+
+In Lua Engine, Execute:
+
+```lua
+if _G.__sow_trait_bridge then _G.__sow_trait_bridge.stop() end
+```
+
+That command is also commented at the top of `ce_bridge.lua`. To restart, Execute the full script again (it auto-stops a previous instance first).
 
 ### Workflow
 
@@ -50,5 +59,3 @@ Requires LuaSocket (`socket` / `socket.core`), which ships with most Cheat Engin
 3. Click **Refresh from Game**.
 4. Drag traits to reorder; use Change / Clear / Add as needed.
 5. Click **Apply to Game** to write the list back (full `0x20` slot records + `list_end` update).
-
-Re-running `ce_bridge.lua` stops the previous listener and starts a new one.

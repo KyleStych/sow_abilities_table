@@ -1,4 +1,5 @@
-export const CE_BRIDGE_BASE = "http://127.0.0.1:8080";
+/** Browser calls same-origin Next proxy; Next forwards to CE on 127.0.0.1:8080. */
+export const CE_BRIDGE_BASE = "/api/ce";
 
 export type CeCatalogTrait = {
   name: string;

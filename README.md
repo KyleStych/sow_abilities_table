@@ -1,6 +1,6 @@
 # Shadow of War Picker Traits
 
-Explainer for the picker traits in Middle-earth: Shadow of War, plus a local **Trait Manager** that talks to Cheat Engine for drag-and-drop reordering.
+Explainer for the picker traits in Middle-earth: Shadow of War, plus a local **Trait Manager** that talks to Cheat Engine for drag-and-drop reordering and CSV import.
 
 ## Local
 
@@ -17,11 +17,11 @@ Open http://localhost:3000 for the trait browser, or http://localhost:3000/manag
 docker compose up --build
 ```
 
-The site is served at http://localhost:3000. The Next.js app proxies `/api/ce/*` to the host Cheat Engine bridge at `127.0.0.1:8080` (Docker: ensure the container can reach the host, or run `npm run dev` on the host for the manager).
+The site is served at http://localhost:3000. The manager’s `/api/ce/*` routes talk to Cheat Engine through a **file IPC bridge** under `C:\Temp\sow_bridge` (works from Docker only if that folder is shared with the host / CE process).
 
-## Trait Manager (Cheat Engine bridge)
+## Trait Manager (Cheat Engine file bridge)
 
-The manager page reads and writes the selected orc’s **Picker abilities** list through a small Lua HTTP server inside Cheat Engine. The browser calls `/api/ce/...`; Next.js forwards to CE.
+Next.js writes `req_*.json` into `C:\Temp\sow_bridge`; [`src/helpers/ce_bridge.lua`](src/helpers/ce_bridge.lua) polls every ~75ms, runs the memory read/write on CE’s Lua timer, and writes `res_*.json`. No TCP sockets inside CE.
 
 ### Prerequisites
 
@@ -30,32 +30,32 @@ The manager page reads and writes the selected orc’s **Picker abilities** list
 3. Enable **Master Script** (registers `p_gamedb`).
 4. Enable **Uruk Pointer** and select an orc in the army menu so `p_uruk` is set.
 
-### Start the bridge
+### Start / stop / export
 
-1. In Cheat Engine: open **Lua Engine**.
-2. Load and **Execute** [`src/helpers/ce_bridge.lua`](src/helpers/ce_bridge.lua).
-3. Confirm it prints that it is listening on port `8080`.
-4. Optional smoke tests:
-
-```bash
-curl http://127.0.0.1:8080/health
-curl http://localhost:3000/api/ce/health
-```
-
-### Stop / restart the bridge
-
-In Lua Engine, Execute:
+In **Lua Engine**, load and Execute [`src/helpers/ce_bridge.lua`](src/helpers/ce_bridge.lua).
 
 ```lua
+-- STOP
 if _G.__sow_trait_bridge then _G.__sow_trait_bridge.stop() end
+
+-- EXPORT CSV (while bridge is running)
+if _G.__sow_trait_bridge then _G.__sow_trait_bridge.exportCsv() end
 ```
 
-That command is also commented at the top of `ce_bridge.lua`. To restart, Execute the full script again (it auto-stops a previous instance first).
+Smoke-test from the site:
+
+```bash
+curl http://localhost:3000/api/ce/health
+```
 
 ### Workflow
 
 1. Run `npm run dev` and open **Manager**.
-2. Select an orc in the army view.
-3. Click **Refresh from Game**.
-4. Drag traits to reorder; use Change / Clear / Add as needed.
-5. Click **Apply to Game** to write the list back (full `0x20` slot records + `list_end` update).
+2. Select an orc in the army view → **Refresh from Game**.
+3. Drag traits to reorder (ember line shows the drop slot), or drop an orc CSV and selectively import.
+4. **Apply to Game** writes the list (names are resolved against the live picker catalog).
+5. **Persist the edit** the SeiKur0 way: change a piece of equipment (or a training order), then quit to the menu and reload. Advancing time alone often rebuilds the orc and discards picker edits that were only in memory.
+
+### CSV imports
+
+Exported CSVs include `HexValue` pointers that are **only valid for that game session**. The manager matches the `Name` column to the live CE catalog and ignores CSV hex. See [`drop-zone-trait-overwrites.md`](drop-zone-trait-overwrites.md).

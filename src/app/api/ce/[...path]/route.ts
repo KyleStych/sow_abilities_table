@@ -28,11 +28,30 @@ async function sendToCeFileBridge(
   const reqFile = path.join(BRIDGE_DIR, `req_${reqId}.json`);
   const resFile = path.join(BRIDGE_DIR, `res_${reqId}.json`);
 
+  // Embed body as a JSON value (object/array), NOT a double-encoded string.
+  // CE's Lua regex unescaping of \" inside a string body was breaking POSTs.
+  let parsedBody: unknown = null;
+  if (rawBody && rawBody.length > 0) {
+    try {
+      parsedBody = JSON.parse(rawBody);
+    } catch (err) {
+      console.error("[ce-bridge] invalid JSON body for", routePath, err);
+      throw new Error("Request body is not valid JSON");
+    }
+  }
+
   const payload = JSON.stringify({
     method,
     path: routePath,
-    body: rawBody && rawBody.length > 0 ? rawBody : null,
+    body: parsedBody,
   });
+
+  console.info(
+    `[ce-bridge] → CE ${method} ${routePath} req=${reqId}` +
+      (parsedBody && typeof parsedBody === "object" && parsedBody !== null && "traits" in parsedBody
+        ? ` traits=${Array.isArray((parsedBody as { traits?: unknown }).traits) ? (parsedBody as { traits: unknown[] }).traits.length : "?"}`
+        : ""),
+  );
 
   // Atomic write (.tmp -> .json) so CE never reads a partial file
   await fs.writeFile(tmpFile, payload, "utf8");
@@ -77,6 +96,17 @@ async function proxy(req: NextRequest, pathParts: string[]) {
         ? envelope.body
         : JSON.stringify(envelope.body ?? {});
 
+    if ((envelope.status || 200) >= 400) {
+      console.error(
+        `[ce-bridge] ← CE ${req.method} ${routePath} status=${envelope.status}`,
+        typeof envelope.body === "string" ? envelope.body : envelope.body,
+      );
+    } else {
+      console.info(
+        `[ce-bridge] ← CE ${req.method} ${routePath} status=${envelope.status || 200}`,
+      );
+    }
+
     return new NextResponse(bodyText, {
       status: envelope.status || 200,
       headers: {
@@ -87,11 +117,12 @@ async function proxy(req: NextRequest, pathParts: string[]) {
   } catch (err) {
     const message =
       err instanceof Error ? err.message : "Failed to reach CE file bridge";
+    console.error(`[ce-bridge] ${req.method} ${routePath} failed:`, message);
     return NextResponse.json(
       {
         error: `Cannot reach Cheat Engine file bridge at ${BRIDGE_DIR} (${message}). Is ce_bridge.lua running?`,
       },
-      { status: 502 },
+      { status: message.includes("valid JSON") ? 400 : 502 },
     );
   }
 }

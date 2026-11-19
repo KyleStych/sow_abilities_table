@@ -1,4 +1,4 @@
-/** Browser calls same-origin Next proxy; Next forwards to CE on 127.0.0.1:8080. */
+/** Browser calls same-origin Next proxy; Next talks to CE via C:\\Temp\\sow_bridge. */
 export const CE_BRIDGE_BASE = "/api/ce";
 
 export type CeCatalogTrait = {
@@ -60,13 +60,19 @@ async function ceFetch<T>(
         typeof (data as { error?: unknown }).error === "string"
           ? (data as { error: string }).error
           : `CE bridge HTTP ${res.status}`;
+      console.error(`[ce-bridge] ${init?.method || "GET"} ${path} → ${res.status}`, {
+        error: errMsg,
+        data,
+        requestBody: init?.body,
+      });
       return { data, error: errMsg, status: res.status };
     }
     return { data, error: null, status: res.status };
-  } catch {
+  } catch (err) {
+    console.error(`[ce-bridge] ${init?.method || "GET"} ${path} network failure`, err);
     return {
       error:
-        "Cannot reach Cheat Engine bridge at 127.0.0.1:8080. Is ce_bridge.lua running?",
+        "Cannot reach Cheat Engine file bridge (C:\\Temp\\sow_bridge). Is ce_bridge.lua running?",
       status: 0,
     };
   }
@@ -85,8 +91,9 @@ export async function getTraitsFromGame() {
 }
 
 export async function postTraitsToGame(
-  traits: Array<{ address: string } | { name: string } | null>,
+  traits: Array<{ address?: string; name?: string } | null>,
 ) {
+  console.info("[ce-bridge] POST /traits", { count: traits.length, traits });
   return ceFetch<CeTraitsResponse>("/traits", {
     method: "POST",
     headers: { "Content-Type": "application/json" },

@@ -255,35 +255,12 @@ local function read_picker_state()
   }, nil
 end
 
-local function read_slot_bytes(list_base, index0)
-  local addr = list_base + index0 * SLOT_STRIDE
-  local bytes = readBytes(addr, SLOT_STRIDE, true)
-  if type(bytes) ~= "table" then
-    bytes = {}
-    for i = 0, SLOT_STRIDE - 1 do
-      bytes[i + 1] = readBytes(addr + i, 1) or 0
-    end
-  end
-  return bytes
-end
-
-local function write_slot_bytes(list_base, index0, bytes)
-  local addr = list_base + index0 * SLOT_STRIDE
-  if type(bytes) == "table" then
-    writeBytes(addr, bytes)
-  else
-    for i = 0, SLOT_STRIDE - 1 do
-      writeBytes(addr + i, 0)
-    end
-  end
-end
-
-local function zero_slot(list_base, index0)
-  local zeros = {}
-  for i = 1, SLOT_STRIDE do
-    zeros[i] = 0
-  end
-  write_slot_bytes(list_base, index0, zeros)
+-- SeiKur0's table edits each picker entry as an 8-byte pointer only
+-- (Address = [[p_uruk]+1E0] + n*0x20, VariableType = 8 Bytes).
+-- Writing the rest of the 0x20 stride corrupts list metadata and the game
+-- often rebuilds/discards the list on save / time advance.
+local function write_slot_ptr(list_base, index0, ptr)
+  writeQword(list_base + index0 * SLOT_STRIDE, ptr or 0)
 end
 
 -- ---------------------------------------------------------------------------
@@ -547,6 +524,8 @@ end
 local function handle_post_traits(body)
   local incoming, perr = parse_traits_body(body)
   if not incoming then
+    print("[sow_trait_bridge] POST /traits parse failed: " .. tostring(perr)
+      .. " body_preview=" .. json_escape((body or ""):sub(1, 180)))
     return 400, string.format('{"error":%s}', json_string(perr or "bad json"))
   end
 
@@ -566,53 +545,54 @@ local function handle_post_traits(body)
     )
   end
 
-  local by_name, by_addr = build_picker_catalog()
-
-  local old_by_ptr = {}
-  for i = 0, state.count - 1 do
-    local ptr = readQword(state.list_base + i * SLOT_STRIDE) or 0
-    if ptr ~= 0 and old_by_ptr[ptr] == nil then
-      old_by_ptr[ptr] = read_slot_bytes(state.list_base, i)
-    end
-  end
+  local by_name = build_picker_catalog()
 
   local resolved = {}
   for i = 1, #incoming do
     local item = incoming[i]
-    local addr = item.address
-    if addr == nil and item.name ~= nil and item.name ~= "" then
+    local addr = nil
+
+    -- Resolve by live catalog name when possible; fall back to the address
+    -- already read from this session (reorder-safe, matches CE copy/paste).
+    if item.name ~= nil and item.name ~= "" then
       addr = by_name[item.name]
-      if addr == nil then
+      if addr == nil and item.address ~= nil and item.address ~= 0 then
+        addr = item.address
+        print("[sow_trait_bridge] catalog miss for " .. item.name .. ", using session address")
+      elseif addr == nil then
         return 400, string.format('{"error":%s}', json_string("unknown trait name: " .. item.name))
       end
-    end
-    if addr == nil then
+    elseif item.address ~= nil then
+      addr = item.address
+    else
       addr = 0
     end
     resolved[#resolved + 1] = addr
   end
 
-  for i = 1, capacity do
-    local index0 = i - 1
-    local addr = resolved[i]
-    if addr == nil or addr == 0 then
-      zero_slot(state.list_base, index0)
-    else
-      local bytes = old_by_ptr[addr]
-      if bytes then
-        write_slot_bytes(state.list_base, index0, bytes)
-      else
-        zero_slot(state.list_base, index0)
-        writeQword(state.list_base + index0 * SLOT_STRIDE, addr)
-      end
-    end
-  end
+  print(string.format("[sow_trait_bridge] POST /traits writing %d slot(s)", #resolved))
 
   local new_count = #resolved
   while new_count > 0 and resolved[new_count] == 0 do
     new_count = new_count - 1
   end
 
+  -- Write only the leading qword per slot (same as changing the CE dropdown).
+  for i = 1, new_count do
+    write_slot_ptr(state.list_base, i - 1, resolved[i])
+  end
+
+  -- Clear pointers that fell off the active list (do not wipe full 0x20 rows,
+  -- and do not touch slots beyond the previous end / new end).
+  local clear_until = state.count
+  if new_count > clear_until then
+    clear_until = new_count
+  end
+  for i = new_count + 1, clear_until do
+    write_slot_ptr(state.list_base, i - 1, 0)
+  end
+
+  -- list_end = address immediately after the last active entry (SeiKur0).
   writeQword(state.orc + 0x1E8, state.list_base + new_count * SLOT_STRIDE)
 
   return handle_get_traits()
@@ -652,6 +632,59 @@ local function write_atomic_response(req_id, status, body)
   os.rename(tmp_path, final_path)
 end
 
+local function extract_request_body(raw)
+  -- Preferred: body embedded as a JSON object/array (from Next.js JSON.parse).
+  local _, end_kw = raw:find('"body"%s*:%s*', 1)
+  if not end_kw then
+    return ""
+  end
+  local i = end_kw + 1
+  while i <= #raw and raw:sub(i, i):match("%s") do
+    i = i + 1
+  end
+  local start_ch = raw:sub(i, i)
+  if start_ch == "n" and raw:sub(i, i + 3) == "null" then
+    return ""
+  end
+  if start_ch == "{" or start_ch == "[" then
+    local open_ch = start_ch
+    local close_ch = start_ch == "{" and "}" or "]"
+    local depth = 0
+    local j = i
+    while j <= #raw do
+      local c = raw:sub(j, j)
+      if c == '"' then
+        j = j + 1
+        while j <= #raw do
+          local cj = raw:sub(j, j)
+          if cj == "\\" then
+            j = j + 2
+          elseif cj == '"' then
+            break
+          else
+            j = j + 1
+          end
+        end
+      elseif c == open_ch then
+        depth = depth + 1
+      elseif c == close_ch then
+        depth = depth - 1
+        if depth == 0 then
+          return raw:sub(i, j)
+        end
+      end
+      j = j + 1
+    end
+    return ""
+  end
+  -- Legacy: body as a JSON string value
+  local body_str = raw:match('"body"%s*:%s*"((?:\\.|[^"\\])*)"')
+  if body_str then
+    return body_str:gsub('\\"', '"'):gsub("\\\\", "\\")
+  end
+  return ""
+end
+
 local function process_request_file(filename)
   local req_id = filename:match("^req_([%w%-_]+)%.json$")
   if not req_id then
@@ -673,26 +706,27 @@ local function process_request_file(filename)
 
   local method = raw:match('"method"%s*:%s*"([^"]+)"') or "GET"
   local path = raw:match('"path"%s*:%s*"([^"]+)"') or "/health"
+  local body = extract_request_body(raw)
 
-  local body = ""
-  local body_str = raw:match('"body"%s*:%s*"((?:\\.|[^"\\])*)"')
-  if body_str then
-    body = body_str:gsub('\\"', '"'):gsub("\\\\", "\\")
-  else
-    local body_obj = raw:match('"body"%s*:%s*(%b{})')
-    if body_obj then
-      body = body_obj
-    end
-  end
+  print(string.format(
+    "[sow_trait_bridge] %s %s body_len=%d",
+    method:upper(),
+    path,
+    #body
+  ))
 
   local ok, status, resp_body = pcall(route_request, method:upper(), path, body)
   if not ok then
+    print("[sow_trait_bridge] ERROR: " .. tostring(status))
     write_atomic_response(
       req_id,
       500,
       string.format('{"error":%s}', json_string(tostring(status)))
     )
   else
+    if status >= 400 then
+      print(string.format("[sow_trait_bridge] %s %s -> %d %s", method:upper(), path, status, tostring(resp_body)))
+    end
     write_atomic_response(req_id, status, resp_body)
   end
 end

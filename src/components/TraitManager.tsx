@@ -495,13 +495,11 @@ export function TraitManager({ traits }: TraitManagerProps) {
 
   const filteredCatalog = useMemo(() => {
     const q = pickerQuery.trim().toLowerCase();
-    if (!q) return catalog.slice(0, 80);
-    return catalog
-      .filter((t) => {
-        const title = enrichTitle(t.name, byPicker).toLowerCase();
-        return t.name.toLowerCase().includes(q) || title.includes(q);
-      })
-      .slice(0, 80);
+    if (!q) return catalog;
+    return catalog.filter((t) => {
+      const title = enrichTitle(t.name, byPicker).toLowerCase();
+      return t.name.toLowerCase().includes(q) || title.includes(q);
+    });
   }, [catalog, pickerQuery, byPicker]);
 
   const connected = health?.ok === true;

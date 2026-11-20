@@ -107,6 +107,42 @@ const READABLE_PREFIXES = [
   "Marker_",
 ];
 
+/** Advanced classes. BaseStrength with these suffixes pairs with Marker_Specialization_. */
+const SPECIALIZATION_SUFFIXES = new Set(["Marksman", "Tracker"]);
+
+export type TraitLinkKind = "element" | "class" | "spec";
+
+/**
+ * Groups the marker and picker that decide the same orc fact, so both rails
+ * can use one text color: elemental weapon, class, or specialization.
+ */
+export function traitLinkKind(
+  name: string | null | undefined,
+): TraitLinkKind | null {
+  if (!name) return null;
+  if (/StatusEffect_/i.test(name) || /_Weapon$/i.test(name)) return "element";
+  if (/Specialization_/i.test(name)) return "spec";
+  if (/^ClassMarker_/i.test(name)) return "class";
+  const base = name.match(/^Picker_BaseStrength_(.+)$/);
+  if (base) {
+    return SPECIALIZATION_SUFFIXES.has(base[1]) ? "spec" : "class";
+  }
+  return null;
+}
+
+export function traitLinkClass(name: string | null | undefined): string {
+  switch (traitLinkKind(name)) {
+    case "element":
+      return "text-sky-300";
+    case "class":
+      return "text-emerald-300";
+    case "spec":
+      return "text-violet-300";
+    default:
+      return "text-foreground";
+  }
+}
+
 /** Game visual title when we have one; otherwise a short label from the id. */
 export function readableLabel(
   name: string | null | undefined,

@@ -5,7 +5,8 @@ import { usePathname } from "next/navigation";
 
 const links = [
   { href: "/", label: "Traits" },
-  { href: "/manager", label: "Manager" },
+  { href: "/manager", label: "Markers & Pickers" },
+  { href: "/appearance", label: "Appearance" },
 ] as const;
 
 export function SiteNav() {
@@ -16,7 +17,7 @@ export function SiteNav() {
       aria-label="Primary"
       className="border-b border-line/80 bg-ink/40 backdrop-blur-sm"
     >
-      <div className="mx-auto flex w-full max-w-3xl items-center gap-1 px-4 py-3">
+      <div className="mx-auto flex w-full max-w-3xl flex-wrap items-center gap-1 px-4 py-3">
         {links.map((link) => {
           const active =
             link.href === "/"

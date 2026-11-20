@@ -8,7 +8,7 @@ export default function ManagerPage() {
       <Suspense
         fallback={
           <div className="mx-auto w-full max-w-3xl px-4 pt-10 pb-16 text-muted">
-            Loading manager…
+            Loading markers and pickers…
           </div>
         }
       >

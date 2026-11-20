@@ -10,6 +10,16 @@
     "Recommended for": "Throne Room Bodyguards, Wall Defense Warchiefs"
   },
   {
+    "Picker": "FastRunner",
+    "Game visual title": "Fast Runner",
+    "Utility": "Mobility / Movement. Boosts sprinting/running speed for rapid pursuit and evasion.",
+    "Offensive bonus": "Chasing down fleeing captains or grunts across open areas.",
+    "Defensive bonus": "Kiting or disengaging quickly when pressured by multiple enemies.",
+    "Class trait": "",
+    "Tribe trait": "",
+    "Recommended for": ""
+  },
+  {
     "Picker": "Picker_Adaptable_Med",
     "Game visual title": "the Adaptable",
     "Utility": "Medium adaptation speed against player combo patterns, stun loops, and stealth setups.",
@@ -51,7 +61,7 @@
   },
   {
     "Picker": "Picker_AttacksFaster",
-    "Game visual title": "the Swift / the Fast",
+    "Game visual title": "Attacks Faster",
     "Utility": "Increases overall melee animation attack speed and reduces recovery frames between strikes.",
     "Offensive bonus": "Overwhelms enemy defenders with fast stagger chains.",
     "Defensive bonus": "Reduces windows where attacking players can land uninterrupted executions or drain abilities.",
@@ -231,7 +241,7 @@
   },
   {
     "Picker": "Picker_BeastSlayer",
-    "Game visual title": "Monster Hunter",
+    "Game visual title": "Beast Slayer",
     "Utility": "Grants massive damage multipliers and specialized attack patterns against beasts and mounts.",
     "Offensive bonus": "Shreds caragors, drakes, and summoned graugs.",
     "Defensive bonus": "Anti-cheese safeguard against players deploying summoned mounts in the throne room.",
@@ -341,7 +351,7 @@
   },
   {
     "Picker": "Picker_Determination",
-    "Game visual title": "Determination / Second Wind",
+    "Game visual title": "Determination",
     "Utility": "Triggers a full health regeneration phase when the Captain enters low health.",
     "Offensive bonus": "Restores full health during prolonged courtyard engagements.",
     "Defensive bonus": "Requires attackers to execute or burst down the Overlord before they heal back to full.",
@@ -711,7 +721,7 @@
   },
   {
     "Picker": "Picker_GroundPound",
-    "Game visual title": "Ground Pound / Slam",
+    "Game visual title": "Ground Pound",
     "Utility": "Slams weapon or fists into the ground to generate a localized shockwave ring that staggers nearby enemies.",
     "Offensive bonus": "Clears grouped defender grunts and knocks down opposing Captains during point captures.",
     "Defensive bonus": "Punishes melee attackers crowding victory points by interrupting combos with AoE knockdowns.",
@@ -911,7 +921,7 @@
   },
   {
     "Picker": "Picker_NoLastChance",
-    "Game visual title": "No Last Chance",
+    "Game visual title": "No Chance",
     "Utility": "Removes the player's quick-time event prompt when downing Talion.",
     "Offensive bonus": "N/A.",
     "Defensive bonus": "Instant mission fail/death for any invading player who goes down near this unit.",
@@ -951,7 +961,7 @@
   },
   {
     "Picker": "Picker_Poison_Weapon",
-    "Game visual title": "Venom Weapon",
+    "Game visual title": "Poison Weapon",
     "Utility": "Infuses weapon attacks and projectiles with toxic poison status effects.",
     "Offensive bonus": "Applies stacking damage-over-time status effects.",
     "Defensive bonus": "Drains player health pools during throne room sieges.",
@@ -971,13 +981,23 @@
   },
   {
     "Picker": "Picker_PrimalRoar",
-    "Game visual title": "Primal Roar / Beast Master Roar",
+    "Game visual title": "Primal Roar",
     "Utility": "Specialized roar that intimidates nearby combatants while enraging or attracting wild beasts into the fight.",
     "Offensive bonus": "Draws hostile beasts into courtyard battles to disrupt defender formations.",
     "Defensive bonus": "Adds chaotic wildlife hazards to outdoor siege defenses and fortress yards.",
     "Class trait": "BeastMaster",
     "Tribe trait": "",
     "Recommended for": "Assault Leaders, Warchiefs"
+  },
+  {
+    "Picker": "Picker_QuickMovement",
+    "Game visual title": "Quick Movement",
+    "Utility": "Mobility / Movement. Increases movement speed and agility during combat and traversal.",
+    "Offensive bonus": "Closing distance quickly against ranged or retreating targets.",
+    "Defensive bonus": "Repositioning faster in nemesis missions, pits, or siege defense.",
+    "Class trait": "",
+    "Tribe trait": "",
+    "Recommended for": ""
   },
   {
     "Picker": "Picker_QuickShot",
@@ -1111,7 +1131,7 @@
   },
   {
     "Picker": "Picker_SecondWind",
-    "Game visual title": "Second Wind / Determination",
+    "Game visual title": "Second Wind",
     "Utility": "Triggers a health restoration phase when entering low health thresholds.",
     "Offensive bonus": "Sustains prolonged engagements.",
     "Defensive bonus": "Extends survivability under heavy assault.",
@@ -1328,25 +1348,5 @@
     "Class trait": "Defender",
     "Tribe trait": "",
     "Recommended for": "Victory Point Defenders, Assault Leaders"
-  },
-  {
-    "Picker": "Picker_QuickMovement",
-    "Game visual title": "Quick Movement",
-    "Utility": "Mobility / Movement. Increases movement speed and agility during combat and traversal.",
-    "Offensive bonus": "Closing distance quickly against ranged or retreating targets.",
-    "Defensive bonus": "Repositioning faster in nemesis missions, pits, or siege defense.",
-    "Class trait": "",
-    "Tribe trait": "",
-    "Recommended for": ""
-  },
-  {
-    "Picker": "FastRunner",
-    "Game visual title": "Fast Runner",
-    "Utility": "Mobility / Movement. Boosts sprinting/running speed for rapid pursuit and evasion.",
-    "Offensive bonus": "Chasing down fleeing captains or grunts across open areas.",
-    "Defensive bonus": "Kiting or disengaging quickly when pressured by multiple enemies.",
-    "Class trait": "",
-    "Tribe trait": "",
-    "Recommended for": ""
   }
 ]

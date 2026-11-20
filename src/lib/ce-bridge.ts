@@ -120,3 +120,74 @@ export async function postMarkersToGame(
     body: JSON.stringify({ traits }),
   });
 }
+
+export type AppearancePointer = {
+  name: string | null;
+  address: string;
+};
+
+export type AppearanceFieldValue = AppearancePointer & {
+  id: string;
+  error?: string;
+};
+
+export type AppearanceListValue = {
+  capacity: number;
+  items: AppearancePointer[];
+  error?: string;
+};
+
+export type AppearanceColorValue = {
+  id: string;
+  label: string;
+  offset: string;
+  argb: string;
+  error?: string;
+};
+
+export type AppearanceResponse = {
+  orc: string;
+  rarity: string;
+  rarityError?: string;
+  fields: AppearanceFieldValue[];
+  tags: AppearanceListValue;
+  wounds: AppearanceListValue;
+  colors: AppearanceColorValue[];
+  error?: string;
+};
+
+export type AppearanceCatalogResponse = {
+  lists: Record<string, CeCatalogTrait[]>;
+  missing?: string[];
+  error?: string;
+};
+
+export type AppearanceWriteBody = {
+  rarity: string;
+  fields: AppearanceFieldValue[];
+  tags: AppearancePointer[];
+  wounds: AppearancePointer[];
+  colors: Array<{ id: string; argb: string }>;
+};
+
+export async function getAppearance() {
+  return ceFetch<AppearanceResponse>("/appearance");
+}
+
+export async function getAppearanceCatalog() {
+  return ceFetch<AppearanceCatalogResponse>("/appearance-catalog");
+}
+
+export async function postAppearance(body: AppearanceWriteBody) {
+  console.info("[ce-bridge] POST /appearance", {
+    fields: body.fields.length,
+    tags: body.tags.length,
+    wounds: body.wounds.length,
+    colors: body.colors.length,
+  });
+  return ceFetch<AppearanceResponse>("/appearance", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(body),
+  });
+}

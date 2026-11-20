@@ -20,6 +20,7 @@ async function sendToCeFileBridge(
   method: string,
   routePath: string,
   rawBody: string | null,
+  timeoutMs: number,
 ): Promise<BridgeEnvelope> {
   await fs.mkdir(BRIDGE_DIR, { recursive: true });
 
@@ -57,7 +58,7 @@ async function sendToCeFileBridge(
   await fs.writeFile(tmpFile, payload, "utf8");
   await fs.rename(tmpFile, reqFile);
 
-  const deadline = Date.now() + TIMEOUT_MS;
+  const deadline = Date.now() + timeoutMs;
 
   try {
     while (Date.now() < deadline) {
@@ -90,7 +91,13 @@ async function proxy(req: NextRequest, pathParts: string[]) {
     const rawBody =
       req.method !== "GET" && req.method !== "HEAD" ? await req.text() : null;
 
-    const envelope = await sendToCeFileBridge(req.method, routePath, rawBody);
+    const timeoutMs = routePath === "/appearance-catalog" ? 45000 : TIMEOUT_MS;
+    const envelope = await sendToCeFileBridge(
+      req.method,
+      routePath,
+      rawBody,
+      timeoutMs,
+    );
     const bodyText =
       typeof envelope.body === "string"
         ? envelope.body

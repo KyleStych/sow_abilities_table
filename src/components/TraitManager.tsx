@@ -3,10 +3,12 @@
 import {
   useCallback,
   useEffect,
+  useId,
   useMemo,
   useRef,
   useState,
   type DragEvent,
+  type KeyboardEvent,
   type MouseEvent,
   type RefObject,
 } from "react";
@@ -24,7 +26,7 @@ import {
   type CeTraitsResponse,
 } from "@/lib/ce-bridge";
 import { parseOrcCsv, type OrcCsvAbilityRow } from "@/lib/orc-csv";
-import { displayValue, readableLabel, traitRoles } from "@/lib/traits";
+import { displayValue, readableLabel, traitLinkClass, traitRoles } from "@/lib/traits";
 import type { Trait } from "@/types/trait";
 
 type ManagedSlot = {
@@ -805,9 +807,9 @@ export function TraitManager({ traits }: TraitManagerProps) {
 
   return (
     <div className="relative mx-auto w-full max-w-[110rem] px-4 pb-16">
-      <div className="xl:grid xl:grid-cols-[minmax(9rem,1fr)_minmax(0,48rem)_minmax(18rem,24rem)] xl:items-start xl:gap-8">
+      <div className="xl:grid xl:grid-cols-[minmax(9rem,1fr)_minmax(0,48rem)_minmax(18rem,24rem)] xl:gap-8">
         <div className="hidden xl:block">
-          <div className="sticky top-24 flex justify-end">
+          <div className="sticky top-0 flex h-dvh items-center justify-end">
             <div className="mr-[30%] flex flex-col gap-2">
               <JumpButton
                 active={sectionInView === "markers"}
@@ -828,7 +830,7 @@ export function TraitManager({ traits }: TraitManagerProps) {
         <div className="min-w-0">
           <header className="pt-10 pb-6">
             <h1 className="font-serif text-4xl tracking-tight text-foreground sm:text-5xl">
-              Trait Manager
+              Markers & Pickers
             </h1>
             <p className="mt-4 max-w-2xl text-base leading-relaxed text-muted">
               Drag to reorder marker and picker traits.{" "}
@@ -862,7 +864,8 @@ export function TraitManager({ traits }: TraitManagerProps) {
             ) : null}
           </div>
 
-          <div className="mb-6 flex flex-wrap gap-2">
+          <div className="sticky top-0 z-30 -mx-1 mb-6 bg-background/70 px-1 py-3 backdrop-blur-sm">
+            <div className="flex flex-wrap gap-2">
             <button
               type="button"
               disabled={busy}
@@ -879,6 +882,7 @@ export function TraitManager({ traits }: TraitManagerProps) {
             >
               Apply to Game
             </button>
+            </div>
           </div>
 
           <div className="mb-6 flex gap-2 xl:hidden">
@@ -993,13 +997,15 @@ export function TraitManager({ traits }: TraitManagerProps) {
         </div>
 
         <aside className="hidden xl:block">
-          <div className="sticky top-24">
+          <div className="sticky top-0 flex h-dvh items-center">
+            <div className="max-h-[calc(100dvh-2rem)] w-full overflow-y-auto">
             <ReferenceRail
               sectionInView={sectionInView}
               markerSlots={markers.slots}
               pickerSlots={pickers.slots}
               byPicker={byPicker}
             />
+            </div>
           </div>
         </aside>
       </div>
@@ -1179,7 +1185,7 @@ function AbilitySection({
                 )}
                 <div
                   className={
-                    detailOpen || isSelected
+                    detailOpen || isSelected || !slot.name
                       ? "overflow-hidden rounded-lg border border-ember bg-raised/70"
                       : "overflow-hidden rounded-lg border border-line bg-raised/70"
                   }
@@ -1315,27 +1321,53 @@ function ReferenceRail({
   byPicker: Map<string, Trait>;
 }) {
   const showingMarkers = sectionInView === "pickers";
-  const markerLabels = markerSlots
+  const specSuffixes = new Set<string>();
+  const classSuffixes = new Set<string>();
+  for (const slot of markerSlots) {
+    const spec = slot.name?.match(/Specialization_(.+)$/);
+    if (spec) specSuffixes.add(spec[1]);
+    const cls = slot.name?.match(/^ClassMarker_(.+)$/);
+    if (cls) classSuffixes.add(cls[1]);
+  }
+
+  function rowClass(name: string | null | undefined) {
+    const base = name?.match(/^Picker_BaseStrength_(.+)$/);
+    if (base) {
+      if (specSuffixes.has(base[1])) return "text-violet-300";
+      if (classSuffixes.has(base[1])) return "text-emerald-300";
+    }
+    return traitLinkClass(name);
+  }
+
+  const markerRows = markerSlots
     .filter((slot) => slot.name)
-    .map((slot) => readableLabel(slot.name, byPicker));
+    .map((slot) => ({
+      name: slot.name,
+      label: readableLabel(slot.name, byPicker),
+    }));
 
   return (
     <div className="rounded-lg border border-line bg-raised/40 p-3">
-      <h2 className="mb-3 text-xs font-medium tracking-wide text-muted uppercase">
+      <h2 className="mb-2 text-xs font-medium tracking-wide text-muted uppercase">
         {showingMarkers ? "Markers" : "Pickers"}
       </h2>
+      <p className="mb-3 flex flex-wrap gap-x-3 text-[10px] font-medium tracking-wide uppercase">
+        <span className="text-sky-300">Element</span>
+        <span className="text-emerald-300">Class</span>
+        <span className="text-violet-300">Specialization</span>
+      </p>
       {showingMarkers ? (
-        markerLabels.length === 0 ? (
+        markerRows.length === 0 ? (
           <p className="text-xs text-muted">No markers selected.</p>
         ) : (
           <ul className="space-y-1">
-            {markerLabels.map((label, index) => (
+            {markerRows.map((row, index) => (
               <li
-                key={`${label}-${index}`}
-                className="truncate text-sm text-foreground"
-                title={label}
+                key={`${row.label}-${index}`}
+                className={`truncate text-sm ${rowClass(row.name)}`}
+                title={row.label}
               >
-                {label}
+                {row.label}
               </li>
             ))}
           </ul>
@@ -1343,11 +1375,12 @@ function ReferenceRail({
       ) : (
         <div className="grid grid-flow-col grid-cols-2 grid-rows-[repeat(28,minmax(1.25rem,auto))] gap-x-3">
           {Array.from({ length: PICKER_RAIL_COUNT }, (_, index) => {
-            const label = readableLabel(pickerSlots[index]?.name, byPicker);
+            const name = pickerSlots[index]?.name;
+            const label = readableLabel(name, byPicker);
             return (
               <p
                 key={index}
-                className="truncate text-xs leading-5 text-foreground"
+                className={`truncate text-xs leading-5 ${rowClass(name)}`}
                 title={label || undefined}
               >
                 {label || "\u00a0"}
@@ -1587,6 +1620,42 @@ function PickerPanel({
   onEmpty?: () => void;
   placeholder: string;
 }) {
+  const [activeIndex, setActiveIndex] = useState(-1);
+  const listRef = useRef<HTMLUListElement>(null);
+  const listId = useId();
+
+  useEffect(() => {
+    setActiveIndex(-1);
+  }, [query]);
+
+  useEffect(() => {
+    if (activeIndex < 0) return;
+    const row = listRef.current?.querySelector<HTMLElement>(
+      `[data-result-index="${activeIndex}"]`,
+    );
+    row?.scrollIntoView({ block: "nearest" });
+  }, [activeIndex]);
+
+  function onSearchKeyDown(e: KeyboardEvent<HTMLInputElement>) {
+    if (e.key === "ArrowDown") {
+      e.preventDefault();
+      if (items.length === 0) return;
+      setActiveIndex((current) =>
+        current < 0 ? 0 : Math.min(current + 1, items.length - 1),
+      );
+      return;
+    }
+    if (e.key === "ArrowUp") {
+      e.preventDefault();
+      setActiveIndex((current) => (current <= 0 ? -1 : current - 1));
+      return;
+    }
+    if (e.key === "Enter" && activeIndex >= 0 && items[activeIndex]) {
+      e.preventDefault();
+      onPick(items[activeIndex]);
+    }
+  }
+
   return (
     <div className="mt-3 mb-4 rounded-lg border border-line bg-ink/60 p-3">
       <div className="mb-2 flex items-center gap-2">
@@ -1594,7 +1663,14 @@ function PickerPanel({
           autoFocus
           value={query}
           onChange={(e) => onQueryChange(e.target.value)}
+          onKeyDown={onSearchKeyDown}
           placeholder={placeholder}
+          role="combobox"
+          aria-expanded={items.length > 0}
+          aria-controls={listId}
+          aria-activedescendant={
+            activeIndex >= 0 ? `${listId}-result-${activeIndex}` : undefined
+          }
           className="min-w-0 flex-1 rounded-md border border-line bg-raised px-3 py-2 text-sm text-foreground outline-none focus:border-ember"
         />
         <button
@@ -1614,26 +1690,43 @@ function PickerPanel({
           Add empty slot
         </button>
       ) : null}
-      <ul className="max-h-56 overflow-y-auto">
+      <ul
+        id={listId}
+        ref={listRef}
+        role="listbox"
+        className="max-h-56 overflow-y-auto"
+      >
         {items.length === 0 ? (
           <li className="px-2 py-3 text-sm text-muted">No matches.</li>
         ) : null}
-        {items.map((t) => (
-          <li key={`${t.name}-${t.address}`}>
-            <button
-              type="button"
-              onClick={() => onPick(t)}
-              className="w-full rounded-md px-2 py-2 text-left hover:bg-raised"
-            >
-              <span className="block text-sm text-foreground">
-                {enrichTitle(t.name, byPicker)}
-              </span>
-              <span className="block truncate font-mono text-xs text-muted">
-                {t.name}
-              </span>
-            </button>
-          </li>
-        ))}
+        {items.map((t, index) => {
+          const active = index === activeIndex;
+          return (
+            <li key={`${t.name}-${t.address}`} role="presentation">
+              <button
+                id={`${listId}-result-${index}`}
+                type="button"
+                role="option"
+                data-result-index={index}
+                aria-selected={active}
+                onMouseEnter={() => setActiveIndex(index)}
+                onClick={() => onPick(t)}
+                className={
+                  active
+                    ? "w-full rounded-md bg-ember/20 px-2 py-2 text-left"
+                    : "w-full rounded-md px-2 py-2 text-left hover:bg-raised"
+                }
+              >
+                <span className="block text-sm text-foreground">
+                  {enrichTitle(t.name, byPicker)}
+                </span>
+                <span className="block truncate font-mono text-xs text-muted">
+                  {t.name}
+                </span>
+              </button>
+            </li>
+          );
+        })}
       </ul>
     </div>
   );

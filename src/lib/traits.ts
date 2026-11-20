@@ -37,7 +37,9 @@ function withNoneFirst(values: string[]): FilterOption[] {
 }
 
 export function traitRoles(trait: Trait): string[] {
-  return trait["Recommended for"]
+  const recommended = trait["Recommended for"];
+  if (typeof recommended !== "string" || recommended.length === 0) return [];
+  return recommended
     .split(",")
     .map((part) => part.trim())
     .filter(Boolean);
@@ -96,4 +98,29 @@ export function filterTraits(list: Trait[], filters: TraitFilters): Trait[] {
 
 export function displayValue(value: string): string {
   return value === NONE ? "None" : value;
+}
+
+const READABLE_PREFIXES = [
+  "PersonalityMarker_",
+  "ClassMarker_",
+  "Picker_",
+  "Marker_",
+];
+
+/** Game visual title when we have one; otherwise a short label from the id. */
+export function readableLabel(
+  name: string | null | undefined,
+  byPicker?: Map<string, Trait>,
+): string {
+  if (!name) return "";
+  const title = byPicker?.get(name)?.["Game visual title"];
+  if (title) return title;
+  let text = name;
+  for (const prefix of READABLE_PREFIXES) {
+    if (text.startsWith(prefix)) {
+      text = text.slice(prefix.length);
+      break;
+    }
+  }
+  return text.replace(/_/g, " ");
 }

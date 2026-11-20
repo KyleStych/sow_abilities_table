@@ -3,19 +3,23 @@
  *
  * IMPORTANT: HexValue columns are only valid for the game session that
  * produced the CSV. Always resolve traits by the Name string against the
- * live Faction/Traits/Picker catalog from CE before writing memory.
+ * live Faction/Traits/Picker and Faction/Traits/Marker catalogs from CE
+ * before writing memory.
  */
 
-export type OrcCsvPickerRow = {
+export type OrcCsvAbilityRow = {
   slot: string;
   name: string;
   /** Session-specific; do not write this address across launches. */
   hexValue: string;
 };
 
+export type OrcCsvPickerRow = OrcCsvAbilityRow;
+
 export type OrcCsvParseResult = {
   orcName: string | null;
-  pickers: OrcCsvPickerRow[];
+  pickers: OrcCsvAbilityRow[];
+  markers: OrcCsvAbilityRow[];
 };
 
 const SKIP_NAMES = new Set([
@@ -55,7 +59,7 @@ function splitCsvLine(line: string): string[] {
 export function parseOrcCsv(text: string): OrcCsvParseResult {
   const lines = text.split(/\r?\n/).filter((l) => l.trim().length > 0);
   if (lines.length === 0) {
-    return { orcName: null, pickers: [] };
+    return { orcName: null, pickers: [], markers: [] };
   }
 
   const header = splitCsvLine(lines[0]).map((h) => h.trim().toLowerCase());
@@ -71,7 +75,8 @@ export function parseOrcCsv(text: string): OrcCsvParseResult {
   }
 
   let orcName: string | null = null;
-  const pickers: OrcCsvPickerRow[] = [];
+  const pickers: OrcCsvAbilityRow[] = [];
+  const markers: OrcCsvAbilityRow[] = [];
 
   for (let i = 1; i < lines.length; i++) {
     const cells = splitCsvLine(lines[i]);
@@ -89,7 +94,13 @@ export function parseOrcCsv(text: string): OrcCsvParseResult {
       continue;
     }
 
-    if (category !== "Picker Abilities") {
+    const bucket =
+      category === "Picker Abilities"
+        ? pickers
+        : category === "Marker Abilities"
+          ? markers
+          : null;
+    if (!bucket) {
       continue;
     }
 
@@ -98,12 +109,12 @@ export function parseOrcCsv(text: string): OrcCsvParseResult {
       continue;
     }
 
-    pickers.push({
-      slot: slot.trim() || `entry ${pickers.length + 1}`,
+    bucket.push({
+      slot: slot.trim() || `entry ${bucket.length + 1}`,
       name,
       hexValue: hexValue.trim(),
     });
   }
 
-  return { orcName, pickers };
+  return { orcName, pickers, markers };
 }

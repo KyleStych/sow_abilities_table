@@ -1330,27 +1330,23 @@
     "Recommended for": "Victory Point Defenders, Assault Leaders"
   },
   {
-    "Picker_QuickMovement": {
-      "name": "Picker_QuickMovement",
-      "label": "Quick Movement",
-      "category": "Mobility / Movement",
-      "description": "Increases movement speed and agility during combat and traversal.",
-      "uses": [
-        "Closing distance quickly against ranged or retreating targets",
-        "Repositioning faster in nemesis missions, pits, or siege defense"
-      ]
-    }
+    "Picker": "Picker_QuickMovement",
+    "Game visual title": "Quick Movement",
+    "Utility": "Mobility / Movement. Increases movement speed and agility during combat and traversal.",
+    "Offensive bonus": "Closing distance quickly against ranged or retreating targets.",
+    "Defensive bonus": "Repositioning faster in nemesis missions, pits, or siege defense.",
+    "Class trait": "",
+    "Tribe trait": "",
+    "Recommended for": ""
   },
   {
-    "FastRunner": {
-      "name": "FastRunner",
-      "label": "Fast Runner",
-      "category": "Mobility / Movement",
-      "description": "Boosts sprinting/running speed for rapid pursuit and evasion.",
-      "uses": [
-        "Chasing down fleeing captains or grunts across open areas",
-        "Kiting or disengaging quickly when pressured by multiple enemies"
-      ]
-    }
+    "Picker": "FastRunner",
+    "Game visual title": "Fast Runner",
+    "Utility": "Mobility / Movement. Boosts sprinting/running speed for rapid pursuit and evasion.",
+    "Offensive bonus": "Chasing down fleeing captains or grunts across open areas.",
+    "Defensive bonus": "Kiting or disengaging quickly when pressured by multiple enemies.",
+    "Class trait": "",
+    "Tribe trait": "",
+    "Recommended for": ""
   }
 ]

@@ -60,7 +60,8 @@ async function ceFetch<T>(
         typeof (data as { error?: unknown }).error === "string"
           ? (data as { error: string }).error
           : `CE bridge HTTP ${res.status}`;
-      console.error(`[ce-bridge] ${init?.method || "GET"} ${path} → ${res.status}`, {
+      const log = res.status === 404 ? console.warn : console.error;
+      log(`[ce-bridge] ${init?.method || "GET"} ${path} → ${res.status}`, {
         error: errMsg,
         data,
         requestBody: init?.body,
@@ -95,6 +96,25 @@ export async function postTraitsToGame(
 ) {
   console.info("[ce-bridge] POST /traits", { count: traits.length, traits });
   return ceFetch<CeTraitsResponse>("/traits", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ traits }),
+  });
+}
+
+export async function getMarkerCatalog() {
+  return ceFetch<CeCatalogResponse>("/marker-catalog");
+}
+
+export async function getMarkersFromGame() {
+  return ceFetch<CeTraitsResponse>("/markers");
+}
+
+export async function postMarkersToGame(
+  traits: Array<{ address?: string; name?: string } | null>,
+) {
+  console.info("[ce-bridge] POST /markers", { count: traits.length, traits });
+  return ceFetch<CeTraitsResponse>("/markers", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ traits }),

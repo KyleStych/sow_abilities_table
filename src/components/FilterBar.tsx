@@ -1,5 +1,6 @@
 "use client";
 
+import { useId, useState } from "react";
 import type { FilterOption } from "@/lib/traits";
 
 type FilterBarProps = {
@@ -72,6 +73,7 @@ export function FilterBar({
           options={classes}
           selected={selectedClasses}
           onToggle={onToggleClass}
+          defaultOpen
         />
         <ChipGroup
           label="Tribe"
@@ -95,23 +97,49 @@ function ChipGroup({
   options,
   selected,
   onToggle,
+  defaultOpen = false,
 }: {
   label: string;
   options: FilterOption[];
   selected: string[];
   onToggle: (value: string) => void;
+  defaultOpen?: boolean;
 }) {
+  const [open, setOpen] = useState(defaultOpen);
+  const headingId = useId();
+  const panelId = useId();
+  const visible = open
+    ? options
+    : options.filter((option) => selected.includes(option.value));
+
   return (
-    <fieldset>
-      <legend className="text-xs font-medium tracking-wide text-muted uppercase">
-        {label}
-      </legend>
-      <div className="mt-1.5 flex flex-wrap gap-2">
-        {options.map((option) => {
+    <div>
+      <button
+        type="button"
+        id={headingId}
+        aria-expanded={open}
+        aria-controls={panelId}
+        onClick={() => setOpen((current) => !current)}
+        className="flex w-full items-center justify-between gap-3 rounded-md py-0.5 text-left focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ember"
+      >
+        <span className="text-xs font-medium tracking-wide text-muted uppercase">
+          {label}
+        </span>
+        <Chevron open={open} />
+      </button>
+      <div
+        id={panelId}
+        role="group"
+        aria-labelledby={headingId}
+        className={
+          visible.length === 0 ? "hidden" : "mt-1.5 flex flex-wrap gap-2"
+        }
+      >
+        {visible.map((option) => {
           const pressed = selected.includes(option.value);
           return (
             <button
-              key={option.label}
+              key={option.value}
               type="button"
               aria-pressed={pressed}
               onClick={() => onToggle(option.value)}
@@ -126,6 +154,25 @@ function ChipGroup({
           );
         })}
       </div>
-    </fieldset>
+    </div>
+  );
+}
+
+function Chevron({ open }: { open: boolean }) {
+  return (
+    <svg
+      viewBox="0 0 20 20"
+      aria-hidden="true"
+      className={`size-4 shrink-0 text-muted transition-transform ${open ? "rotate-180" : ""}`}
+    >
+      <path
+        d="M5 7.5 10 12.5 15 7.5"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.6"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
   );
 }

@@ -17,6 +17,14 @@ local POLL_INTERVAL_MS = 75
 local SLOT_STRIDE = 0x20
 local MAX_SLOTS = 56
 local PICKER_LIST_ID = "Faction/Traits/Picker"
+-- Marker abilities are packed 8-byte pointers (SeiKur0 "Marker abilities":
+-- list [[p_uruk]+1B0], list_end p_uruk+1B8, list_maxlength p_uruk+1C0).
+local MARKER_STRIDE = 8
+local MAX_MARKER_SLOTS = 48
+local MARKER_LIST_ID = "Faction/Traits/Marker"
+local MARKER_LIST_OFF = 0x1B0
+local MARKER_END_OFF = 0x1B8
+local MARKER_MAX_OFF = 0x1C0
 
 os.execute('if not exist "' .. BRIDGE_DIR .. '" mkdir "' .. BRIDGE_DIR .. '"')
 os.execute('if not exist "' .. CSV_DIR .. '" mkdir "' .. CSV_DIR .. '"')
@@ -172,14 +180,14 @@ local function get_list_base_from_list_id(listid)
   return nil
 end
 
-local function build_picker_catalog()
+local function build_catalog(list_id, missing_message)
   local by_name = {}
   local by_addr = {}
   local items = {}
 
-  local base = get_list_base_from_list_id(PICKER_LIST_ID)
+  local base = get_list_base_from_list_id(list_id)
   if base == nil then
-    return by_name, by_addr, items, "Faction/Traits/Picker list not found — enable Master Script"
+    return by_name, by_addr, items, missing_message
   end
 
   local length = readInteger(base + 0x28) or 0
@@ -204,6 +212,20 @@ local function build_picker_catalog()
   return by_name, by_addr, items, nil
 end
 
+local function build_picker_catalog()
+  return build_catalog(
+    PICKER_LIST_ID,
+    "Faction/Traits/Picker list not found — enable Master Script"
+  )
+end
+
+local function build_marker_catalog()
+  return build_catalog(
+    MARKER_LIST_ID,
+    "Faction/Traits/Marker list not found — enable Master Script"
+  )
+end
+
 local function trait_name_from_ptr(ptr, by_addr)
   if ptr == nil or ptr == 0 then
     return nil
@@ -218,29 +240,32 @@ local function trait_name_from_ptr(ptr, by_addr)
   return nil
 end
 
-local function read_picker_state()
+-- Picker entries are 8-byte pointers at stride 0x20
+-- (Address = [[p_uruk]+1E0] + n*0x20). Marker entries are packed pointers
+-- at stride 8 ([[p_uruk]+1B0] + n*8). Only the pointer qword is written.
+local function read_ability_state(spec)
   local orc, err = get_orc()
   if not orc then
     return nil, err
   end
 
-  local list_base = readPointer(orc + 0x1E0)
-  local list_end = readQword(orc + 0x1E8)
-  local max_length = readInteger(orc + 0x1F0) or MAX_SLOTS
+  local list_base = readPointer(orc + spec.list_off)
+  local list_end = readQword(orc + spec.end_off)
+  local max_length = readInteger(orc + spec.max_off) or spec.hard_cap
 
   if list_base == nil or list_base == 0 then
-    return nil, "picker list base is null"
+    return nil, spec.null_base_error
   end
 
   local count = 0
   if list_end and list_end ~= 0 and list_end >= list_base then
-    count = math.floor((list_end - list_base) / SLOT_STRIDE)
+    count = math.floor((list_end - list_base) / spec.stride)
   end
   if count < 0 then
     count = 0
   end
-  if count > MAX_SLOTS then
-    count = MAX_SLOTS
+  if count > spec.hard_cap then
+    count = spec.hard_cap
   end
   if max_length > 0 and count > max_length then
     count = max_length
@@ -252,15 +277,40 @@ local function read_picker_state()
     list_end = list_end,
     max_length = max_length,
     count = count,
+    stride = spec.stride,
+    end_off = spec.end_off,
+    hard_cap = spec.hard_cap,
   }, nil
 end
 
--- SeiKur0's table edits each picker entry as an 8-byte pointer only
--- (Address = [[p_uruk]+1E0] + n*0x20, VariableType = 8 Bytes).
--- Writing the rest of the 0x20 stride corrupts list metadata and the game
--- often rebuilds/discards the list on save / time advance.
-local function write_slot_ptr(list_base, index0, ptr)
-  writeQword(list_base + index0 * SLOT_STRIDE, ptr or 0)
+local PICKER_SPEC = {
+  list_off = 0x1E0,
+  end_off = 0x1E8,
+  max_off = 0x1F0,
+  stride = SLOT_STRIDE,
+  hard_cap = MAX_SLOTS,
+  null_base_error = "picker list base is null",
+}
+
+local MARKER_SPEC = {
+  list_off = MARKER_LIST_OFF,
+  end_off = MARKER_END_OFF,
+  max_off = MARKER_MAX_OFF,
+  stride = MARKER_STRIDE,
+  hard_cap = MAX_MARKER_SLOTS,
+  null_base_error = "marker list base is null",
+}
+
+local function read_picker_state()
+  return read_ability_state(PICKER_SPEC)
+end
+
+local function read_marker_state()
+  return read_ability_state(MARKER_SPEC)
+end
+
+local function write_slot_ptr(list_base, index0, stride, ptr)
+  writeQword(list_base + index0 * stride, ptr or 0)
 end
 
 -- ---------------------------------------------------------------------------
@@ -475,8 +525,7 @@ local function handle_health()
   )
 end
 
-local function handle_catalog()
-  local _, _, items, err = build_picker_catalog()
+local function handle_catalog_response(items, err)
   if err and #items == 0 then
     return 503, string.format('{"error":%s,"traits":[]}', json_string(err))
   end
@@ -492,16 +541,26 @@ local function handle_catalog()
   return 200, '{"traits":[' .. table.concat(parts, ",") .. "]}"
 end
 
-local function handle_get_traits()
-  local state, err = read_picker_state()
+local function handle_catalog()
+  local _, _, items, err = build_picker_catalog()
+  return handle_catalog_response(items, err)
+end
+
+local function handle_marker_catalog()
+  local _, _, items, err = build_marker_catalog()
+  return handle_catalog_response(items, err)
+end
+
+local function handle_get_ability(read_state, build_cat)
+  local state, err = read_state()
   if not state then
     return 503, string.format('{"error":%s}', json_string(err))
   end
 
-  local _, by_addr = build_picker_catalog()
+  local _, by_addr = build_cat()
   local parts = {}
   for i = 0, state.count - 1 do
-    local slot_addr = state.list_base + i * SLOT_STRIDE
+    local slot_addr = state.list_base + i * state.stride
     local ptr = readQword(slot_addr) or 0
     local name = trait_name_from_ptr(ptr, by_addr)
     parts[#parts + 1] = string.format(
@@ -521,22 +580,30 @@ local function handle_get_traits()
   )
 end
 
-local function handle_post_traits(body)
+local function handle_get_traits()
+  return handle_get_ability(read_picker_state, build_picker_catalog)
+end
+
+local function handle_get_markers()
+  return handle_get_ability(read_marker_state, build_marker_catalog)
+end
+
+local function handle_post_ability(body, route_label, read_state, build_cat, reread)
   local incoming, perr = parse_traits_body(body)
   if not incoming then
-    print("[sow_trait_bridge] POST /traits parse failed: " .. tostring(perr)
+    print("[sow_trait_bridge] POST " .. route_label .. " parse failed: " .. tostring(perr)
       .. " body_preview=" .. json_escape((body or ""):sub(1, 180)))
     return 400, string.format('{"error":%s}', json_string(perr or "bad json"))
   end
 
-  local state, err = read_picker_state()
+  local state, err = read_state()
   if not state then
     return 503, string.format('{"error":%s}', json_string(err))
   end
 
   local capacity = state.max_length
-  if capacity <= 0 or capacity > MAX_SLOTS then
-    capacity = MAX_SLOTS
+  if capacity <= 0 or capacity > state.hard_cap then
+    capacity = state.hard_cap
   end
   if #incoming > capacity then
     return 400, string.format(
@@ -545,7 +612,7 @@ local function handle_post_traits(body)
     )
   end
 
-  local by_name = build_picker_catalog()
+  local by_name = build_cat()
 
   local resolved = {}
   for i = 1, #incoming do
@@ -570,45 +637,85 @@ local function handle_post_traits(body)
     resolved[#resolved + 1] = addr
   end
 
-  print(string.format("[sow_trait_bridge] POST /traits writing %d slot(s)", #resolved))
+  print(string.format("[sow_trait_bridge] POST %s writing %d slot(s)", route_label, #resolved))
 
   local new_count = #resolved
   while new_count > 0 and resolved[new_count] == 0 do
     new_count = new_count - 1
   end
 
-  -- Write only the leading qword per slot (same as changing the CE dropdown).
+  -- Write only the pointer qword (same as changing the CE dropdown).
   for i = 1, new_count do
-    write_slot_ptr(state.list_base, i - 1, resolved[i])
+    write_slot_ptr(state.list_base, i - 1, state.stride, resolved[i])
   end
 
-  -- Clear pointers that fell off the active list (do not wipe full 0x20 rows,
-  -- and do not touch slots beyond the previous end / new end).
+  -- Clear pointers that fell off the active list. Do not touch slots beyond
+  -- the previous end / new end.
   local clear_until = state.count
   if new_count > clear_until then
     clear_until = new_count
   end
   for i = new_count + 1, clear_until do
-    write_slot_ptr(state.list_base, i - 1, 0)
+    write_slot_ptr(state.list_base, i - 1, state.stride, 0)
   end
 
   -- list_end = address immediately after the last active entry (SeiKur0).
-  writeQword(state.orc + 0x1E8, state.list_base + new_count * SLOT_STRIDE)
+  writeQword(state.orc + state.end_off, state.list_base + new_count * state.stride)
 
-  return handle_get_traits()
+  return reread()
+end
+
+local function handle_post_traits(body)
+  return handle_post_ability(
+    body,
+    "/traits",
+    read_picker_state,
+    build_picker_catalog,
+    handle_get_traits
+  )
+end
+
+local function handle_post_markers(body)
+  return handle_post_ability(
+    body,
+    "/markers",
+    read_marker_state,
+    build_marker_catalog,
+    handle_get_markers
+  )
+end
+
+local function normalize_path(path)
+  path = tostring(path or "")
+  path = path:gsub("\\", "/")
+  path = path:gsub("%s+", "")
+  path = path:match("^([^%?#]+)") or path
+  if path ~= "" and path:sub(1, 1) ~= "/" then
+    path = "/" .. path
+  end
+  path = path:gsub("/+$", "")
+  return path
 end
 
 local function route_request(method, path, body)
-  path = path:match("^([^%?]+)") or path
-  if method == "GET" and path == "/health" then
+  path = normalize_path(path)
+  local key = method .. " " .. path
+  if key == "GET /health" then
     return handle_health()
-  elseif method == "GET" and path == "/catalog" then
+  elseif key == "GET /catalog" then
     return handle_catalog()
-  elseif method == "GET" and path == "/traits" then
+  elseif key == "GET /traits" then
     return handle_get_traits()
-  elseif method == "POST" and path == "/traits" then
+  elseif key == "POST /traits" then
     return handle_post_traits(body)
+  elseif key == "GET /marker-catalog" then
+    return handle_marker_catalog()
+  elseif key == "GET /markers" then
+    return handle_get_markers()
+  elseif key == "POST /markers" then
+    return handle_post_markers(body)
   end
+  print("[sow_trait_bridge] no route for [" .. key .. "]")
   return 404, '{"error":"not found"}'
 end
 
@@ -779,6 +886,7 @@ local function start_bridge()
   bridge.timer = t
 
   print(string.format("[sow_trait_bridge] File IPC bridge active on %s (polling every %dms)", BRIDGE_DIR, POLL_INTERVAL_MS))
+  print("  Routes: GET /health, GET /catalog, GET /traits, POST /traits, GET /markers, POST /markers, GET /marker-catalog")
   print("  Export CSV anytime: if _G.__sow_trait_bridge then _G.__sow_trait_bridge.exportCsv() end")
   print("  Stop bridge:        if _G.__sow_trait_bridge then _G.__sow_trait_bridge.stop() end")
 end

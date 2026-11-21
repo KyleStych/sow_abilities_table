@@ -20,6 +20,13 @@ export type OrcCsvParseResult = {
   orcName: string | null;
   pickers: OrcCsvAbilityRow[];
   markers: OrcCsvAbilityRow[];
+  /** Additional Properties except Trait Level Offset, which is never imported. */
+  properties: OrcCsvAbilityRow[];
+  equipment: OrcCsvAbilityRow[];
+  tags: OrcCsvAbilityRow[];
+  wounds: OrcCsvAbilityRow[];
+  colors: OrcCsvAbilityRow[];
+  rarity: string | null;
 };
 
 const SKIP_NAMES = new Set([
@@ -59,7 +66,7 @@ function splitCsvLine(line: string): string[] {
 export function parseOrcCsv(text: string): OrcCsvParseResult {
   const lines = text.split(/\r?\n/).filter((l) => l.trim().length > 0);
   if (lines.length === 0) {
-    return { orcName: null, pickers: [], markers: [] };
+    return emptyCsv();
   }
 
   const header = splitCsvLine(lines[0]).map((h) => h.trim().toLowerCase());
@@ -75,8 +82,14 @@ export function parseOrcCsv(text: string): OrcCsvParseResult {
   }
 
   let orcName: string | null = null;
+  let rarity: string | null = null;
   const pickers: OrcCsvAbilityRow[] = [];
   const markers: OrcCsvAbilityRow[] = [];
+  const properties: OrcCsvAbilityRow[] = [];
+  const equipment: OrcCsvAbilityRow[] = [];
+  const tags: OrcCsvAbilityRow[] = [];
+  const wounds: OrcCsvAbilityRow[] = [];
+  const colors: OrcCsvAbilityRow[] = [];
 
   for (let i = 1; i < lines.length; i++) {
     const cells = splitCsvLine(lines[i]);
@@ -94,6 +107,50 @@ export function parseOrcCsv(text: string): OrcCsvParseResult {
       continue;
     }
 
+    const slotName = slot.trim();
+    const lower = name.toLowerCase();
+    const empty = SKIP_NAMES.has(lower);
+
+    if (category === "Additional Properties") {
+      if (slotName === "Trait Level Offset") continue;
+      if (slotName === "Orc Rarity (visual)") {
+        rarity = empty ? "" : name;
+        continue;
+      }
+      properties.push({
+        slot: slotName,
+        name: empty ? "" : name,
+        hexValue: hexValue.trim(),
+      });
+      continue;
+    }
+    if (category === "Equipment and Looks") {
+      equipment.push({
+        slot: slotName,
+        name: empty ? "" : name,
+        hexValue: hexValue.trim(),
+      });
+      continue;
+    }
+    if (category === "Equipment - Colors (ARGB)") {
+      colors.push({
+        slot: slotName,
+        name: name || hexValue.trim(),
+        hexValue: hexValue.trim(),
+      });
+      continue;
+    }
+    if (category === "Equipment - Tags" || category === "Equipment - Wounds") {
+      if (empty) continue;
+      const list = category === "Equipment - Tags" ? tags : wounds;
+      list.push({
+        slot: slotName || `entry ${list.length + 1}`,
+        name,
+        hexValue: hexValue.trim(),
+      });
+      continue;
+    }
+
     const bucket =
       category === "Picker Abilities"
         ? pickers
@@ -104,17 +161,40 @@ export function parseOrcCsv(text: string): OrcCsvParseResult {
       continue;
     }
 
-    const lower = name.toLowerCase();
-    if (SKIP_NAMES.has(lower) || lower === "<none>") {
+    if (empty) {
       continue;
     }
 
     bucket.push({
-      slot: slot.trim() || `entry ${bucket.length + 1}`,
+      slot: slotName || `entry ${bucket.length + 1}`,
       name,
       hexValue: hexValue.trim(),
     });
   }
 
-  return { orcName, pickers, markers };
+  return {
+    orcName,
+    pickers,
+    markers,
+    properties,
+    equipment,
+    tags,
+    wounds,
+    colors,
+    rarity,
+  };
+}
+
+function emptyCsv(): OrcCsvParseResult {
+  return {
+    orcName: null,
+    pickers: [],
+    markers: [],
+    properties: [],
+    equipment: [],
+    tags: [],
+    wounds: [],
+    colors: [],
+    rarity: null,
+  };
 }

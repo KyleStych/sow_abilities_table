@@ -488,5 +488,15 @@
     "Class trait": "",
     "Tribe trait": "",
     "Recommended for": "Overlord, Throne Room Bodyguards, Victory Point Defenders"
+  },
+  {
+    "Picker": "Picker_GroundPound",
+    "Game visual title": "Ground Pound",
+    "Utility": "Slams weapon or fists into the ground to generate a localized shockwave ring that staggers nearby enemies.",
+    "Offensive bonus": "Clears grouped defender grunts and knocks down opposing Captains during point captures.",
+    "Defensive bonus": "Punishes melee attackers crowding victory points by interrupting combos with AoE knockdowns.",
+    "Class trait": "",
+    "Tribe trait": "",
+    "Recommended for": "Victory Point Defenders, Overlord, Assault Leaders"
   }
 ]

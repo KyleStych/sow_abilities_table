@@ -1345,6 +1345,9 @@ local function handle_post_appearance(body)
     if not spec then
       return 400, string.format('{"error":%s}', json_string("unknown appearance field: " .. item.id))
     end
+    if spec.id == "trait-level" then
+      -- PickerLevelRemap is a pointer the editor must not rewrite.
+    else
     local by_name, cerr = catalog_by_name(spec.list_id, catalogs, lists)
     if not by_name then
       return 503, string.format('{"error":%s}', json_string(cerr))
@@ -1355,9 +1358,20 @@ local function handle_post_appearance(body)
     end
     local value_addr, ferr = follow_offsets(orc, spec.offsets)
     if not value_addr then
-      return 503, string.format('{"error":%s}', json_string(spec.label .. ": " .. (ferr or "null pointer")))
+      -- Some equipment slots, such as an unused special body, have a null
+      -- parent pointer. Leaving that slot empty must not block other edits.
+      if (ptr or 0) == 0 then
+        print("[sow_trait_bridge] skip " .. spec.label .. ": " .. (ferr or "null pointer"))
+      else
+        return 503, string.format(
+          '{"error":%s}',
+          json_string(spec.label .. " has no memory record (" .. (ferr or "null pointer") .. ")")
+        )
+      end
+    else
+      resolved_fields[#resolved_fields + 1] = { addr = value_addr, ptr = ptr }
     end
-    resolved_fields[#resolved_fields + 1] = { addr = value_addr, ptr = ptr }
+    end
   end
 
   local tag_state, tag_err = read_tag_state(orc)

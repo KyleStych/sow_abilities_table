@@ -807,25 +807,8 @@ export function TraitManager({ traits }: TraitManagerProps) {
 
   return (
     <div className="relative mx-auto w-full max-w-[110rem] px-4 pb-16">
-      <div className="xl:grid xl:grid-cols-[minmax(9rem,1fr)_minmax(0,48rem)_minmax(18rem,24rem)] xl:gap-8">
-        <div className="hidden xl:block">
-          <div className="sticky top-0 flex h-dvh items-center justify-end">
-            <div className="mr-[30%] flex flex-col gap-2">
-              <JumpButton
-                active={sectionInView === "markers"}
-                onClick={() => jumpTo("markers")}
-              >
-                Markers
-              </JumpButton>
-              <JumpButton
-                active={sectionInView === "pickers"}
-                onClick={() => jumpTo("pickers")}
-              >
-                Pickers
-              </JumpButton>
-            </div>
-          </div>
-        </div>
+      <div className="lg:grid lg:grid-cols-[minmax(9rem,1fr)_minmax(0,48rem)_minmax(18rem,24rem)] lg:gap-8">
+        <div className="hidden lg:block" aria-hidden />
 
         <div className="min-w-0">
           <header className="pt-10 pb-6">
@@ -864,7 +847,7 @@ export function TraitManager({ traits }: TraitManagerProps) {
             ) : null}
           </div>
 
-          <div className="sticky top-0 z-30 -mx-1 mb-6 bg-background/70 px-1 py-3 backdrop-blur-sm">
+          <div className="sticky top-0 z-40 -mx-1 mb-6 bg-background/85 px-1 py-3 backdrop-blur-sm">
             <div className="flex flex-wrap gap-2">
             <button
               type="button"
@@ -885,7 +868,7 @@ export function TraitManager({ traits }: TraitManagerProps) {
             </div>
           </div>
 
-          <div className="mb-6 flex gap-2 xl:hidden">
+          <div className="mb-6 flex gap-2 lg:hidden">
             <JumpButton
               active={sectionInView === "markers"}
               onClick={() => jumpTo("markers")}
@@ -996,18 +979,39 @@ export function TraitManager({ traits }: TraitManagerProps) {
           />
         </div>
 
-        <aside className="hidden xl:block">
-          <div className="sticky top-0 flex h-dvh items-center">
-            <div className="max-h-[calc(100dvh-2rem)] w-full overflow-y-auto">
-            <ReferenceRail
-              sectionInView={sectionInView}
-              markerSlots={markers.slots}
-              pickerSlots={pickers.slots}
-              byPicker={byPicker}
-            />
+        <div className="hidden lg:block" aria-hidden />
+      </div>
+
+      <div className="pointer-events-none fixed inset-x-0 top-0 z-20 hidden h-dvh lg:block">
+        <div className="mx-auto grid h-full max-w-[110rem] grid-cols-[minmax(9rem,1fr)_minmax(0,48rem)_minmax(18rem,24rem)] gap-8 px-4">
+          <div className="flex items-center justify-end">
+            <div className="pointer-events-auto mr-[30%] flex flex-col gap-2">
+              <JumpButton
+                active={sectionInView === "markers"}
+                onClick={() => jumpTo("markers")}
+              >
+                Markers
+              </JumpButton>
+              <JumpButton
+                active={sectionInView === "pickers"}
+                onClick={() => jumpTo("pickers")}
+              >
+                Pickers
+              </JumpButton>
             </div>
           </div>
-        </aside>
+          <div />
+          <aside className="flex items-center">
+            <div className="pointer-events-auto max-h-[calc(100dvh-2rem)] w-full overflow-y-auto">
+              <ReferenceRail
+                sectionInView={sectionInView}
+                markerSlots={markers.slots}
+                pickerSlots={pickers.slots}
+                byPicker={byPicker}
+              />
+            </div>
+          </aside>
+        </div>
       </div>
     </div>
   );
@@ -1404,20 +1408,31 @@ function CsvGroup({
   setRows: (update: (rows: CsvImportRow[]) => CsvImportRow[]) => void;
   onLoad: (mode: "replace" | "append") => void;
 }) {
+  const [open, setOpen] = useState(false);
   const selectedCount = rows.filter((r) => r.selected && !r.unresolved).length;
   const unresolvedCount = rows.filter((r) => r.unresolved).length;
 
   return (
     <div>
       <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
-        <div>
-          <h3 className="text-sm font-medium text-foreground">{title}</h3>
-          <p className="text-xs text-muted">
-            {rows.length === 0
-              ? "None in this CSV"
-              : `${selectedCount} selected · ${unresolvedCount} unresolved`}
-          </p>
-        </div>
+        <button
+          type="button"
+          aria-expanded={open}
+          onClick={() => setOpen((current) => !current)}
+          className="flex items-center gap-2 text-left"
+        >
+          <span className="text-base leading-none text-muted" aria-hidden>
+            {open ? "▾" : "▸"}
+          </span>
+          <span>
+            <span className="block text-sm font-medium text-foreground">{title}</span>
+            <span className="block text-xs text-muted">
+              {rows.length === 0
+                ? "None in this CSV"
+                : `${selectedCount} selected · ${unresolvedCount} unresolved`}
+            </span>
+          </span>
+        </button>
         <div className="flex flex-wrap gap-2">
           <button
             type="button"
@@ -1464,8 +1479,8 @@ function CsvGroup({
           </button>
         </div>
       </div>
-      {rows.length > 0 ? (
-        <ul className="max-h-56 space-y-1 overflow-y-auto">
+      {open && rows.length > 0 ? (
+        <ul className="max-h-[70vh] space-y-1 overflow-y-auto">
           {rows.map((row) => (
             <li key={row.id}>
               <label

@@ -250,14 +250,24 @@
     "Recommended for": "Victory Point Defenders, Throne Room Bodyguards"
   },
   {
+    "Picker": "Picker_Berserker_Tackle",
+    "Game visual title": "Furious Charge",
+    "Utility": "Charges after opponents, knocking them onto the ground and following up with heavy strikes.",
+    "Offensive bonus": "Closes distance rapidly and knocks targets down to interrupt attacks or set up follow-ups.",
+    "Defensive bonus": "Pressures kiting or ranged attackers and forces dodging when the Captain initiates a charge.",
+    "Class trait": "Berserker",
+    "Tribe trait": "",
+    "Recommended for": "Assault Leaders, Overlord, Throne Room Bodyguards"
+  },
+  {
     "Picker": "Picker_BestialRoar",
     "Game visual title": "Bestial Roar",
-    "Utility": "Unleashes a deafening roar that inflicts Terror on nearby grunts and briefly staggers opposing Captains.",
-    "Offensive bonus": "Causes defending grunts to flee in panic, leaving enemy Captains isolated on capture points.",
-    "Defensive bonus": "Clears surrounding attackers and disrupts enemy momentum during control point brawls.",
-    "Class trait": "",
+    "Utility": "Specialized roar that intimidates nearby combatants while enraging or attracting wild beasts into the fight.",
+    "Offensive bonus": "Draws hostile beasts into courtyard battles to disrupt defender formations.",
+    "Defensive bonus": "Adds chaotic wildlife hazards to outdoor siege defenses and fortress yards.",
+    "Class trait": "BeastMaster",
     "Tribe trait": "",
-    "Recommended for": "Assault Leaders, Victory Point Defenders"
+    "Recommended for": "Assault Leaders, Warchiefs"
   },
   {
     "Picker": "Picker_BlockCounter",
@@ -300,6 +310,16 @@
     "Recommended for": "Overlord, Throne Room Bodyguards"
   },
   {
+    "Picker": "Picker_BoomerangThrow",
+    "Game visual title": "Boomerang Throw",
+    "Utility": "Hurls a returning projectile along a curved/return path that can hit targets on both the outbound throw and the return pass.",
+    "Offensive bonus": "Clips retreating or dodging targets and adds extra mid-range pressure on the return arc.",
+    "Defensive bonus": "Catches attacking players mid-dodge in tight throne rooms or wall lanes and disrupts spacing.",
+    "Class trait": "",
+    "Tribe trait": "",
+    "Recommended for": "Throne Room Bodyguards, Wall Defense Warchiefs"
+  },
+  {
     "Picker": "Picker_ChargeAttack",
     "Game visual title": "Charge Attack / Heavy Dash",
     "Utility": "Executes a high-momentum forward charging strike that breaks standard guard stances and staggers targets.",
@@ -331,7 +351,7 @@
   },
   {
     "Picker": "Picker_Deadly",
-    "Game visual title": "the Deadly",
+    "Game visual title": "Deadly",
     "Utility": "Global high damage output multiplier applied to all basic attacks and special strikes.",
     "Offensive bonus": "Accelerates damage output against targets.",
     "Defensive bonus": "Deals massive burst damage against attacking assault leaders in throne room choke points.",
@@ -381,7 +401,7 @@
   },
   {
     "Picker": "Picker_DodgeMelee",
-    "Game visual title": "Agile / Melee Dodge",
+    "Game visual title": "Agile",
     "Utility": "Enables reactive sidestep dodges against incoming melee swings without abandoning the current combat zone.",
     "Offensive bonus": "Maintains close-quarters pressure without getting staggered by heavy swings.",
     "Defensive bonus": "Superior alternative to Reposition for Commanders and Tanks, keeping them anchored on the victory point.",
@@ -721,13 +741,13 @@
   },
   {
     "Picker": "Picker_GroundPound",
-    "Game visual title": "Ground Pound",
-    "Utility": "Slams weapon or fists into the ground to generate a localized shockwave ring that staggers nearby enemies.",
-    "Offensive bonus": "Clears grouped defender grunts and knocks down opposing Captains during point captures.",
-    "Defensive bonus": "Punishes melee attackers crowding victory points by interrupting combos with AoE knockdowns.",
+    "Game visual title": "Shield Quake",
+    "Utility": "Strikes shield into the ground to generate an outward shockwave that pushes back and stuns nearby foes.",
+    "Offensive bonus": "Breaks enemy guard spacing and stuns nearby targets to set up follow-up attacks.",
+    "Defensive bonus": "Pushes back crowding attackers and interrupts combos at close range.",
     "Class trait": "",
     "Tribe trait": "",
-    "Recommended for": "Victory Point Defenders, Overlord, Assault Leaders"
+    "Recommended for": "Victory Point Defenders, Throne Room Bodyguards"
   },
   {
     "Picker": "Picker_HasGang_Archer",
@@ -871,7 +891,7 @@
   },
   {
     "Picker": "Picker_LifeSteal",
-    "Game visual title": "Vampiric Strikes",
+    "Game visual title": "Life Steal",
     "Utility": "Converts a percentage of damage dealt back into restoring health.",
     "Offensive bonus": "Sustains unit during combat.",
     "Defensive bonus": "Makes high-threat defenders harder to grind down.",
@@ -981,13 +1001,13 @@
   },
   {
     "Picker": "Picker_PrimalRoar",
-    "Game visual title": "Primal Roar",
-    "Utility": "Specialized roar that intimidates nearby combatants while enraging or attracting wild beasts into the fight.",
-    "Offensive bonus": "Draws hostile beasts into courtyard battles to disrupt defender formations.",
-    "Defensive bonus": "Adds chaotic wildlife hazards to outdoor siege defenses and fortress yards.",
-    "Class trait": "BeastMaster",
+    "Game visual title": "Rabid",
+    "Utility": "Utters a terrifying battle cry that disorients and intimidates nearby combatants.",
+    "Offensive bonus": "Disorients and intimidates nearby foes during pushes and capture point fights.",
+    "Defensive bonus": "Disrupts surrounding attackers in throne rooms and choke points.",
+    "Class trait": "",
     "Tribe trait": "",
-    "Recommended for": "Assault Leaders, Warchiefs"
+    "Recommended for": "Overlord, Throne Room Bodyguards, Victory Point Defenders"
   },
   {
     "Picker": "Picker_QuickMovement",
@@ -1028,6 +1048,16 @@
     "Class trait": "Necromancer / Mystic",
     "Tribe trait": "Mystic",
     "Recommended for": "Overlord, Victory Point Defenders"
+  },
+  {
+    "Picker": "Picker_RecklessAOE",
+    "Game visual title": "Reckless AoE",
+    "Utility": "Recklessly charges into battle, lashing out with wide attacks that hit anyone near the target—including nearby allies.",
+    "Offensive bonus": "Clears dense clusters of foes quickly with wide-sweeping attacks.",
+    "Defensive bonus": "Creates chaotic AoE pressure around the target, though nearby friendly grunts can get caught in the splash.",
+    "Class trait": "Berserker",
+    "Tribe trait": "",
+    "Recommended for": "Assault Leaders, Overlord, Throne Room Bodyguards"
   },
   {
     "Picker": "Picker_Resist_Beast_Immune",
@@ -1191,7 +1221,7 @@
   },
   {
     "Picker": "Picker_Summoner_Gang",
-    "Game visual title": "Reinforcement Summoner",
+    "Game visual title": "Call Reinforcements",
     "Utility": "Active combat ability to call in fresh waves of reinforcements during extended skirmishes.",
     "Offensive bonus": "Prevents the Captain from ever getting isolated.",
     "Defensive bonus": "Maintains grunt swarm presence around the sniper position.",
@@ -1348,5 +1378,15 @@
     "Class trait": "Defender",
     "Tribe trait": "",
     "Recommended for": "Victory Point Defenders, Assault Leaders"
+  },
+  {
+    "Picker": "WhirlwindAttack_Savage",
+    "Game visual title": "Whirlwind Attack",
+    "Utility": "Executes a spinning multi-strike melee cleave that sweeps around the Captain to hit nearby targets in an arc.",
+    "Offensive bonus": "Clears clustered grunts and punishes close-range defenders during point captures.",
+    "Defensive bonus": "Pushes back or staggers surrounding attackers crowding victory points and throne room choke points.",
+    "Class trait": "Savage",
+    "Tribe trait": "",
+    "Recommended for": "Victory Point Defenders, Throne Room Bodyguards"
   }
 ]

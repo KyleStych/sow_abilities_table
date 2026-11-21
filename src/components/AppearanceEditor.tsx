@@ -14,9 +14,11 @@ import {
   AppearanceField,
   TAG_LIST_ID,
   WOUND_LIST_ID,
+  appearanceFieldLocked,
   argbParts,
   toArgb,
 } from "@/lib/appearance";
+import { OrcCsvAbilityRow, parseOrcCsv } from "@/lib/orc-csv";
 import {
   AppearanceColorValue,
   AppearanceFieldValue,
@@ -213,12 +215,49 @@ function CatalogSearch({
   );
 }
 
+function slotUnavailable(error?: string) {
+  return Boolean(error?.toLowerCase().includes("null pointer"));
+}
+
+type CsvGroupId = "property" | "equipment" | "tag" | "wound" | "color" | "rarity";
+
+type AppearanceCsvRow = {
+  key: string;
+  group: CsvGroupId;
+  fieldId: string | null;
+  slot: string;
+  name: string;
+  address: string | null;
+  argb: string | null;
+  selected: boolean;
+  unresolved: boolean;
+  unavailable: boolean;
+};
+
+let csvSerial = 0;
+
+function normalizeArgb(value: string) {
+  const clean = value.replace(/^0x/i, "").trim();
+  return /^[0-9a-fA-F]{8}$/.test(clean) ? clean.toUpperCase() : null;
+}
+
+const CSV_GROUP_LABELS: Record<CsvGroupId, string> = {
+  property: "Additional Properties",
+  equipment: "Equipment slots",
+  tag: "Tags",
+  wound: "Wounds",
+  color: "Colors",
+  rarity: "Orc Rarity",
+};
+
 function PointerRow({
   label,
   listId,
   value,
   error,
   disabled,
+  unavailable,
+  locked,
   searching,
   onChange,
   onClear,
@@ -228,35 +267,65 @@ function PointerRow({
   value: AppearancePointer;
   error?: string;
   disabled: boolean;
+  unavailable?: boolean;
+  locked?: boolean;
   searching: boolean;
   onChange: () => void;
   onClear: () => void;
 }) {
   const empty = !value.name;
+  const inert = unavailable || locked;
   return (
     <div
       className={
-        empty
-          ? "rounded-lg border border-ember bg-raised/40 px-3 py-3"
-          : "rounded-lg border border-line bg-raised/40 px-3 py-3"
+        unavailable
+          ? "rounded-lg border border-line/70 bg-raised/20 px-3 py-3 opacity-55"
+          : empty && !locked
+            ? "rounded-lg border border-ember bg-raised/40 px-3 py-3"
+            : "rounded-lg border border-line bg-raised/40 px-3 py-3"
       }
+      aria-disabled={inert || undefined}
     >
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div className="min-w-0">
-          <p className="text-sm font-medium text-foreground">{label}</p>
+          <p
+            className={
+              unavailable
+                ? "text-sm font-medium text-muted"
+                : "text-sm font-medium text-foreground"
+            }
+          >
+            {label}
+          </p>
           <p className="font-mono text-[11px] text-muted" title={listId}>
             {listId}
           </p>
-          <p className="mt-1 truncate font-mono text-sm text-foreground">
-            {value.name || "(none)"}
+          <p
+            className={
+              unavailable
+                ? "mt-1 truncate font-mono text-sm text-muted"
+                : "mt-1 truncate font-mono text-sm text-foreground"
+            }
+          >
+            {unavailable
+              ? "Not available for this orc"
+              : value.name || "(none)"}
           </p>
-          {error ? <p className="mt-1 text-xs text-ember">{error}</p> : null}
+          {locked ? (
+            <p className="mt-1 text-xs text-muted">
+              Memory pointer. This value is left unchanged.
+            </p>
+          ) : null}
+          {unavailable || locked || !error ? null : (
+            <p className="mt-1 text-xs text-ember">{error}</p>
+          )}
         </div>
+        {locked ? null : (
         <div className="flex gap-2">
           <button
             type="button"
             className={buttonClass}
-            disabled={disabled}
+            disabled={disabled || unavailable}
             onClick={onChange}
           >
             {searching ? "Searching" : "Change"}
@@ -264,12 +333,13 @@ function PointerRow({
           <button
             type="button"
             className={buttonClass}
-            disabled={disabled || empty}
+            disabled={disabled || unavailable || empty}
             onClick={onClear}
           >
             Clear
           </button>
         </div>
+        )}
       </div>
     </div>
   );
@@ -305,6 +375,9 @@ export function AppearanceEditor() {
   const [tagGap, setTagGap] = useState<number | null>(null);
   const [woundDrag, setWoundDrag] = useState<number | null>(null);
   const [woundGap, setWoundGap] = useState<number | null>(null);
+  const [csvDragOver, setCsvDragOver] = useState(false);
+  const [csvOrcName, setCsvOrcName] = useState<string | null>(null);
+  const [csvRows, setCsvRows] = useState<AppearanceCsvRow[]>([]);
 
   const signature = useMemo(
     () =>
@@ -403,7 +476,9 @@ export function AppearanceEditor() {
   async function applyToGame() {
     const body: AppearanceWriteBody = {
       rarity,
-      fields: APPEARANCE_FIELDS.map((field) => {
+      fields: APPEARANCE_FIELDS.filter(
+        (field) => !appearanceFieldLocked(field.id),
+      ).map((field) => {
         const value = fields[field.id];
         return {
           id: field.id,
@@ -484,6 +559,197 @@ export function AppearanceEditor() {
     setQuery("");
   }
 
+  function matchCatalog(
+    listId: string,
+    name: string,
+    lists: Record<string, CeCatalogTrait[]>,
+  ) {
+    if (!name) return { address: "0x0", unresolved: false };
+    const found = (lists[listId] ?? []).find((item) => item.name === name);
+    if (!found) return { address: null, unresolved: true };
+    return { address: found.address, unresolved: false };
+  }
+
+  function buildCsvRows(
+    parsed: ReturnType<typeof parseOrcCsv>,
+    lists: Record<string, CeCatalogTrait[]>,
+    currentFields: Record<string, AppearanceFieldValue>,
+    rarityBlocked: boolean,
+  ) {
+    const rows: AppearanceCsvRow[] = [];
+    const pushField = (
+      group: "property" | "equipment",
+      row: OrcCsvAbilityRow,
+    ) => {
+      const field = APPEARANCE_FIELDS.find(
+        (item) => item.section === group && item.label === row.slot,
+      );
+      if (!field || appearanceFieldLocked(field.id)) return;
+      const unavailable = slotUnavailable(currentFields[field.id]?.error);
+      const resolved = matchCatalog(field.listId, row.name, lists);
+      rows.push({
+        key: `csv-${csvSerial++}`,
+        group,
+        fieldId: field.id,
+        slot: field.label,
+        name: row.name,
+        address: resolved.address,
+        argb: null,
+        selected: !unavailable && !resolved.unresolved,
+        unresolved: resolved.unresolved,
+        unavailable,
+      });
+    };
+
+    if (parsed.rarity !== null) {
+      rows.push({
+        key: `csv-${csvSerial++}`,
+        group: "rarity",
+        fieldId: "rarity",
+        slot: "Orc Rarity (visual)",
+        name: parsed.rarity,
+        address: null,
+        argb: null,
+        selected: !rarityBlocked,
+        unresolved: false,
+        unavailable: rarityBlocked,
+      });
+    }
+    for (const row of parsed.properties) pushField("property", row);
+    for (const row of parsed.equipment) pushField("equipment", row);
+    for (const row of parsed.tags) {
+      const resolved = matchCatalog(TAG_LIST_ID, row.name, lists);
+      rows.push({
+        key: `csv-${csvSerial++}`,
+        group: "tag",
+        fieldId: null,
+        slot: row.slot,
+        name: row.name,
+        address: resolved.address,
+        argb: null,
+        selected: !resolved.unresolved,
+        unresolved: resolved.unresolved,
+        unavailable: false,
+      });
+    }
+    for (const row of parsed.wounds) {
+      const resolved = matchCatalog(WOUND_LIST_ID, row.name, lists);
+      rows.push({
+        key: `csv-${csvSerial++}`,
+        group: "wound",
+        fieldId: null,
+        slot: row.slot,
+        name: row.name,
+        address: resolved.address,
+        argb: null,
+        selected: !resolved.unresolved,
+        unresolved: resolved.unresolved,
+        unavailable: false,
+      });
+    }
+    parsed.colors.forEach((row, index) => {
+      const spec = APPEARANCE_COLORS[index];
+      if (!spec) return;
+      const argb = normalizeArgb(row.name) || normalizeArgb(row.hexValue);
+      rows.push({
+        key: `csv-${csvSerial++}`,
+        group: "color",
+        fieldId: spec.id,
+        slot: spec.label,
+        name: argb ?? row.name,
+        address: null,
+        argb,
+        selected: Boolean(argb),
+        unresolved: !argb,
+        unavailable: false,
+      });
+    });
+    return rows;
+  }
+
+  async function handleCsvFile(file: File) {
+    const text = await file.text();
+    const parsed = parseOrcCsv(text);
+    let lists = catalogs;
+    if (!catalogReady) {
+      const result = await getAppearanceCatalog();
+      if (result.data) {
+        lists = result.data.lists;
+        setCatalogs(lists);
+        setMissingLists(result.data.missing ?? []);
+        setCatalogReady(true);
+      }
+    }
+    const rows = buildCsvRows(parsed, lists, fields, Boolean(rarityError));
+    setCsvOrcName(parsed.orcName);
+    setCsvRows(rows);
+    const unmatched = rows.filter((row) => row.unresolved).length;
+    const blocked = rows.filter((row) => row.unavailable).length;
+    setStatus(
+      `Read ${file.name}${parsed.orcName ? ` (${parsed.orcName})` : ""}: ${rows.length} appearance value(s). ${unmatched} unmatched, ${blocked} unavailable on this orc. Trait Level Offset was ignored.`,
+    );
+  }
+
+  function loadCsvGroup(
+    group: CsvGroupId,
+    mode: "replace" | "append" = "replace",
+  ) {
+    const chosen = csvRows.filter(
+      (row) =>
+        (row.group === group || (group === "property" && row.group === "rarity")) &&
+        row.selected &&
+        !row.unresolved &&
+        !row.unavailable,
+    );
+    if (chosen.length === 0) {
+      setStatus(`No ${CSV_GROUP_LABELS[group]} rows selected.`);
+      return;
+    }
+    if (group === "property" || group === "equipment") {
+      setFields((current) => {
+        const next = { ...current };
+        for (const row of chosen) {
+          if (!row.fieldId || appearanceFieldLocked(row.fieldId)) continue;
+          if (row.group === "rarity") continue;
+          next[row.fieldId] = {
+            id: row.fieldId,
+            name: row.name || null,
+            address: row.address || "0x0",
+          };
+        }
+        return next;
+      });
+      const rarityRow = chosen.find((row) => row.group === "rarity");
+      if (rarityRow) setRarity(rarityRow.name);
+    } else if (group === "color") {
+      setColors((current) =>
+        current.map((color) => {
+          const row = chosen.find((item) => item.fieldId === color.id);
+          return row?.argb ? { ...color, argb: row.argb } : color;
+        }),
+      );
+    } else if (group === "tag") {
+      const slots = chosen.map((row) =>
+        nextSlot({ name: row.name, address: row.address || "0x0" }),
+      );
+      setTags((current) =>
+        (mode === "append" ? [...current, ...slots] : slots).slice(0, tagCapacity),
+      );
+    } else if (group === "wound") {
+      const slots = chosen.map((row) =>
+        nextSlot({ name: row.name, address: row.address || "0x0" }),
+      );
+      setWounds((current) =>
+        (mode === "append" ? [...current, ...slots] : slots).slice(0, woundCapacity),
+      );
+    }
+    setStatus(
+      mode === "append"
+        ? `Appended ${chosen.length} ${CSV_GROUP_LABELS[group]} into the editor. Apply to Game writes them.`
+        : `Loaded ${chosen.length} ${CSV_GROUP_LABELS[group]} into the editor. Apply to Game writes them.`,
+    );
+  }
+
   const activeListId = searchListId(search);
   const activeCatalog = catalogs[activeListId] ?? [];
 
@@ -503,7 +769,8 @@ export function AppearanceEditor() {
           and Colors. Options come from the game-database lists the cheat table
           binds to each dropdown. These selections have no trait definitions.
           Tags and Wounds can be reordered. Every other field stays in its
-          table position.
+          table position. Trait Level Offset is a memory pointer and stays
+          unchanged.
         </p>
       </header>
 
@@ -527,7 +794,7 @@ export function AppearanceEditor() {
         ) : null}
       </div>
 
-      <div className="sticky top-0 z-30 -mx-1 mb-6 bg-background/70 px-1 py-3 backdrop-blur-sm">
+      <div className="sticky top-0 z-40 -mx-1 mb-6 bg-background/85 px-1 py-3 backdrop-blur-sm">
         <div className="flex flex-wrap gap-2">
           <button
             type="button"
@@ -549,12 +816,85 @@ export function AppearanceEditor() {
         <p className="mt-3 text-sm text-muted">{status}</p>
       </div>
 
+      <section
+        className={
+          csvDragOver
+            ? "mb-6 rounded-lg border-2 border-dashed border-ember bg-ember/10 px-4 py-6"
+            : "mb-6 rounded-lg border-2 border-dashed border-line bg-raised/30 px-4 py-6"
+        }
+        onDragEnter={(event) => {
+          if (![...event.dataTransfer.types].includes("Files")) return;
+          event.preventDefault();
+          setCsvDragOver(true);
+        }}
+        onDragOver={(event) => {
+          if (![...event.dataTransfer.types].includes("Files")) return;
+          event.preventDefault();
+          setCsvDragOver(true);
+        }}
+        onDragLeave={() => setCsvDragOver(false)}
+        onDrop={(event) => {
+          if (![...event.dataTransfer.types].includes("Files")) return;
+          event.preventDefault();
+          setCsvDragOver(false);
+          const file = event.dataTransfer.files?.[0];
+          if (file) void handleCsvFile(file);
+        }}
+      >
+        <p className="text-sm font-medium text-foreground">
+          Drop an orc CSV export here
+        </p>
+        <p className="mt-1 text-xs text-muted">
+          Names are matched to the live cheat-table lists. Hex addresses are
+          ignored. Trait Level Offset is not imported, and slots this orc does
+          not have stay unchanged.
+        </p>
+        <label className="mt-3 inline-block cursor-pointer text-sm text-ember underline-offset-2 hover:underline">
+          Or browse…
+          <input
+            type="file"
+            accept=".csv,text/csv"
+            className="hidden"
+            onChange={(event) => {
+              const file = event.target.files?.[0];
+              if (file) void handleCsvFile(file);
+              event.target.value = "";
+            }}
+          />
+        </label>
+      </section>
+
+      {csvRows.length > 0 ? (
+        <AppearanceCsvPanel
+          orcName={csvOrcName}
+          rows={csvRows}
+          disabled={busy || !loaded}
+          hint={
+            loaded
+              ? null
+              : "Refresh from Game before loading these into the editor."
+          }
+          onToggle={(key, selected) =>
+            setCsvRows((current) =>
+              current.map((row) => (row.key === key ? { ...row, selected } : row)),
+            )
+          }
+          onUncheckAll={() =>
+            setCsvRows((current) =>
+              current.map((row) => ({ ...row, selected: false })),
+            )
+          }
+          onLoad={loadCsvGroup}
+        />
+      ) : null}
+
       <section className="mb-10">
         <h2 className="font-serif text-3xl text-foreground">Additional Properties</h2>
         <div className="mt-4 flex flex-col gap-3">
           {propertyFields.map((field) => {
             const value = fieldValue(field);
-            const open = search?.kind === "field" && search.id === field.id;
+            const locked = appearanceFieldLocked(field.id);
+            const open = !locked && search?.kind === "field" && search.id === field.id;
             return (
               <div key={field.id}>
                 <PointerRow
@@ -563,6 +903,7 @@ export function AppearanceEditor() {
                   value={value}
                   error={value.error}
                   disabled={!loaded || busy}
+                  locked={locked}
                   searching={open}
                   onChange={() => openSearch({ kind: "field", id: field.id })}
                   onClear={() => setField(field.id, { name: null, address: "0x0" })}
@@ -840,7 +1181,9 @@ export function AppearanceEditor() {
           <div className="mt-4 flex flex-col gap-3">
             {equipmentFields.map((field) => {
               const value = fieldValue(field);
-              const open = search?.kind === "field" && search.id === field.id;
+              const unavailable = slotUnavailable(value.error);
+              const open =
+                !unavailable && search?.kind === "field" && search.id === field.id;
               return (
                 <div key={field.id}>
                   <PointerRow
@@ -849,11 +1192,16 @@ export function AppearanceEditor() {
                     value={value}
                     error={value.error}
                     disabled={!loaded || busy}
+                    unavailable={unavailable}
                     searching={open}
-                    onChange={() => openSearch({ kind: "field", id: field.id })}
-                    onClear={() =>
-                      setField(field.id, { name: null, address: "0x0" })
-                    }
+                    onChange={() => {
+                      if (unavailable) return;
+                      openSearch({ kind: "field", id: field.id });
+                    }}
+                    onClear={() => {
+                      if (unavailable) return;
+                      setField(field.id, { name: null, address: "0x0" });
+                    }}
                   />
                   {open ? (
                     <CatalogSearch
@@ -1037,5 +1385,130 @@ function ReorderList({
         <li className="my-1 h-1 rounded-full bg-ember" aria-hidden />
       ) : null}
     </ul>
+  );
+}
+
+const CSV_SECTIONS: { id: CsvGroupId; append?: boolean; also?: CsvGroupId }[] = [
+  { id: "property", also: "rarity" },
+  { id: "equipment" },
+  { id: "tag", append: true },
+  { id: "wound", append: true },
+  { id: "color" },
+];
+
+function AppearanceCsvPanel({
+  orcName,
+  rows,
+  disabled,
+  hint,
+  onToggle,
+  onUncheckAll,
+  onLoad,
+}: {
+  orcName: string | null;
+  rows: AppearanceCsvRow[];
+  disabled: boolean;
+  hint: string | null;
+  onToggle: (key: string, selected: boolean) => void;
+  onUncheckAll: () => void;
+  onLoad: (group: CsvGroupId, mode?: "replace" | "append") => void;
+}) {
+  const [open, setOpen] = useState<Partial<Record<CsvGroupId, boolean>>>({});
+
+  return (
+    <div className="mb-8 rounded-lg border border-line bg-raised/40 px-4 py-4">
+      <div className="flex flex-wrap items-start justify-between gap-2">
+        <p className="text-sm font-medium text-foreground">
+          CSV import{orcName ? ` · ${orcName}` : ""}
+        </p>
+        <button type="button" className={buttonClass} onClick={onUncheckAll}>
+          Uncheck all
+        </button>
+      </div>
+      <p className="mt-1 text-xs text-muted">
+        {hint ||
+          "Selected rows load into the editor. Apply to Game writes them. Unmatched names and unavailable slots stay unchecked."}
+      </p>
+      <div className="mt-4 flex flex-col gap-5">
+        {CSV_SECTIONS.map((section) => {
+          const sectionRows = rows.filter(
+            (row) => row.group === section.id || row.group === section.also,
+          );
+          if (sectionRows.length === 0) return null;
+          const expanded = open[section.id] ?? false;
+          return (
+            <div key={section.id}>
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <button
+                  type="button"
+                  aria-expanded={expanded}
+                  onClick={() =>
+                    setOpen((current) => ({
+                      ...current,
+                      [section.id]: !expanded,
+                    }))
+                  }
+                  className="flex items-center gap-2 text-left text-sm font-medium text-foreground"
+                >
+                  <span className="text-base leading-none text-muted" aria-hidden>
+                    {expanded ? "▾" : "▸"}
+                  </span>
+                  {CSV_GROUP_LABELS[section.id]}
+                  <span className="font-sans text-xs font-normal text-muted">
+                    {sectionRows.filter((row) => row.selected).length}/
+                    {sectionRows.length}
+                  </span>
+                </button>
+                <div className="flex gap-2">
+                  <button
+                    type="button"
+                    className={buttonClass}
+                    disabled={disabled}
+                    onClick={() => onLoad(section.id, "replace")}
+                  >
+                    {section.append ? "Replace list" : "Load selected"}
+                  </button>
+                  {section.append ? (
+                    <button
+                      type="button"
+                      className={buttonClass}
+                      disabled={disabled}
+                      onClick={() => onLoad(section.id, "append")}
+                    >
+                      Append selected
+                    </button>
+                  ) : null}
+                </div>
+              </div>
+              {expanded ? (
+              <ul className="mt-2 flex max-h-[70vh] flex-col gap-1 overflow-y-auto">
+                {sectionRows.map((row) => (
+                  <li key={row.key} className="flex items-start gap-2 text-sm">
+                    <input
+                      type="checkbox"
+                      className="mt-1"
+                      checked={row.selected}
+                      disabled={row.unresolved || row.unavailable}
+                      onChange={(event) => onToggle(row.key, event.target.checked)}
+                    />
+                    <span className="min-w-0 text-foreground">
+                      <span className="text-muted">{row.slot}: </span>
+                      {row.name || "(none)"}
+                      {row.unresolved ? (
+                        <span className="text-ember"> · not in the live list</span>
+                      ) : null}
+                      {row.unavailable ? (
+                        <span className="text-muted"> · not available for this orc</span>
+                      ) : null}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+              ) : null}
+            </div>
+          );
+        })}
+      </div>
+    </div>
   );
 }

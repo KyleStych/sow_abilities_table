@@ -12,6 +12,13 @@ export type AppearanceField = {
   section: "property" | "equipment";
 };
 
+/** PickerLevelRemap pointer. Shown for reference and never written or imported. */
+export const LOCKED_APPEARANCE_FIELD_ID = "trait-level";
+
+export function appearanceFieldLocked(id: string) {
+  return id === LOCKED_APPEARANCE_FIELD_ID;
+}
+
 export const APPEARANCE_FIELDS: AppearanceField[] = [
   { id: "ai", label: "AI", listId: "Combat/Tree", section: "property" },
   {

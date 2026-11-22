@@ -268,6 +268,19 @@ export const APPEARANCE_FIELDS: AppearanceField[] = [
 export const TAG_LIST_ID = "Faction/AppearanceTags/Tags";
 export const WOUND_LIST_ID = "Inventory/Items";
 
+/** Body-size tokens used in model, item, and tag names, such as Orc_Stk_Body_LOD. */
+export const BODY_TYPES = ["Slim", "Stk", "Buff"] as const;
+export type BodyType = (typeof BODY_TYPES)[number];
+
+const BODY_TYPE_TOKEN = /(^|_)(Slim|Stk|Buff)(?=_|$)/;
+
+/** Replace Slim, Stk, or Buff tokens. Returns null when the name does not change. */
+export function swapBodyTypeName(name: string, target: BodyType): string | null {
+  if (!BODY_TYPE_TOKEN.test(name)) return null;
+  const next = name.replace(new RegExp(BODY_TYPE_TOKEN.source, "g"), `$1${target}`);
+  return next === name ? null : next;
+}
+
 export const APPEARANCE_COLORS = [
   { id: "color-0", label: "body color", offset: "178" },
   { id: "color-1", label: "? color", offset: "17C" },

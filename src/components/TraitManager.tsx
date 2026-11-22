@@ -128,6 +128,7 @@ type AbilityEditorOptions = {
   noun: string;
   byPicker: Map<string, Trait>;
   hardCap: number;
+  dontOpenInfoOnSelection: boolean;
   fetchCatalog: () => Promise<{
     data?: CeCatalogResponse;
     error: string | null;
@@ -150,6 +151,7 @@ function useAbilityEditor({
   noun,
   byPicker,
   hardCap,
+  dontOpenInfoOnSelection,
   fetchCatalog,
   fetchFromGame,
   postToGame,
@@ -348,11 +350,34 @@ function useAbilityEditor({
       return;
     }
 
+    if (dontOpenInfoOnSelection) {
+      const alreadyActive =
+        selectedIds.size === 1 && selectedIds.has(slot.id);
+      if (alreadyActive) {
+        setDetailSlotId((current) =>
+          current === slot.id ? null : slot.id,
+        );
+      } else {
+        setDetailSlotId(null);
+        setSelectedIds(new Set([slot.id]));
+        setSelectionAnchorId(slot.id);
+      }
+      return;
+    }
+
     if (detailSlotId === slot.id) {
       setDetailSlotId(null);
     } else {
       setDetailSlotId(slot.id);
     }
+    setSelectedIds(new Set([slot.id]));
+    setSelectionAnchorId(slot.id);
+  }
+
+  function openDetail(index: number) {
+    const slot = slots[index];
+    if (!slot) return;
+    setDetailSlotId(slot.id);
     setSelectedIds(new Set([slot.id]));
     setSelectionAnchorId(slot.id);
   }
@@ -473,14 +498,12 @@ function useAbilityEditor({
   function updateInsertFromPoint(index: number, e: DragEvent) {
     if (draggingIds.size === 0) return;
     const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
+    // Full card is a drop target: top half inserts before, bottom half after.
     const before = e.clientY < rect.top + rect.height / 2;
-    let nextInsert = before ? index : index + 1;
-    nextInsert = Math.max(0, Math.min(nextInsert, slots.length));
-    const preview = moveSelectedTo(slots, draggingIds, nextInsert);
-    if (sameOrder(preview, slots)) {
-      setInsertAt(null);
-      return;
-    }
+    const nextInsert = Math.max(
+      0,
+      Math.min(before ? index : index + 1, slots.length),
+    );
     setInsertAt(nextInsert);
   }
 
@@ -549,6 +572,7 @@ function useAbilityEditor({
     draggingIds,
     insertAt,
     detailSlotId,
+    dontOpenInfoOnSelection,
     pickerOpenFor,
     pickerQuery,
     filteredCatalog,
@@ -559,6 +583,7 @@ function useAbilityEditor({
     clearSlot,
     removeSlot,
     selectSlot,
+    openDetail,
     setSlotTrait,
     addSlot,
     beginAdd,
@@ -589,11 +614,15 @@ export function TraitManager({ traits }: TraitManagerProps) {
     return map;
   }, [traits]);
 
+  const [dontOpenInfoOnSelection, setDontOpenInfoOnSelection] =
+    useState(false);
+
   const markers = useAbilityEditor({
     label: "Markers",
     noun: "marker",
     byPicker,
     hardCap: MAX_MARKER_SLOTS,
+    dontOpenInfoOnSelection,
     fetchCatalog: getMarkerCatalog,
     fetchFromGame: getMarkersFromGame,
     postToGame: postMarkersToGame,
@@ -603,6 +632,7 @@ export function TraitManager({ traits }: TraitManagerProps) {
     noun: "picker",
     byPicker,
     hardCap: MAX_PICKER_SLOTS,
+    dontOpenInfoOnSelection,
     fetchCatalog: getCatalog,
     fetchFromGame: getTraitsFromGame,
     postToGame: postTraitsToGame,
@@ -1008,6 +1038,8 @@ export function TraitManager({ traits }: TraitManagerProps) {
                 markerSlots={markers.slots}
                 pickerSlots={pickers.slots}
                 byPicker={byPicker}
+                dontOpenInfoOnSelection={dontOpenInfoOnSelection}
+                onDontOpenInfoOnSelectionChange={setDontOpenInfoOnSelection}
               />
             </div>
           </aside>
@@ -1032,8 +1064,8 @@ function JumpButton({
       onClick={onClick}
       className={
         active
-          ? "rounded-md border border-ember bg-ember/15 px-2.5 py-1 text-xs font-medium text-foreground"
-          : "rounded-md border border-line bg-raised/80 px-2.5 py-1 text-xs font-medium text-muted hover:border-ember/60 hover:text-foreground"
+          ? "rounded-md border border-ember bg-ember/15 px-3 py-2 text-sm font-medium text-foreground"
+          : "rounded-md border border-line bg-raised/80 px-3 py-2 text-sm font-medium text-muted hover:border-ember/60 hover:text-foreground"
       }
     >
       {children}
@@ -1155,9 +1187,11 @@ function AbilitySection({
 
       {open ? (
         <ul
-          className="flex flex-col"
+          className="flex flex-col gap-1"
           onDragOver={(e) => {
-            if (editor.draggingIds.size > 0) e.preventDefault();
+            if (editor.draggingIds.size === 0) return;
+            e.preventDefault();
+            e.dataTransfer.dropEffect = "move";
           }}
           onDrop={(e) => {
             e.preventDefault();
@@ -1177,16 +1211,44 @@ function AbilitySection({
             const definition = slot.name
               ? editor.byPicker.get(slot.name)
               : undefined;
+            const showInsertBefore =
+              editor.draggingIds.size > 0 && editor.insertAt === index;
+            const showInsertAfter =
+              index === editor.slots.length - 1 &&
+              editor.draggingIds.size > 0 &&
+              editor.insertAt === editor.slots.length;
             return (
-              <li key={slot.id} className="relative">
-                {editor.draggingIds.size > 0 && editor.insertAt === index ? (
+              <li
+                key={slot.id}
+                className="relative"
+                onDragOver={(e) => {
+                  if (editor.draggingIds.size === 0) return;
+                  e.preventDefault();
+                  e.stopPropagation();
+                  e.dataTransfer.dropEffect = "move";
+                  editor.updateInsertFromPoint(index, e);
+                }}
+                onDrop={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  const rect = (
+                    e.currentTarget as HTMLElement
+                  ).getBoundingClientRect();
+                  const fallback =
+                    e.clientY < rect.top + rect.height / 2
+                      ? index
+                      : index + 1;
+                  editor.commitDrop(
+                    editor.insertAt !== null ? editor.insertAt : fallback,
+                  );
+                }}
+              >
+                {showInsertBefore ? (
                   <div
-                    className="pointer-events-none my-1 h-1 rounded-full bg-ember shadow-[0_0_8px_rgba(224,138,69,0.7)]"
+                    className="pointer-events-none absolute -top-0.5 right-0 left-0 z-10 h-1 rounded-full bg-ember shadow-[0_0_8px_rgba(224,138,69,0.7)]"
                     aria-hidden
                   />
-                ) : (
-                  <div className="h-1" aria-hidden />
-                )}
+                ) : null}
                 <div
                   className={
                     detailOpen || isSelected || !slot.name
@@ -1203,6 +1265,12 @@ function AbilitySection({
                       if (target.closest("button")) return;
                       editor.selectSlot(index, e);
                     }}
+                    onDoubleClick={(e: MouseEvent) => {
+                      if (!editor.dontOpenInfoOnSelection) return;
+                      const target = e.target as HTMLElement;
+                      if (target.closest("button")) return;
+                      editor.openDetail(index);
+                    }}
                     onDragStart={(e) => {
                       editor.beginDrag(slot.id);
                       e.dataTransfer.effectAllowed = "move";
@@ -1213,25 +1281,6 @@ function AbilitySection({
                       }
                     }}
                     onDragEnd={() => editor.endDrag()}
-                    onDragOver={(e) => {
-                      e.preventDefault();
-                      e.stopPropagation();
-                      editor.updateInsertFromPoint(index, e);
-                    }}
-                    onDrop={(e) => {
-                      e.preventDefault();
-                      e.stopPropagation();
-                      const rect = (
-                        e.currentTarget as HTMLElement
-                      ).getBoundingClientRect();
-                      const fallback =
-                        e.clientY < rect.top + rect.height / 2
-                          ? index
-                          : index + 1;
-                      editor.commitDrop(
-                        editor.insertAt !== null ? editor.insertAt : fallback,
-                      );
-                    }}
                     className={
                       isDragging
                         ? "flex cursor-grabbing items-start gap-3 px-3 py-3 opacity-40 select-none"
@@ -1296,11 +1345,9 @@ function AbilitySection({
                     />
                   ) : null}
                 </div>
-                {index === editor.slots.length - 1 &&
-                editor.draggingIds.size > 0 &&
-                editor.insertAt === editor.slots.length ? (
+                {showInsertAfter ? (
                   <div
-                    className="pointer-events-none my-1 h-1 rounded-full bg-ember shadow-[0_0_8px_rgba(224,138,69,0.7)]"
+                    className="pointer-events-none absolute -bottom-0.5 right-0 left-0 z-10 h-1 rounded-full bg-ember shadow-[0_0_8px_rgba(224,138,69,0.7)]"
                     aria-hidden
                   />
                 ) : null}
@@ -1318,12 +1365,17 @@ function ReferenceRail({
   markerSlots,
   pickerSlots,
   byPicker,
+  dontOpenInfoOnSelection,
+  onDontOpenInfoOnSelectionChange,
 }: {
   sectionInView: SectionId;
   markerSlots: ManagedSlot[];
   pickerSlots: ManagedSlot[];
   byPicker: Map<string, Trait>;
+  dontOpenInfoOnSelection: boolean;
+  onDontOpenInfoOnSelectionChange: (value: boolean) => void;
 }) {
+  const preferId = useId();
   const showingMarkers = sectionInView === "pickers";
   const specSuffixes = new Set<string>();
   const classSuffixes = new Set<string>();
@@ -1393,6 +1445,19 @@ function ReferenceRail({
           })}
         </div>
       )}
+      <label
+        htmlFor={preferId}
+        className="mt-3 flex cursor-pointer items-start gap-2 border-t border-line pt-3 text-xs text-muted"
+      >
+        <input
+          id={preferId}
+          type="checkbox"
+          checked={dontOpenInfoOnSelection}
+          onChange={(e) => onDontOpenInfoOnSelectionChange(e.target.checked)}
+          className="mt-0.5 size-3.5 shrink-0 rounded border-line accent-ember"
+        />
+        <span>Don&apos;t open info on selection</span>
+      </label>
     </div>
   );
 }

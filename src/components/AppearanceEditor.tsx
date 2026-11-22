@@ -12,9 +12,12 @@ import {
   APPEARANCE_COLORS,
   APPEARANCE_FIELDS,
   AppearanceField,
+  BODY_TYPES,
+  BodyType,
   TAG_LIST_ID,
   WOUND_LIST_ID,
   appearanceFieldLocked,
+  swapBodyTypeName,
   argbParts,
   toArgb,
 } from "@/lib/appearance";
@@ -30,7 +33,7 @@ import {
   postAppearance,
 } from "@/lib/ce-bridge";
 
-type Slot = AppearancePointer & { key: string };
+type Slot = AppearancePointer & { key: string; error?: string };
 
 type SearchTarget =
   | { kind: "field"; id: string }
@@ -232,6 +235,7 @@ type AppearanceCsvRow = {
   selected: boolean;
   unresolved: boolean;
   unavailable: boolean;
+  issue?: string;
 };
 
 let csvSerial = 0;
@@ -275,12 +279,13 @@ function PointerRow({
 }) {
   const empty = !value.name;
   const inert = unavailable || locked;
+  const problem = Boolean(error) && !inert;
   return (
     <div
       className={
         unavailable
           ? "rounded-lg border border-line/70 bg-raised/20 px-3 py-3 opacity-55"
-          : empty && !locked
+          : (empty && !locked) || problem
             ? "rounded-lg border border-ember bg-raised/40 px-3 py-3"
             : "rounded-lg border border-line bg-raised/40 px-3 py-3"
       }
@@ -540,14 +545,14 @@ export function AppearanceEditor() {
     if (search.kind === "tag") {
       setTags((current) =>
         current.map((slot, index) =>
-          index === search.index ? { ...slot, ...pointer } : slot,
+          index === search.index ? { ...slot, ...pointer, error: undefined } : slot,
         ),
       );
     }
     if (search.kind === "wound") {
       setWounds((current) =>
         current.map((slot, index) =>
-          index === search.index ? { ...slot, ...pointer } : slot,
+          index === search.index ? { ...slot, ...pointer, error: undefined } : slot,
         ),
       );
     }
@@ -750,6 +755,141 @@ export function AppearanceEditor() {
     );
   }
 
+  async function applyBodyType(target: BodyType) {
+    setBusy(true);
+    setStatus(`Checking ${target} names against the live lists…`);
+    let lists = catalogs;
+    let missing = missingLists;
+    if (!catalogReady) {
+      const result = await getAppearanceCatalog();
+      if (result.data) {
+        lists = result.data.lists ?? {};
+        missing = result.data.missing ?? [];
+        setCatalogs(lists);
+        setMissingLists(missing);
+        setCatalogReady(true);
+      }
+    }
+
+    const translate = (listId: string, renamed: string) => {
+      if (missing.includes(listId) || !lists[listId]) {
+        return {
+          address: "0x0",
+          error: `No ${target} record named ${renamed}. ${listId} is not loaded.`,
+        };
+      }
+      const found = lists[listId].find((item) => item.name === renamed);
+      if (!found) {
+        return {
+          address: "0x0",
+          error: `No ${target} record named ${renamed}`,
+        };
+      }
+      return { address: found.address, error: undefined as string | undefined };
+    };
+
+    let updated = 0;
+    const misses: string[] = [];
+
+    if (loaded) {
+      const nextFields = { ...fields };
+      for (const field of APPEARANCE_FIELDS) {
+        if (appearanceFieldLocked(field.id)) continue;
+        const value = fields[field.id];
+        if (!value?.name || slotUnavailable(value.error)) continue;
+        const renamed = swapBodyTypeName(value.name, target);
+        if (!renamed) continue;
+        updated += 1;
+        const resolved = translate(field.listId, renamed);
+        if (resolved.error) misses.push(`${field.label}: ${renamed}`);
+        nextFields[field.id] = {
+          id: field.id,
+          name: renamed,
+          address: resolved.address,
+          ...(resolved.error ? { error: resolved.error } : {}),
+        };
+      }
+      setFields(nextFields);
+
+      const retargetSlots = (slots: Slot[], listId: string, noun: string) =>
+        slots.map((slot) => {
+          if (!slot.name) return slot;
+          const renamed = swapBodyTypeName(slot.name, target);
+          if (!renamed) return slot;
+          updated += 1;
+          const resolved = translate(listId, renamed);
+          if (resolved.error) misses.push(`${noun}: ${renamed}`);
+          return {
+            ...slot,
+            name: renamed,
+            address: resolved.address,
+            error: resolved.error,
+          };
+        });
+      setTags(retargetSlots(tags, TAG_LIST_ID, "tag"));
+      setWounds(retargetSlots(wounds, WOUND_LIST_ID, "wound"));
+
+      if (rarity) {
+        const renamedRarity = swapBodyTypeName(rarity, target);
+        if (renamedRarity) {
+          setRarity(renamedRarity);
+          updated += 1;
+        }
+      }
+    }
+
+    let csvUpdated = 0;
+    if (csvRows.length > 0) {
+      setCsvRows(
+        csvRows.map((row) => {
+          if (row.group === "color" || !row.name) return row;
+          const renamed = swapBodyTypeName(row.name, target);
+          if (!renamed) return row;
+          csvUpdated += 1;
+          if (row.group === "rarity") {
+            return { ...row, name: renamed, issue: undefined };
+          }
+          const listId =
+            row.group === "tag"
+              ? TAG_LIST_ID
+              : row.group === "wound"
+                ? WOUND_LIST_ID
+                : APPEARANCE_FIELDS.find((field) => field.id === row.fieldId)?.listId;
+          if (!listId) return { ...row, name: renamed };
+          const resolved = translate(listId, renamed);
+          if (resolved.error) misses.push(`${row.slot}: ${renamed}`);
+          return {
+            ...row,
+            name: renamed,
+            address: resolved.error ? null : resolved.address,
+            unresolved: Boolean(resolved.error),
+            selected: row.unavailable || Boolean(resolved.error)
+              ? false
+              : row.unresolved
+                ? true
+                : row.selected,
+            issue: resolved.error,
+          };
+        }),
+      );
+    }
+
+    setBusy(false);
+    if (updated === 0 && csvUpdated === 0) {
+      setStatus(`No Slim, Stk, or Buff names to change to ${target}.`);
+      return;
+    }
+    const parts = [
+      updated > 0 ? `${updated} loaded name${updated === 1 ? "" : "s"}` : "",
+      csvUpdated > 0 ? `${csvUpdated} CSV name${csvUpdated === 1 ? "" : "s"}` : "",
+    ].filter(Boolean);
+    const missNote =
+      misses.length === 0
+        ? ""
+        : ` ${misses.length} ${misses.length === 1 ? "has" : "have"} no ${target} record: ${misses.slice(0, 4).join("; ")}${misses.length > 4 ? `; and ${misses.length - 4} more` : ""}. Apply to Game rejects unknown names.`;
+    setStatus(`Set body type to ${target}. Updated ${parts.join(" and ")}.${missNote}`);
+  }
+
   const activeListId = searchListId(search);
   const activeCatalog = catalogs[activeListId] ?? [];
 
@@ -864,6 +1004,36 @@ export function AppearanceEditor() {
         </label>
       </section>
 
+      <section className="mb-6 rounded-lg border border-line bg-raised/40 px-4 py-4">
+        <label htmlFor="body-type" className="block text-sm font-medium text-foreground">
+          Body type
+        </label>
+        <p className="mt-1 text-xs text-muted">
+          Replaces Slim, Stk, or Buff in every loaded appearance name, and in a
+          CSV import when one is open. A name with no matching record is
+          highlighted.
+        </p>
+        <select
+          id="body-type"
+          value=""
+          disabled={busy || (!loaded && csvRows.length === 0)}
+          onChange={(event) => {
+            const value = event.target.value;
+            if (value === "Slim" || value === "Stk" || value === "Buff") {
+              void applyBodyType(value);
+            }
+          }}
+          className="mt-3 w-full max-w-xs rounded-md border border-line bg-raised px-3 py-2 text-sm text-foreground outline-none focus:border-ember disabled:opacity-50"
+        >
+          <option value="">Swap to…</option>
+          {BODY_TYPES.map((type) => (
+            <option key={type} value={type}>
+              {type}
+            </option>
+          ))}
+        </select>
+      </section>
+
       {csvRows.length > 0 ? (
         <AppearanceCsvPanel
           orcName={csvOrcName}
@@ -885,6 +1055,15 @@ export function AppearanceEditor() {
             )
           }
           onLoad={loadCsvGroup}
+          onClearSection={(group) =>
+            setCsvRows((current) =>
+              current.map((row) =>
+                row.group === group || (group === "property" && row.group === "rarity")
+                  ? { ...row, selected: false }
+                  : row,
+              ),
+            )
+          }
         />
       ) : null}
 
@@ -977,7 +1156,7 @@ export function AppearanceEditor() {
               setTags((current) =>
                 current.map((slot, slotIndex) =>
                   slotIndex === index
-                    ? { ...slot, name: null, address: "0x0" }
+                    ? { ...slot, name: null, address: "0x0", error: undefined }
                     : slot,
                 ),
               )
@@ -1050,7 +1229,7 @@ export function AppearanceEditor() {
               setWounds((current) =>
                 current.map((slot, slotIndex) =>
                   slotIndex === index
-                    ? { ...slot, name: null, address: "0x0" }
+                    ? { ...slot, name: null, address: "0x0", error: undefined }
                     : slot,
                 ),
               )
@@ -1293,9 +1472,9 @@ function ReorderList({
             )}
             <div
               className={
-                slot.name
-                  ? "rounded-lg border border-line bg-raised/70"
-                  : "rounded-lg border border-ember bg-raised/70"
+                slot.error || !slot.name
+                  ? "rounded-lg border border-ember bg-raised/70"
+                  : "rounded-lg border border-line bg-raised/70"
               }
             >
               <div
@@ -1335,6 +1514,9 @@ function ReorderList({
                   <p className="truncate font-mono text-sm text-foreground">
                     {slot.name || "(none)"}
                   </p>
+                  {slot.error ? (
+                    <p className="mt-1 text-xs text-ember">{slot.error}</p>
+                  ) : null}
                 </div>
                 <div className="flex gap-2">
                   <button
@@ -1404,6 +1586,7 @@ function AppearanceCsvPanel({
   onToggle,
   onUncheckAll,
   onLoad,
+  onClearSection,
 }: {
   orcName: string | null;
   rows: AppearanceCsvRow[];
@@ -1412,6 +1595,7 @@ function AppearanceCsvPanel({
   onToggle: (key: string, selected: boolean) => void;
   onUncheckAll: () => void;
   onLoad: (group: CsvGroupId, mode?: "replace" | "append") => void;
+  onClearSection: (group: CsvGroupId) => void;
 }) {
   const [open, setOpen] = useState<Partial<Record<CsvGroupId, boolean>>>({});
 
@@ -1436,6 +1620,7 @@ function AppearanceCsvPanel({
           );
           if (sectionRows.length === 0) return null;
           const expanded = open[section.id] ?? false;
+          const selectedCount = sectionRows.filter((row) => row.selected).length;
           return (
             <div key={section.id}>
               <div className="flex flex-wrap items-center justify-between gap-2">
@@ -1455,8 +1640,7 @@ function AppearanceCsvPanel({
                   </span>
                   {CSV_GROUP_LABELS[section.id]}
                   <span className="font-sans text-xs font-normal text-muted">
-                    {sectionRows.filter((row) => row.selected).length}/
-                    {sectionRows.length}
+                    {selectedCount}/{sectionRows.length}
                   </span>
                 </button>
                 <div className="flex gap-2">
@@ -1467,6 +1651,14 @@ function AppearanceCsvPanel({
                     onClick={() => onLoad(section.id, "replace")}
                   >
                     {section.append ? "Replace list" : "Load selected"}
+                  </button>
+                  <button
+                    type="button"
+                    className={buttonClass}
+                    disabled={selectedCount === 0}
+                    onClick={() => onClearSection(section.id)}
+                  >
+                    Clear selections
                   </button>
                   {section.append ? (
                     <button
@@ -1483,7 +1675,14 @@ function AppearanceCsvPanel({
               {expanded ? (
               <ul className="mt-2 flex max-h-[70vh] flex-col gap-1 overflow-y-auto">
                 {sectionRows.map((row) => (
-                  <li key={row.key} className="flex items-start gap-2 text-sm">
+                  <li
+                    key={row.key}
+                    className={
+                      row.unresolved || row.issue
+                        ? "flex items-start gap-2 rounded-md bg-ember/10 px-2 py-1 text-sm"
+                        : "flex items-start gap-2 text-sm"
+                    }
+                  >
                     <input
                       type="checkbox"
                       className="mt-1"
@@ -1494,7 +1693,9 @@ function AppearanceCsvPanel({
                     <span className="min-w-0 text-foreground">
                       <span className="text-muted">{row.slot}: </span>
                       {row.name || "(none)"}
-                      {row.unresolved ? (
+                      {row.issue ? (
+                        <span className="text-ember"> · {row.issue}</span>
+                      ) : row.unresolved ? (
                         <span className="text-ember"> · not in the live list</span>
                       ) : null}
                       {row.unavailable ? (

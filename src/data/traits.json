@@ -17,7 +17,7 @@
     "Defensive bonus": "Kiting or disengaging quickly when pressured by multiple enemies.",
     "Class trait": "",
     "Tribe trait": "",
-    "Recommended for": ""
+    "Recommended for": "Assault Leaders, Throne Room Bodyguards"
   },
   {
     "Picker": "Picker_Adaptable_Med",
@@ -410,6 +410,16 @@
     "Recommended for": "Commanders, Victory Point Defenders, Throne Room Bodyguards"
   },
   {
+    "Picker": "Picker_DodgeProjectiles",
+    "Game visual title": "Dodge Projectiles",
+    "Utility": "Enables reactive evasive dodges/sidesteps against incoming arrows, spears, bolts, and thrown projectiles.",
+    "Offensive bonus": "Keeps ranged-harassed captains moving and closing distance without getting staggered mid-approach.",
+    "Defensive bonus": "Helps avoid ranged poke and projectile volleys during sieges and open encounters.",
+    "Class trait": "",
+    "Tribe trait": "",
+    "Recommended for": "Assault Leaders, Victory Point Defenders, Throne Room Bodyguards"
+  },
+  {
     "Picker": "Picker_DyingCommand",
     "Game visual title": "Dying Command / Final Curse",
     "Utility": "Triggers a final battle-cry/curse event upon death that marks the killer and shocks surrounding units.",
@@ -698,6 +708,16 @@
     "Class trait": "Destroyer",
     "Tribe trait": "",
     "Recommended for": "Throne Room Bodyguards"
+  },
+  {
+    "Picker": "Picker_FastRunner",
+    "Game visual title": "Fast Runner",
+    "Utility": "Increases sprinting and pursuit movement speed during combat and traversal.",
+    "Offensive bonus": "Closes distance quickly and chases down fleeing captains or grunts.",
+    "Defensive bonus": "Helps reposition rapidly or disengage when pressured in open areas.",
+    "Class trait": "",
+    "Tribe trait": "",
+    "Recommended for": "Assault Leaders, Throne Room Bodyguards"
   },
   {
     "Picker": "Picker_Fearless",
@@ -1017,7 +1037,7 @@
     "Defensive bonus": "Repositioning faster in nemesis missions, pits, or siege defense.",
     "Class trait": "",
     "Tribe trait": "",
-    "Recommended for": ""
+    "Recommended for": "Assault Leaders, Throne Room Bodyguards, Victory Point Defenders"
   },
   {
     "Picker": "Picker_QuickShot",
@@ -1230,16 +1250,6 @@
     "Recommended for": "Overlord, Throne Room Bodyguards, Victory Point Defenders"
   },
   {
-    "Picker": "Picker_SummonerGang",
-    "Game visual title": "Summoner Gang",
-    "Utility": "Active replenishment trait that summons fresh waves of assigned gang grunts whenever existing ones are killed.",
-    "Offensive bonus": "Continuously refills assault grunt numbers on capture points.",
-    "Defensive bonus": "Maintains constant grunt swarm clutter in throne rooms and victory points.",
-    "Class trait": "",
-    "Tribe trait": "",
-    "Recommended for": "Overlord, Warchiefs, Victory Point Defenders"
-  },
-  {
     "Picker": "Picker_TribeAttack_Dark",
     "Game visual title": "Dark Strike / Dark Tribe Attack",
     "Utility": "Tribe special ability executing rapid dual-blade dark poison combo strikes.",
@@ -1381,7 +1391,7 @@
   },
   {
     "Picker": "WhirlwindAttack_Savage",
-    "Game visual title": "Whirlwind Attack",
+    "Game visual title": "Savage Whirlwind Attack",
     "Utility": "Executes a spinning multi-strike melee cleave that sweeps around the Captain to hit nearby targets in an arc.",
     "Offensive bonus": "Clears clustered grunts and punishes close-range defenders during point captures.",
     "Defensive bonus": "Pushes back or staggers surrounding attackers crowding victory points and throne room choke points.",

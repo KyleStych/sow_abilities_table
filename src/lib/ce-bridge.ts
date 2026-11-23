@@ -60,7 +60,10 @@ async function ceFetch<T>(
         typeof (data as { error?: unknown }).error === "string"
           ? (data as { error: string }).error
           : `CE bridge HTTP ${res.status}`;
-      const log = res.status === 404 ? console.warn : console.error;
+      const log =
+        res.status === 404 || /select an orc/i.test(errMsg)
+          ? console.warn
+          : console.error;
       log(`[ce-bridge] ${init?.method || "GET"} ${path} → ${res.status}`, {
         error: errMsg,
         data,

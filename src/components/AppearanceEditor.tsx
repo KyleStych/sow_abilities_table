@@ -2,6 +2,7 @@
 
 import {
   KeyboardEvent,
+  RefObject,
   useEffect,
   useId,
   useMemo,
@@ -17,6 +18,9 @@ import {
   TAG_LIST_ID,
   WOUND_LIST_ID,
   appearanceFieldLocked,
+  bodyAppearanceMarkerName,
+  bodyTypeFromName,
+  isBodyAppearanceMarker,
   swapBodyTypeName,
   argbParts,
   toArgb,
@@ -30,8 +34,20 @@ import {
   CeCatalogTrait,
   getAppearance,
   getAppearanceCatalog,
+  getMarkerCatalog,
+  getMarkersFromGame,
   postAppearance,
+  postMarkersToGame,
 } from "@/lib/ce-bridge";
+
+type SectionId =
+  | "body-type"
+  | "csv"
+  | "properties"
+  | "equipment"
+  | "tags"
+  | "wounds"
+  | "colors";
 
 type Slot = AppearancePointer & { key: string; error?: string };
 
@@ -383,6 +399,27 @@ export function AppearanceEditor() {
   const [csvDragOver, setCsvDragOver] = useState(false);
   const [csvOrcName, setCsvOrcName] = useState<string | null>(null);
   const [csvRows, setCsvRows] = useState<AppearanceCsvRow[]>([]);
+  const [propertiesOpen, setPropertiesOpen] = useState(true);
+  const [equipmentOpen, setEquipmentOpen] = useState(true);
+  const [csvOpen, setCsvOpen] = useState(true);
+  const [tagsOpen, setTagsOpen] = useState(true);
+  const [woundsOpen, setWoundsOpen] = useState(true);
+  const [colorsOpen, setColorsOpen] = useState(true);
+  const [bodyMarkerName, setBodyMarkerName] = useState<string | null>(null);
+  const [pendingBodyType, setPendingBodyType] = useState<BodyType | "">("");
+  const [bodyMenuOpen, setBodyMenuOpen] = useState(false);
+  const [sectionInView, setSectionInView] = useState<SectionId>("properties");
+
+  const bodyTypeRef = useRef<HTMLElement>(null);
+  const csvRef = useRef<HTMLElement>(null);
+  const propertiesRef = useRef<HTMLElement>(null);
+  const equipmentRef = useRef<HTMLElement>(null);
+  const tagsRef = useRef<HTMLElement>(null);
+  const woundsRef = useRef<HTMLElement>(null);
+  const colorsRef = useRef<HTMLElement>(null);
+  const viewLock = useRef<SectionId | null>(null);
+  const visibleHeight = useRef<Partial<Record<SectionId, number>>>({});
+  const bodyMenuRef = useRef<HTMLDivElement>(null);
 
   const signature = useMemo(
     () =>
@@ -396,6 +433,119 @@ export function AppearanceEditor() {
     [colors, fields, rarity, tags, wounds],
   );
   const dirty = loaded && signature !== baseline;
+
+  const bodyTypeInsight = useMemo(() => {
+    const found = new Set<BodyType>();
+    const note = (name: string | null | undefined) => {
+      const type = bodyTypeFromName(name);
+      if (type) found.add(type);
+    };
+    for (const field of APPEARANCE_FIELDS) {
+      note(fields[field.id]?.name);
+    }
+    note(rarity);
+    for (const slot of tags) note(slot.name);
+    for (const slot of wounds) note(slot.name);
+    for (const row of csvRows) note(row.name);
+    note(bodyMarkerName);
+    const types = BODY_TYPES.filter((type) => found.has(type));
+    return {
+      types,
+      mismatch: types.length > 1,
+      current: types.length === 1 ? types[0] : null,
+    };
+  }, [bodyMarkerName, csvRows, fields, rarity, tags, wounds]);
+
+  useEffect(() => {
+    if (!bodyMenuOpen) return;
+    function onPointerDown(event: MouseEvent) {
+      if (!bodyMenuRef.current?.contains(event.target as Node)) {
+        setBodyMenuOpen(false);
+      }
+    }
+    function onKey(event: globalThis.KeyboardEvent) {
+      if (event.key === "Escape") setBodyMenuOpen(false);
+    }
+    document.addEventListener("mousedown", onPointerDown);
+    document.addEventListener("keydown", onKey);
+    return () => {
+      document.removeEventListener("mousedown", onPointerDown);
+      document.removeEventListener("keydown", onKey);
+    };
+  }, [bodyMenuOpen]);
+
+  useEffect(() => {
+    const nodes: { id: SectionId; node: HTMLElement | null }[] = [
+      { id: "body-type", node: bodyTypeRef.current },
+      { id: "csv", node: csvRef.current },
+      { id: "properties", node: propertiesRef.current },
+      { id: "equipment", node: equipmentRef.current },
+      { id: "tags", node: tagsRef.current },
+      { id: "wounds", node: woundsRef.current },
+      { id: "colors", node: colorsRef.current },
+    ];
+    const observed = nodes.filter(
+      (entry): entry is { id: SectionId; node: HTMLElement } =>
+        Boolean(entry.node),
+    );
+    if (observed.length === 0) return;
+    const observer = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          const id = (entry.target as HTMLElement).dataset.section as
+            | SectionId
+            | undefined;
+          if (!id) continue;
+          visibleHeight.current[id] = entry.intersectionRect.height;
+        }
+        if (viewLock.current) return;
+        let best: SectionId | null = null;
+        let bestHeight = 0;
+        for (const [id, height] of Object.entries(visibleHeight.current) as [
+          SectionId,
+          number,
+        ][]) {
+          if (height > bestHeight) {
+            bestHeight = height;
+            best = id;
+          }
+        }
+        if (best) setSectionInView(best);
+      },
+      { threshold: [0, 0.1, 0.25, 0.5, 0.75, 1] },
+    );
+    for (const { node } of observed) observer.observe(node);
+    return () => observer.disconnect();
+  }, [csvRows.length, equipmentOpen, propertiesOpen, csvOpen, tagsOpen, woundsOpen, colorsOpen]);
+
+  function jumpTo(id: SectionId) {
+    if (id === "csv") setCsvOpen(true);
+    if (id === "properties") setPropertiesOpen(true);
+    if (id === "equipment" || id === "tags" || id === "wounds" || id === "colors") {
+      setEquipmentOpen(true);
+    }
+    if (id === "tags") setTagsOpen(true);
+    if (id === "wounds") setWoundsOpen(true);
+    if (id === "colors") setColorsOpen(true);
+
+    const refs: Record<SectionId, RefObject<HTMLElement | null>> = {
+      "body-type": bodyTypeRef,
+      csv: csvRef,
+      properties: propertiesRef,
+      equipment: equipmentRef,
+      tags: tagsRef,
+      wounds: woundsRef,
+      colors: colorsRef,
+    };
+    viewLock.current = id;
+    setSectionInView(id);
+    requestAnimationFrame(() => {
+      refs[id].current?.scrollIntoView({ behavior: "smooth", block: "start" });
+      window.setTimeout(() => {
+        if (viewLock.current === id) viewLock.current = null;
+      }, 700);
+    });
+  }
 
   function applyResponse(data: {
     orc: string;
@@ -459,8 +609,23 @@ export function AppearanceEditor() {
       return;
     }
     applyResponse(appearance.data);
-    setStatus(`Loaded appearance for orc ${appearance.data.orc}. Loading dropdown lists…`);
-    const catalog = await getAppearanceCatalog();
+    setStatus(
+      `Loaded appearance for orc ${appearance.data.orc}. Loading dropdown lists…`,
+    );
+    const [catalog, markerResult] = await Promise.all([
+      getAppearanceCatalog(),
+      getMarkersFromGame(),
+    ]);
+    if (markerResult.data) {
+      const marker = markerResult.data.traits.find((slot) =>
+        isBodyAppearanceMarker(slot.name),
+      );
+      setBodyMarkerName(marker?.name ?? null);
+      const markerType = bodyTypeFromName(marker?.name);
+      if (markerType) setPendingBodyType(markerType);
+    } else {
+      setBodyMarkerName(null);
+    }
     setBusy(false);
     if (catalog.error || !catalog.data) {
       setCatalogReady(false);
@@ -688,11 +853,20 @@ export function AppearanceEditor() {
     const rows = buildCsvRows(parsed, lists, fields, Boolean(rarityError));
     setCsvOrcName(parsed.orcName);
     setCsvRows(rows);
+    setCsvOpen(true);
     const unmatched = rows.filter((row) => row.unresolved).length;
     const blocked = rows.filter((row) => row.unavailable).length;
     setStatus(
       `Read ${file.name}${parsed.orcName ? ` (${parsed.orcName})` : ""}: ${rows.length} appearance value(s). ${unmatched} unmatched, ${blocked} unavailable on this orc. Trait Level Offset was ignored.`,
     );
+  }
+
+  function clearCsvImport() {
+    setCsvRows([]);
+    setCsvOrcName(null);
+    setCsvOpen(true);
+    setCsvDragOver(false);
+    setStatus("CSV import cleared.");
   }
 
   function loadCsvGroup(
@@ -874,20 +1048,78 @@ export function AppearanceEditor() {
       );
     }
 
+    let markerNote = "";
+    const markerTarget = bodyAppearanceMarkerName(target);
+    const markersResult = await getMarkersFromGame();
+    if (markersResult.error || !markersResult.data) {
+      markerNote = ` Marker not updated: ${markersResult.error || "could not read markers"}.`;
+    } else {
+      let markerCatalog = await getMarkerCatalog();
+      const catalogTraits = markerCatalog.data?.traits ?? [];
+      const resolved = catalogTraits.find((item) => item.name === markerTarget);
+      if (!resolved) {
+        markerNote = ` Marker not updated: ${markerTarget} is not in the marker catalog.`;
+      } else {
+        const currentTraits = markersResult.data.traits;
+        let replaced = false;
+        const nextTraits = currentTraits.map((slot) => {
+          if (!isBodyAppearanceMarker(slot.name)) {
+            return {
+              name: slot.name ?? undefined,
+              address: slot.address,
+            };
+          }
+          replaced = true;
+          updated += 1;
+          return { name: resolved.name, address: resolved.address };
+        });
+        if (!replaced) {
+          if (nextTraits.length >= markersResult.data.max_length) {
+            markerNote = ` Marker not added: marker list is at capacity (${markersResult.data.max_length}).`;
+          } else {
+            nextTraits.push({
+              name: resolved.name,
+              address: resolved.address,
+            });
+            updated += 1;
+            replaced = true;
+          }
+        }
+        if (replaced || nextTraits.some((slot) => slot.name === markerTarget)) {
+          const posted = await postMarkersToGame(nextTraits);
+          if (posted.error || !posted.data) {
+            markerNote = ` Marker write failed: ${posted.error || "unknown error"}.`;
+          } else {
+            const written = posted.data.traits.find((slot) =>
+              isBodyAppearanceMarker(slot.name),
+            );
+            setBodyMarkerName(written?.name ?? markerTarget);
+            markerNote = ` Marker set to ${markerTarget}.`;
+          }
+        }
+      }
+    }
+
+    setPendingBodyType(target);
+    setBodyMenuOpen(false);
     setBusy(false);
-    if (updated === 0 && csvUpdated === 0) {
-      setStatus(`No Slim, Stk, or Buff names to change to ${target}.`);
+    if (updated === 0 && csvUpdated === 0 && !markerNote.includes("Marker set")) {
+      setStatus(`No Slim, Stk, or Buff names to change to ${target}.${markerNote}`);
       return;
     }
     const parts = [
       updated > 0 ? `${updated} loaded name${updated === 1 ? "" : "s"}` : "",
-      csvUpdated > 0 ? `${csvUpdated} CSV name${csvUpdated === 1 ? "" : "s"}` : "",
+      csvUpdated > 0
+        ? `${csvUpdated} CSV name${csvUpdated === 1 ? "" : "s"}`
+        : "",
     ].filter(Boolean);
     const missNote =
       misses.length === 0
         ? ""
         : ` ${misses.length} ${misses.length === 1 ? "has" : "have"} no ${target} record: ${misses.slice(0, 4).join("; ")}${misses.length > 4 ? `; and ${misses.length - 4} more` : ""}. Apply to Game rejects unknown names.`;
-    setStatus(`Set body type to ${target}. Updated ${parts.join(" and ")}.${missNote}`);
+    setStatus(
+      `Set body type to ${target}. Updated ${parts.join(" and ") || "marker only"}.${markerNote}${missNote}`,
+    );
   }
 
   const activeListId = searchListId(search);
@@ -899,7 +1131,10 @@ export function AppearanceEditor() {
   );
 
   return (
-    <div className="mx-auto w-full max-w-3xl px-4 pb-16">
+    <div className="relative mx-auto w-full max-w-[110rem] px-4 pb-16">
+      <div className="lg:grid lg:grid-cols-[minmax(9rem,1fr)_minmax(0,48rem)_minmax(9rem,1fr)] lg:gap-8">
+        <div className="hidden lg:block" aria-hidden />
+        <div className="min-w-0">
       <header className="pt-10 pb-6">
         <h1 className="font-serif text-4xl tracking-tight text-foreground sm:text-5xl">
           Appearance
@@ -913,6 +1148,60 @@ export function AppearanceEditor() {
           unchanged.
         </p>
       </header>
+
+      <div className="mb-6 flex flex-wrap gap-2 lg:hidden">
+        <button
+          type="button"
+          onClick={() => jumpTo("body-type")}
+          className={
+            bodyTypeInsight.mismatch
+              ? "rounded-md border-2 border-red-500 bg-raised/80 px-3 py-2 text-sm font-medium text-red-500"
+              : sectionInView === "body-type"
+                ? "rounded-md border border-ember bg-ember/15 px-3 py-2 text-sm font-medium text-foreground"
+                : "rounded-md border border-line bg-raised/80 px-3 py-2 text-sm font-medium text-muted hover:border-ember/60 hover:text-foreground"
+          }
+        >
+          {bodyTypeInsight.mismatch ? "Error" : "Body type"}
+        </button>
+        <JumpButton
+          active={sectionInView === "properties"}
+          onClick={() => jumpTo("properties")}
+        >
+          Properties
+        </JumpButton>
+        <JumpButton
+          active={sectionInView === "equipment"}
+          onClick={() => jumpTo("equipment")}
+        >
+          Equipment
+        </JumpButton>
+        {csvRows.length > 0 ? (
+          <JumpButton
+            active={sectionInView === "csv"}
+            onClick={() => jumpTo("csv")}
+          >
+            CSV
+          </JumpButton>
+        ) : null}
+        <JumpButton
+          active={sectionInView === "tags"}
+          onClick={() => jumpTo("tags")}
+        >
+          Tags
+        </JumpButton>
+        <JumpButton
+          active={sectionInView === "wounds"}
+          onClick={() => jumpTo("wounds")}
+        >
+          Wounds
+        </JumpButton>
+        <JumpButton
+          active={sectionInView === "colors"}
+          onClick={() => jumpTo("colors")}
+        >
+          Colors
+        </JumpButton>
+      </div>
 
       <div className="mb-6 flex flex-wrap items-center gap-3 rounded-lg border border-line bg-raised/50 px-4 py-3">
         <span
@@ -955,6 +1244,72 @@ export function AppearanceEditor() {
         </div>
         <p className="mt-3 text-sm text-muted">{status}</p>
       </div>
+
+      <section
+        id="body-type"
+        data-section="body-type"
+        ref={bodyTypeRef}
+        className="mb-6 scroll-mt-6 rounded-lg border border-line bg-raised/40 px-4 py-4"
+      >
+        <h2 className="text-sm font-medium text-foreground">Body type</h2>
+        <p className="mt-1 text-xs text-muted">
+          Replaces Slim, Stk, or Buff in every loaded appearance name, CSV import
+          rows, and the Marker_AppearanceTag_* marker. Confirm with Apply. A
+          name with no matching record is highlighted.
+        </p>
+        {bodyTypeInsight.mismatch ? (
+          <p className="mt-2 text-xs font-medium text-red-500">
+            Mismatch across names/marker: {bodyTypeInsight.types.join(", ")}
+          </p>
+        ) : bodyTypeInsight.current ? (
+          <p className="mt-2 text-xs text-muted">
+            Current: {bodyTypeInsight.current}
+            {bodyMarkerName ? ` · marker ${bodyMarkerName}` : ""}
+          </p>
+        ) : (
+          <p className="mt-2 text-xs text-muted">
+            No Slim/Stk/Buff tokens found yet.
+          </p>
+        )}
+        <div className="mt-3 flex flex-wrap items-end gap-3">
+          <label className="block text-xs text-muted" htmlFor="body-type-select">
+            Swap to
+            <select
+              id="body-type-select"
+              value={pendingBodyType}
+              disabled={busy || (!loaded && csvRows.length === 0)}
+              onChange={(event) => {
+                const value = event.target.value;
+                setPendingBodyType(
+                  value === "Slim" || value === "Stk" || value === "Buff"
+                    ? value
+                    : "",
+                );
+              }}
+              className="mt-1 block w-40 rounded-md border border-line bg-raised px-3 py-2 text-sm text-foreground outline-none focus:border-ember disabled:opacity-50"
+            >
+              <option value="">Choose…</option>
+              {BODY_TYPES.map((type) => (
+                <option key={type} value={type}>
+                  {type}
+                </option>
+              ))}
+            </select>
+          </label>
+          <button
+            type="button"
+            disabled={
+              busy || !pendingBodyType || (!loaded && csvRows.length === 0)
+            }
+            onClick={() => {
+              if (pendingBodyType) void applyBodyType(pendingBodyType);
+            }}
+            className="rounded-md bg-ember px-3 py-2 text-sm font-medium text-ink transition-opacity hover:opacity-90 disabled:opacity-40"
+          >
+            Apply
+          </button>
+        </div>
+      </section>
 
       <section
         className={
@@ -1004,138 +1359,211 @@ export function AppearanceEditor() {
         </label>
       </section>
 
-      <section className="mb-6 rounded-lg border border-line bg-raised/40 px-4 py-4">
-        <label htmlFor="body-type" className="block text-sm font-medium text-foreground">
-          Body type
-        </label>
-        <p className="mt-1 text-xs text-muted">
-          Replaces Slim, Stk, or Buff in every loaded appearance name, and in a
-          CSV import when one is open. A name with no matching record is
-          highlighted.
-        </p>
-        <select
-          id="body-type"
-          value=""
-          disabled={busy || (!loaded && csvRows.length === 0)}
-          onChange={(event) => {
-            const value = event.target.value;
-            if (value === "Slim" || value === "Stk" || value === "Buff") {
-              void applyBodyType(value);
-            }
-          }}
-          className="mt-3 w-full max-w-xs rounded-md border border-line bg-raised px-3 py-2 text-sm text-foreground outline-none focus:border-ember disabled:opacity-50"
-        >
-          <option value="">Swap to…</option>
-          {BODY_TYPES.map((type) => (
-            <option key={type} value={type}>
-              {type}
-            </option>
-          ))}
-        </select>
-      </section>
-
       {csvRows.length > 0 ? (
-        <AppearanceCsvPanel
-          orcName={csvOrcName}
-          rows={csvRows}
-          disabled={busy || !loaded}
-          hint={
-            loaded
-              ? null
-              : "Refresh from Game before loading these into the editor."
-          }
-          onToggle={(key, selected) =>
-            setCsvRows((current) =>
-              current.map((row) => (row.key === key ? { ...row, selected } : row)),
-            )
-          }
-          onUncheckAll={() =>
-            setCsvRows((current) =>
-              current.map((row) => ({ ...row, selected: false })),
-            )
-          }
-          onLoad={loadCsvGroup}
-          onClearSection={(group) =>
-            setCsvRows((current) =>
-              current.map((row) =>
-                row.group === group || (group === "property" && row.group === "rarity")
-                  ? { ...row, selected: false }
-                  : row,
-              ),
-            )
-          }
-        />
+        <section
+          id="csv"
+          data-section="csv"
+          ref={csvRef}
+          className="mb-8 scroll-mt-6"
+        >
+          <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+            <button
+              type="button"
+              aria-expanded={csvOpen}
+              onClick={() => setCsvOpen((open) => !open)}
+              className="flex items-center gap-3 text-left font-serif text-3xl tracking-tight text-foreground hover:text-ember sm:text-4xl"
+            >
+              <span
+                className="inline-block text-[1.25em] leading-none text-muted"
+                aria-hidden
+              >
+                {csvOpen ? "▾" : "▸"}
+              </span>
+              CSV import
+              {csvOrcName ? (
+                <span className="font-sans text-sm tracking-normal text-muted">
+                  · {csvOrcName}
+                </span>
+              ) : null}
+            </button>
+            <button
+              type="button"
+              onClick={clearCsvImport}
+              className="rounded-md border border-line px-3 py-2 text-sm text-muted transition-colors hover:border-ember/60 hover:text-foreground"
+            >
+              Clear
+            </button>
+          </div>
+          {csvOpen ? (
+            <AppearanceCsvPanel
+              orcName={csvOrcName}
+              rows={csvRows}
+              disabled={busy || !loaded}
+              hideTitle
+              hint={
+                loaded
+                  ? null
+                  : "Refresh from Game before loading these into the editor."
+              }
+              onToggle={(key, selected) =>
+                setCsvRows((current) =>
+                  current.map((row) =>
+                    row.key === key ? { ...row, selected } : row,
+                  ),
+                )
+              }
+              onUncheckAll={() =>
+                setCsvRows((current) =>
+                  current.map((row) => ({ ...row, selected: false })),
+                )
+              }
+              onLoad={loadCsvGroup}
+              onClearSection={(group) =>
+                setCsvRows((current) =>
+                  current.map((row) =>
+                    row.group === group ||
+                    (group === "property" && row.group === "rarity")
+                      ? { ...row, selected: false }
+                      : row,
+                  ),
+                )
+              }
+            />
+          ) : null}
+        </section>
       ) : null}
 
-      <section className="mb-10">
-        <h2 className="font-serif text-3xl text-foreground">Additional Properties</h2>
-        <div className="mt-4 flex flex-col gap-3">
-          {propertyFields.map((field) => {
-            const value = fieldValue(field);
-            const locked = appearanceFieldLocked(field.id);
-            const open = !locked && search?.kind === "field" && search.id === field.id;
-            return (
-              <div key={field.id}>
-                <PointerRow
-                  label={field.label}
-                  listId={field.listId}
-                  value={value}
-                  error={value.error}
-                  disabled={!loaded || busy}
-                  locked={locked}
-                  searching={open}
-                  onChange={() => openSearch({ kind: "field", id: field.id })}
-                  onClear={() => setField(field.id, { name: null, address: "0x0" })}
-                />
-                {open ? (
-                  <CatalogSearch
-                    items={activeCatalog}
-                    total={activeCatalog.length}
-                    missing={missingLists.includes(field.listId)}
-                    query={query}
-                    onQueryChange={setQuery}
-                    onPick={pick}
-                    onClose={() => setSearch(null)}
-                    placeholder={`Search ${field.label}…`}
+      <section
+        id="properties"
+        data-section="properties"
+        ref={propertiesRef}
+        className="mb-10 scroll-mt-6"
+      >
+        <button
+          type="button"
+          aria-expanded={propertiesOpen}
+          onClick={() => setPropertiesOpen((open) => !open)}
+          className="flex items-center gap-3 text-left font-serif text-3xl tracking-tight text-foreground hover:text-ember sm:text-4xl"
+        >
+          <span
+            className="inline-block text-[1.25em] leading-none text-muted"
+            aria-hidden
+          >
+            {propertiesOpen ? "▾" : "▸"}
+          </span>
+          Additional Properties
+        </button>
+        {propertiesOpen ? (
+          <div className="mt-4 flex flex-col gap-3">
+            {propertyFields.map((field) => {
+              const value = fieldValue(field);
+              const locked = appearanceFieldLocked(field.id);
+              const open =
+                !locked && search?.kind === "field" && search.id === field.id;
+              return (
+                <div key={field.id}>
+                  <PointerRow
+                    label={field.label}
+                    listId={field.listId}
+                    value={value}
+                    error={value.error}
+                    disabled={!loaded || busy}
+                    locked={locked}
+                    searching={open}
+                    onChange={() => openSearch({ kind: "field", id: field.id })}
+                    onClear={() =>
+                      setField(field.id, { name: null, address: "0x0" })
+                    }
                   />
-                ) : null}
-              </div>
-            );
-          })}
-          <label className="rounded-lg border border-line bg-raised/40 px-3 py-3">
-            <span className="text-sm font-medium text-foreground">
-              Orc Rarity (visual)
-            </span>
-            <span className="mt-1 block font-mono text-[11px] text-muted">
-              String on the orc, not a dropdown
-            </span>
-            <input
-              value={rarity}
-              disabled={!loaded || busy}
-              maxLength={63}
-              onChange={(event) => setRarity(event.target.value)}
-              className="mt-2 w-full rounded-md border border-line bg-raised px-3 py-2 font-mono text-sm text-foreground outline-none focus:border-ember disabled:opacity-50"
-            />
-            {rarityError ? (
-              <span className="mt-1 block text-xs text-ember">{rarityError}</span>
-            ) : null}
-          </label>
-        </div>
+                  {open ? (
+                    <CatalogSearch
+                      items={activeCatalog}
+                      total={activeCatalog.length}
+                      missing={missingLists.includes(field.listId)}
+                      query={query}
+                      onQueryChange={setQuery}
+                      onPick={pick}
+                      onClose={() => setSearch(null)}
+                      placeholder={`Search ${field.label}…`}
+                    />
+                  ) : null}
+                </div>
+              );
+            })}
+            <label className="rounded-lg border border-line bg-raised/40 px-3 py-3">
+              <span className="text-sm font-medium text-foreground">
+                Orc Rarity (visual)
+              </span>
+              <span className="mt-1 block font-mono text-[11px] text-muted">
+                String on the orc, not a dropdown
+              </span>
+              <input
+                value={rarity}
+                disabled={!loaded || busy}
+                maxLength={63}
+                onChange={(event) => setRarity(event.target.value)}
+                className="mt-2 w-full rounded-md border border-line bg-raised px-3 py-2 font-mono text-sm text-foreground outline-none focus:border-ember disabled:opacity-50"
+              />
+              {rarityError ? (
+                <span className="mt-1 block text-xs text-ember">{rarityError}</span>
+              ) : null}
+            </label>
+          </div>
+        ) : null}
       </section>
 
-      <section>
-        <h2 className="font-serif text-3xl text-foreground">Equipment / Looks</h2>
+      <section
+        id="equipment"
+        data-section="equipment"
+        ref={equipmentRef}
+        className="scroll-mt-6"
+      >
+        <button
+          type="button"
+          aria-expanded={equipmentOpen}
+          onClick={() => setEquipmentOpen((open) => !open)}
+          className="flex items-center gap-3 text-left font-serif text-3xl tracking-tight text-foreground hover:text-ember sm:text-4xl"
+        >
+          <span
+            className="inline-block text-[1.25em] leading-none text-muted"
+            aria-hidden
+          >
+            {equipmentOpen ? "▾" : "▸"}
+          </span>
+          Equipment / Looks
+        </button>
 
-        <div className="mt-6">
+        {equipmentOpen ? (
+          <>
+        <section
+          id="tags"
+          data-section="tags"
+          ref={tagsRef}
+          className="mt-6 scroll-mt-6"
+        >
           <div className="mb-3 flex flex-wrap items-end justify-between gap-2">
-            <div>
-              <h3 className="text-lg font-medium text-foreground">Tags</h3>
-              <p className="font-mono text-[11px] text-muted">{TAG_LIST_ID}</p>
-            </div>
+            <button
+              type="button"
+              aria-expanded={tagsOpen}
+              onClick={() => setTagsOpen((open) => !open)}
+              className="flex items-center gap-2 text-left text-lg font-medium text-foreground hover:text-ember"
+            >
+              <span className="text-base leading-none text-muted" aria-hidden>
+                {tagsOpen ? "▾" : "▸"}
+              </span>
+              <span>
+                Tags
+                <span className="mt-0.5 block font-mono text-[11px] font-normal text-muted">
+                  {TAG_LIST_ID}
+                </span>
+              </span>
+            </button>
             <p className="text-sm text-muted">
               {tags.length} / {tagCapacity}
             </p>
           </div>
+          {tagsOpen ? (
+            <>
           {tagError ? <p className="mb-2 text-sm text-ember">{tagError}</p> : null}
           <ReorderList
             slots={tags}
@@ -1197,18 +1625,39 @@ export function AppearanceEditor() {
               placeholder="Search tags…"
             />
           ) : null}
-        </div>
+            </>
+          ) : null}
+        </section>
 
-        <div className="mt-8">
+        <section
+          id="wounds"
+          data-section="wounds"
+          ref={woundsRef}
+          className="mt-8 scroll-mt-6"
+        >
           <div className="mb-3 flex flex-wrap items-end justify-between gap-2">
-            <div>
-              <h3 className="text-lg font-medium text-foreground">Wounds</h3>
-              <p className="font-mono text-[11px] text-muted">{WOUND_LIST_ID}</p>
-            </div>
+            <button
+              type="button"
+              aria-expanded={woundsOpen}
+              onClick={() => setWoundsOpen((open) => !open)}
+              className="flex items-center gap-2 text-left text-lg font-medium text-foreground hover:text-ember"
+            >
+              <span className="text-base leading-none text-muted" aria-hidden>
+                {woundsOpen ? "▾" : "▸"}
+              </span>
+              <span>
+                Wounds
+                <span className="mt-0.5 block font-mono text-[11px] font-normal text-muted">
+                  {WOUND_LIST_ID}
+                </span>
+              </span>
+            </button>
             <p className="text-sm text-muted">
               {wounds.length} / {woundCapacity}
             </p>
           </div>
+          {woundsOpen ? (
+            <>
           {woundError ? <p className="mb-2 text-sm text-ember">{woundError}</p> : null}
           <ReorderList
             slots={wounds}
@@ -1274,10 +1723,29 @@ export function AppearanceEditor() {
               placeholder="Search wounds…"
             />
           ) : null}
-        </div>
+            </>
+          ) : null}
+        </section>
 
-        <div className="mt-8">
-          <h3 className="text-lg font-medium text-foreground">Colors</h3>
+        <section
+          id="colors"
+          data-section="colors"
+          ref={colorsRef}
+          className="mt-8 scroll-mt-6"
+        >
+          <button
+            type="button"
+            aria-expanded={colorsOpen}
+            onClick={() => setColorsOpen((open) => !open)}
+            className="flex items-center gap-2 text-left text-lg font-medium text-foreground hover:text-ember"
+          >
+            <span className="text-base leading-none text-muted" aria-hidden>
+              {colorsOpen ? "▾" : "▸"}
+            </span>
+            Colors
+          </button>
+          {colorsOpen ? (
+            <>
           <p className="mt-1 text-sm text-muted">
             Each swatch writes an ARGB hex value, alpha first, such as FF6DA9E8.
             The unnamed rows keep the cheat table&apos;s &quot;? color&quot; labels
@@ -1349,7 +1817,9 @@ export function AppearanceEditor() {
               );
             })}
           </div>
-        </div>
+            </>
+          ) : null}
+        </section>
 
         <div className="mt-8">
           <h3 className="text-lg font-medium text-foreground">Equipment slots</h3>
@@ -1399,7 +1869,182 @@ export function AppearanceEditor() {
             })}
           </div>
         </div>
+          </>
+        ) : null}
       </section>
+        </div>
+        <div className="hidden lg:block" aria-hidden />
+      </div>
+
+      <div className="pointer-events-none fixed inset-x-0 top-0 z-20 hidden h-dvh lg:block">
+        <div className="mx-auto grid h-full max-w-[110rem] grid-cols-[minmax(9rem,1fr)_minmax(0,48rem)_minmax(9rem,1fr)] gap-8 px-4">
+          <div className="flex items-center justify-end">
+            <div className="pointer-events-auto mr-[20%] flex flex-col gap-0">
+              <BodyTypeNavControl
+                insight={bodyTypeInsight}
+                pending={pendingBodyType}
+                menuOpen={bodyMenuOpen}
+                busy={busy}
+                disabled={busy || (!loaded && csvRows.length === 0)}
+                menuRef={bodyMenuRef}
+                onToggleMenu={() => setBodyMenuOpen((open) => !open)}
+                onPendingChange={setPendingBodyType}
+                onApply={() => {
+                  if (pendingBodyType) void applyBodyType(pendingBodyType);
+                }}
+                onJump={() => jumpTo("body-type")}
+              />
+              <JumpButton
+                active={sectionInView === "properties"}
+                onClick={() => jumpTo("properties")}
+              >
+                Properties
+              </JumpButton>
+              <JumpButton
+                active={sectionInView === "equipment"}
+                onClick={() => jumpTo("equipment")}
+              >
+                Equipment
+              </JumpButton>
+              {csvRows.length > 0 ? (
+                <JumpButton
+                  active={sectionInView === "csv"}
+                  onClick={() => jumpTo("csv")}
+                >
+                  CSV
+                </JumpButton>
+              ) : null}
+              <JumpButton
+                active={sectionInView === "tags"}
+                onClick={() => jumpTo("tags")}
+              >
+                Tags
+              </JumpButton>
+              <JumpButton
+                active={sectionInView === "wounds"}
+                onClick={() => jumpTo("wounds")}
+              >
+                Wounds
+              </JumpButton>
+              <JumpButton
+                active={sectionInView === "colors"}
+                onClick={() => jumpTo("colors")}
+              >
+                Colors
+              </JumpButton>
+            </div>
+          </div>
+          <div />
+          <div />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function JumpButton({
+  active,
+  onClick,
+  children,
+}: {
+  active: boolean;
+  onClick: () => void;
+  children: string;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={
+        active
+          ? "my-[5px] rounded-md border border-ember bg-ember/15 px-3 py-2 text-sm font-medium text-foreground"
+          : "my-[5px] rounded-md border border-line bg-raised/80 px-3 py-2 text-sm font-medium text-muted hover:border-ember/60 hover:text-foreground"
+      }
+    >
+      {children}
+    </button>
+  );
+}
+
+function BodyTypeNavControl({
+  insight,
+  pending,
+  menuOpen,
+  busy,
+  disabled,
+  menuRef,
+  onToggleMenu,
+  onPendingChange,
+  onApply,
+  onJump,
+}: {
+  insight: {
+    types: BodyType[];
+    mismatch: boolean;
+    current: BodyType | null;
+  };
+  pending: BodyType | "";
+  menuOpen: boolean;
+  busy: boolean;
+  disabled: boolean;
+  menuRef: RefObject<HTMLDivElement | null>;
+  onToggleMenu: () => void;
+  onPendingChange: (value: BodyType | "") => void;
+  onApply: () => void;
+  onJump: () => void;
+}) {
+  return (
+    <div ref={menuRef} className="relative my-[5px]">
+      <button
+        type="button"
+        aria-expanded={menuOpen}
+        onClick={() => {
+          onJump();
+          onToggleMenu();
+        }}
+        className={
+          insight.mismatch
+            ? "rounded-md border-2 border-red-500 bg-raised/80 px-3 py-2 text-sm font-medium text-red-500"
+            : "rounded-md border border-line bg-raised/80 px-3 py-2 text-sm font-medium text-muted hover:border-ember/60 hover:text-foreground"
+        }
+      >
+        {insight.mismatch ? "Error" : "Body type"}
+      </button>
+      {menuOpen ? (
+        <div className="absolute top-full left-0 z-50 mt-2 w-44 rounded-md border border-line bg-raised p-3 shadow-lg">
+          <label className="block text-xs text-muted">
+            Swap to
+            <select
+              value={pending}
+              disabled={disabled}
+              onChange={(event) => {
+                const value = event.target.value;
+                onPendingChange(
+                  value === "Slim" || value === "Stk" || value === "Buff"
+                    ? value
+                    : "",
+                );
+              }}
+              className="mt-1 w-full rounded-md border border-line bg-background px-2 py-1.5 text-sm text-foreground outline-none focus:border-ember disabled:opacity-50"
+            >
+              <option value="">Choose…</option>
+              {BODY_TYPES.map((type) => (
+                <option key={type} value={type}>
+                  {type}
+                </option>
+              ))}
+            </select>
+          </label>
+          <button
+            type="button"
+            disabled={busy || disabled || !pending}
+            onClick={onApply}
+            className="mt-2 w-full rounded-md bg-ember px-2 py-1.5 text-sm font-medium text-ink transition-opacity hover:opacity-90 disabled:opacity-40"
+          >
+            Apply
+          </button>
+        </div>
+      ) : null}
     </div>
   );
 }
@@ -1583,6 +2228,7 @@ function AppearanceCsvPanel({
   rows,
   disabled,
   hint,
+  hideTitle = false,
   onToggle,
   onUncheckAll,
   onLoad,
@@ -1592,6 +2238,7 @@ function AppearanceCsvPanel({
   rows: AppearanceCsvRow[];
   disabled: boolean;
   hint: string | null;
+  hideTitle?: boolean;
   onToggle: (key: string, selected: boolean) => void;
   onUncheckAll: () => void;
   onLoad: (group: CsvGroupId, mode?: "replace" | "append") => void;
@@ -1600,11 +2247,15 @@ function AppearanceCsvPanel({
   const [open, setOpen] = useState<Partial<Record<CsvGroupId, boolean>>>({});
 
   return (
-    <div className="mb-8 rounded-lg border border-line bg-raised/40 px-4 py-4">
+    <div className="rounded-lg border border-line bg-raised/40 px-4 py-4">
       <div className="flex flex-wrap items-start justify-between gap-2">
-        <p className="text-sm font-medium text-foreground">
-          CSV import{orcName ? ` · ${orcName}` : ""}
-        </p>
+        {hideTitle ? (
+          <p className="text-xs text-muted">Import selections</p>
+        ) : (
+          <p className="text-sm font-medium text-foreground">
+            CSV import{orcName ? ` · ${orcName}` : ""}
+          </p>
+        )}
         <button type="button" className={buttonClass} onClick={onUncheckAll}>
           Uncheck all
         </button>

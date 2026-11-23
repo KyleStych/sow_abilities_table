@@ -25,6 +25,14 @@ import {
   type CeHealth,
   type CeTraitsResponse,
 } from "@/lib/ce-bridge";
+import {
+  ELEMENT_TYPES,
+  ElementType,
+  TEAM_DAMAGE_BOOST_BY_ELEMENT,
+  elementFromName,
+  needsExploitedBoostConfirm,
+  swapElementName,
+} from "@/lib/element";
 import { parseOrcCsv, type OrcCsvAbilityRow } from "@/lib/orc-csv";
 import { displayValue, readableLabel, traitLinkClass, traitRoles } from "@/lib/traits";
 import type { Trait } from "@/types/trait";
@@ -521,6 +529,35 @@ function useAbilityEditor({
     setInsertAt(null);
   }
 
+  function remapElements(target: ElementType) {
+    let updated = 0;
+    const misses: string[] = [];
+    const next = slots.map((slot) => {
+      if (!slot.name) return slot;
+      const renamed = swapElementName(slot.name, target);
+      if (!renamed) return slot;
+      updated += 1;
+      const found = catalog.find((item) => item.name === renamed);
+      if (!found) {
+        misses.push(renamed);
+        return {
+          ...slot,
+          name: renamed,
+          address: "0x0",
+          title: enrichTitle(renamed, byPicker),
+        };
+      }
+      return {
+        ...slot,
+        name: found.name,
+        address: found.address,
+        title: enrichTitle(found.name, byPicker),
+      };
+    });
+    if (updated > 0) setSlots(next);
+    return { updated, misses };
+  }
+
   function importSelection(
     rows: CsvImportRow[],
     mode: "replace" | "append",
@@ -600,6 +637,7 @@ function useAbilityEditor({
     updateInsertFromPoint,
     commitDrop,
     importSelection,
+    remapElements,
   };
 }
 
@@ -649,11 +687,69 @@ export function TraitManager({ traits }: TraitManagerProps) {
   const [pickerCsv, setPickerCsv] = useState<CsvImportRow[]>([]);
   const [csvOrcName, setCsvOrcName] = useState<string | null>(null);
   const [csvDragOver, setCsvDragOver] = useState(false);
+  const [pendingElement, setPendingElement] = useState<ElementType | "">("");
+  const [elementMenuOpen, setElementMenuOpen] = useState(false);
+  const [elementConfirm, setElementConfirm] = useState<{
+    target: ElementType;
+    fromNames: string[];
+  } | null>(null);
 
   const markersRef = useRef<HTMLElement>(null);
   const pickersRef = useRef<HTMLElement>(null);
+  const elementMenuRef = useRef<HTMLDivElement>(null);
   const viewLock = useRef<SectionId | null>(null);
   const visibleHeight = useRef({ markers: 0, pickers: 0 });
+
+  const elementInsight = useMemo(() => {
+    const found = new Set<ElementType>();
+    const note = (name: string | null | undefined) => {
+      const type = elementFromName(name);
+      if (type) found.add(type);
+    };
+    for (const slot of markers.slots) note(slot.name);
+    for (const slot of pickers.slots) note(slot.name);
+    for (const row of markerCsv) note(row.name);
+    for (const row of pickerCsv) note(row.name);
+    const types = ELEMENT_TYPES.filter((type) => found.has(type));
+    return {
+      types,
+      mismatch: types.length > 1,
+      current: types.length === 1 ? types[0] : null,
+    };
+  }, [markerCsv, markers.slots, pickerCsv, pickers.slots]);
+
+  useEffect(() => {
+    if (!elementMenuOpen) return;
+    function onPointerDown(event: globalThis.MouseEvent) {
+      if (!elementMenuRef.current?.contains(event.target as Node)) {
+        setElementMenuOpen(false);
+      }
+    }
+    function onKey(event: globalThis.KeyboardEvent) {
+      if (event.key === "Escape") setElementMenuOpen(false);
+    }
+    document.addEventListener("mousedown", onPointerDown);
+    document.addEventListener("keydown", onKey);
+    return () => {
+      document.removeEventListener("mousedown", onPointerDown);
+      document.removeEventListener("keydown", onKey);
+    };
+  }, [elementMenuOpen]);
+
+  useEffect(() => {
+    if (!elementConfirm) return;
+    function onKey(event: globalThis.KeyboardEvent) {
+      if (event.key === "Escape") setElementConfirm(null);
+    }
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, [elementConfirm]);
+
+  useEffect(() => {
+    if (elementInsight.current && !pendingElement) {
+      setPendingElement(elementInsight.current);
+    }
+  }, [elementInsight.current, pendingElement]);
 
   const refreshHealth = useCallback(async () => {
     const { data, error } = await getHealth();
@@ -714,6 +810,7 @@ export function TraitManager({ traits }: TraitManagerProps) {
     await refreshHealth();
     const markerResult = await markers.refreshFromGame();
     const pickerResult = await pickers.refreshFromGame();
+    setPendingElement("");
     const markerMessage = /not found/i.test(markerResult.message)
       ? "Markers: re-run src/helpers/ce_bridge.lua in Cheat Engine, then refresh again."
       : markerResult.message;
@@ -747,6 +844,103 @@ export function TraitManager({ traits }: TraitManagerProps) {
     }
     await refreshHealth();
     setBusy(false);
+  }
+
+  function remapCsvRows(
+    rows: CsvImportRow[],
+    catalog: CeCatalogTrait[],
+    target: ElementType,
+  ) {
+    let updated = 0;
+    const misses: string[] = [];
+    const byName = new Map(catalog.map((item) => [item.name, item]));
+    const next = rows.map((row) => {
+      const renamed = swapElementName(row.name, target);
+      if (!renamed) return row;
+      updated += 1;
+      const live = byName.get(renamed);
+      if (!live) {
+        misses.push(renamed);
+        return {
+          ...row,
+          name: renamed,
+          title: enrichTitle(renamed, byPicker),
+          address: null,
+          selected: false,
+          unresolved: true,
+        };
+      }
+      return {
+        ...row,
+        name: live.name,
+        title: enrichTitle(live.name, byPicker),
+        address: live.address,
+        selected: true,
+        unresolved: false,
+      };
+    });
+    return { rows: next, updated, misses };
+  }
+
+  function commitElementType(target: ElementType) {
+    const markerResult = markers.remapElements(target);
+    const pickerResult = pickers.remapElements(target);
+    const markerCsvResult = remapCsvRows(markerCsv, markers.catalog, target);
+    const pickerCsvResult = remapCsvRows(pickerCsv, pickers.catalog, target);
+    if (markerCsvResult.updated > 0) setMarkerCsv(markerCsvResult.rows);
+    if (pickerCsvResult.updated > 0) setPickerCsv(pickerCsvResult.rows);
+
+    const updated =
+      markerResult.updated +
+      pickerResult.updated +
+      markerCsvResult.updated +
+      pickerCsvResult.updated;
+    const misses = [
+      ...markerResult.misses,
+      ...pickerResult.misses,
+      ...markerCsvResult.misses,
+      ...pickerCsvResult.misses,
+    ];
+    setPendingElement(target);
+    setElementMenuOpen(false);
+    setElementConfirm(null);
+    if (updated === 0) {
+      setStatus(`No Curse, Fire, or Poison names to change to ${target}.`);
+      return;
+    }
+    const missNote =
+      misses.length === 0
+        ? ""
+        : ` ${misses.length} name${misses.length === 1 ? "" : "s"} missing from the live catalog: ${misses.slice(0, 4).join("; ")}${misses.length > 4 ? `; and ${misses.length - 4} more` : ""}. Apply to Game rejects unknown names.`;
+    setStatus(
+      `Set element to ${target}. Updated ${updated} name${updated === 1 ? "" : "s"}.${missNote}`,
+    );
+  }
+
+  function applyElementType(target: ElementType) {
+    const confirmFrom = new Set<string>();
+    for (const slot of markers.slots) {
+      if (slot.name && needsExploitedBoostConfirm(slot.name, target)) {
+        confirmFrom.add(slot.name);
+      }
+    }
+    for (const slot of pickers.slots) {
+      if (slot.name && needsExploitedBoostConfirm(slot.name, target)) {
+        confirmFrom.add(slot.name);
+      }
+    }
+    for (const row of markerCsv) {
+      if (needsExploitedBoostConfirm(row.name, target)) confirmFrom.add(row.name);
+    }
+    for (const row of pickerCsv) {
+      if (needsExploitedBoostConfirm(row.name, target)) confirmFrom.add(row.name);
+    }
+    if (confirmFrom.size > 0) {
+      setElementMenuOpen(false);
+      setElementConfirm({ target, fromNames: [...confirmFrom] });
+      return;
+    }
+    commitElementType(target);
   }
 
   function buildCsvRows(
@@ -898,7 +1092,22 @@ export function TraitManager({ traits }: TraitManagerProps) {
             </div>
           </div>
 
-          <div className="mb-6 flex gap-2 lg:hidden">
+          <div className="mb-6 flex flex-wrap gap-2 lg:hidden">
+            <button
+              type="button"
+              onClick={() =>
+                document
+                  .getElementById("element-type")
+                  ?.scrollIntoView({ behavior: "smooth", block: "start" })
+              }
+              className={
+                elementInsight.mismatch
+                  ? "rounded-md border-2 border-red-500 bg-raised/80 px-3 py-2 text-sm font-medium text-red-500"
+                  : "rounded-md border border-line bg-raised/80 px-3 py-2 text-sm font-medium text-muted hover:border-ember/60 hover:text-foreground"
+              }
+            >
+              {elementInsight.mismatch ? "Error" : "Element"}
+            </button>
             <JumpButton
               active={sectionInView === "markers"}
               onClick={() => jumpTo("markers")}
@@ -912,6 +1121,85 @@ export function TraitManager({ traits }: TraitManagerProps) {
               Pickers
             </JumpButton>
           </div>
+
+          <section
+            id="element-type"
+            className="mb-6 scroll-mt-6 rounded-lg border border-line bg-raised/40 px-4 py-4"
+          >
+            <h2 className="text-sm font-medium text-foreground">Element</h2>
+            <p className="mt-1 text-xs text-muted">
+              Swaps Curse, Fire, and Poison across marker and picker names (and
+              CSV rows). Team Damage Boost uses Exploited for Curse, OnFire for
+              Fire, and Poisoned for Poison.
+            </p>
+            {elementInsight.mismatch ? (
+              <p className="mt-2 text-xs font-medium text-red-500">
+                Mismatch across names: {elementInsight.types.join(", ")}
+              </p>
+            ) : elementInsight.current ? (
+              <p className="mt-2 text-xs text-muted">
+                Current: {elementInsight.current}
+              </p>
+            ) : (
+              <p className="mt-2 text-xs text-muted">
+                No Curse/Fire/Poison names found yet.
+              </p>
+            )}
+            <div className="mt-3 flex flex-wrap items-end gap-3">
+              <label
+                className="block text-xs text-muted"
+                htmlFor="element-type-select"
+              >
+                Swap to
+                <select
+                  id="element-type-select"
+                  value={pendingElement}
+                  disabled={
+                    busy ||
+                    (markers.slots.length === 0 &&
+                      pickers.slots.length === 0 &&
+                      markerCsv.length === 0 &&
+                      pickerCsv.length === 0)
+                  }
+                  onChange={(event) => {
+                    const value = event.target.value;
+                    setPendingElement(
+                      value === "Curse" ||
+                        value === "Fire" ||
+                        value === "Poison"
+                        ? value
+                        : "",
+                    );
+                  }}
+                  className="mt-1 block w-40 rounded-md border border-line bg-raised px-3 py-2 text-sm text-foreground outline-none focus:border-ember disabled:opacity-50"
+                >
+                  <option value="">Choose…</option>
+                  {ELEMENT_TYPES.map((type) => (
+                    <option key={type} value={type}>
+                      {type}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <button
+                type="button"
+                disabled={
+                  busy ||
+                  !pendingElement ||
+                  (markers.slots.length === 0 &&
+                    pickers.slots.length === 0 &&
+                    markerCsv.length === 0 &&
+                    pickerCsv.length === 0)
+                }
+                onClick={() => {
+                  if (pendingElement) applyElementType(pendingElement);
+                }}
+                className="rounded-md bg-ember px-3 py-2 text-sm font-medium text-ink transition-opacity hover:opacity-90 disabled:opacity-40"
+              >
+                Apply
+              </button>
+            </div>
+          </section>
 
           <section
             className={
@@ -1015,7 +1303,26 @@ export function TraitManager({ traits }: TraitManagerProps) {
       <div className="pointer-events-none fixed inset-x-0 top-0 z-20 hidden h-dvh lg:block">
         <div className="mx-auto grid h-full max-w-[110rem] grid-cols-[minmax(9rem,1fr)_minmax(0,48rem)_minmax(18rem,24rem)] gap-8 px-4">
           <div className="flex items-center justify-end">
-            <div className="pointer-events-auto mr-[30%] flex flex-col gap-2">
+            <div className="pointer-events-auto mr-[30%] flex flex-col gap-0">
+              <ElementNavControl
+                mismatch={elementInsight.mismatch}
+                pending={pendingElement}
+                menuOpen={elementMenuOpen}
+                busy={busy}
+                disabled={
+                  busy ||
+                  (markers.slots.length === 0 &&
+                    pickers.slots.length === 0 &&
+                    markerCsv.length === 0 &&
+                    pickerCsv.length === 0)
+                }
+                menuRef={elementMenuRef}
+                onToggleMenu={() => setElementMenuOpen((open) => !open)}
+                onPendingChange={setPendingElement}
+                onApply={() => {
+                  if (pendingElement) applyElementType(pendingElement);
+                }}
+              />
               <JumpButton
                 active={sectionInView === "markers"}
                 onClick={() => jumpTo("markers")}
@@ -1045,6 +1352,61 @@ export function TraitManager({ traits }: TraitManagerProps) {
           </aside>
         </div>
       </div>
+
+      {elementConfirm ? (
+        <div
+          className="fixed inset-0 z-[100] flex items-center justify-center bg-black/70 p-4"
+          role="presentation"
+          onClick={() => setElementConfirm(null)}
+        >
+          <div
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="element-confirm-title"
+            className="w-full max-w-md rounded-lg border border-line bg-raised p-6 shadow-2xl"
+            onClick={(event) => event.stopPropagation()}
+          >
+            <h2
+              id="element-confirm-title"
+              className="font-serif text-2xl tracking-tight text-foreground"
+            >
+              Confirm Team Damage Boost swap
+            </h2>
+            <p className="mt-3 text-sm leading-relaxed text-muted">
+              Curse uses a different Team Damage Boost name. Confirm swapping
+              {elementConfirm.fromNames.length === 1 ? " this picker" : " these pickers"}{" "}
+              for{" "}
+              <span className="font-mono text-foreground">
+                {TEAM_DAMAGE_BOOST_BY_ELEMENT.Curse}
+              </span>
+              :
+            </p>
+            <ul className="mt-4 space-y-2 rounded-md border border-line bg-ink/40 px-3 py-3">
+              {elementConfirm.fromNames.map((name) => (
+                <li key={name} className="font-mono text-xs break-all text-foreground">
+                  {name}
+                </li>
+              ))}
+            </ul>
+            <div className="mt-6 flex flex-wrap justify-end gap-2">
+              <button
+                type="button"
+                onClick={() => setElementConfirm(null)}
+                className="rounded-md border border-line bg-raised px-3 py-2 text-sm font-medium text-muted transition-colors hover:border-ember/60 hover:text-foreground"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={() => commitElementType(elementConfirm.target)}
+                className="rounded-md bg-ember px-3 py-2 text-sm font-medium text-ink transition-opacity hover:opacity-90"
+              >
+                Confirm swap
+              </button>
+            </div>
+          </div>
+        </div>
+      ) : null}
     </div>
   );
 }
@@ -1064,12 +1426,91 @@ function JumpButton({
       onClick={onClick}
       className={
         active
-          ? "rounded-md border border-ember bg-ember/15 px-3 py-2 text-sm font-medium text-foreground"
-          : "rounded-md border border-line bg-raised/80 px-3 py-2 text-sm font-medium text-muted hover:border-ember/60 hover:text-foreground"
+          ? "my-[5px] rounded-md border border-ember bg-ember/15 px-3 py-2 text-sm font-medium text-foreground"
+          : "my-[5px] rounded-md border border-line bg-raised/80 px-3 py-2 text-sm font-medium text-muted hover:border-ember/60 hover:text-foreground"
       }
     >
       {children}
     </button>
+  );
+}
+
+function ElementNavControl({
+  mismatch,
+  pending,
+  menuOpen,
+  busy,
+  disabled,
+  menuRef,
+  onToggleMenu,
+  onPendingChange,
+  onApply,
+}: {
+  mismatch: boolean;
+  pending: ElementType | "";
+  menuOpen: boolean;
+  busy: boolean;
+  disabled: boolean;
+  menuRef: RefObject<HTMLDivElement | null>;
+  onToggleMenu: () => void;
+  onPendingChange: (value: ElementType | "") => void;
+  onApply: () => void;
+}) {
+  return (
+    <div ref={menuRef} className="relative my-[5px]">
+      <button
+        type="button"
+        aria-expanded={menuOpen}
+        onClick={() => {
+          document
+            .getElementById("element-type")
+            ?.scrollIntoView({ behavior: "smooth", block: "start" });
+          onToggleMenu();
+        }}
+        className={
+          mismatch
+            ? "rounded-md border-2 border-red-500 bg-raised/80 px-3 py-2 text-sm font-medium text-red-500"
+            : "rounded-md border border-line bg-raised/80 px-3 py-2 text-sm font-medium text-muted hover:border-ember/60 hover:text-foreground"
+        }
+      >
+        {mismatch ? "Error" : "Element"}
+      </button>
+      {menuOpen ? (
+        <div className="absolute top-full left-0 z-50 mt-2 w-44 rounded-md border border-line bg-raised p-3 shadow-lg">
+          <label className="block text-xs text-muted">
+            Swap to
+            <select
+              value={pending}
+              disabled={disabled}
+              onChange={(event) => {
+                const value = event.target.value;
+                onPendingChange(
+                  value === "Curse" || value === "Fire" || value === "Poison"
+                    ? value
+                    : "",
+                );
+              }}
+              className="mt-1 w-full rounded-md border border-line bg-background px-2 py-1.5 text-sm text-foreground outline-none focus:border-ember disabled:opacity-50"
+            >
+              <option value="">Choose…</option>
+              {ELEMENT_TYPES.map((type) => (
+                <option key={type} value={type}>
+                  {type}
+                </option>
+              ))}
+            </select>
+          </label>
+          <button
+            type="button"
+            disabled={busy || disabled || !pending}
+            onClick={onApply}
+            className="mt-2 w-full rounded-md bg-ember px-2 py-1.5 text-sm font-medium text-ink transition-opacity hover:opacity-90 disabled:opacity-40"
+          >
+            Apply
+          </button>
+        </div>
+      ) : null}
+    </div>
   );
 }
 

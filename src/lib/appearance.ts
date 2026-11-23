@@ -272,13 +272,37 @@ export const WOUND_LIST_ID = "Inventory/Items";
 export const BODY_TYPES = ["Slim", "Stk", "Buff"] as const;
 export type BodyType = (typeof BODY_TYPES)[number];
 
+/** Marker ability that records the orc's appearance body tag. */
+export const BODY_APPEARANCE_MARKER_PREFIX = "Marker_AppearanceTag_";
+
 const BODY_TYPE_TOKEN = /(^|_)(Slim|Stk|Buff)(?=_|$)/;
+const BODY_APPEARANCE_MARKER_RE =
+  /^Marker_AppearanceTag_(Slim|Stk|Buff)$/;
 
 /** Replace Slim, Stk, or Buff tokens. Returns null when the name does not change. */
 export function swapBodyTypeName(name: string, target: BodyType): string | null {
   if (!BODY_TYPE_TOKEN.test(name)) return null;
   const next = name.replace(new RegExp(BODY_TYPE_TOKEN.source, "g"), `$1${target}`);
   return next === name ? null : next;
+}
+
+/** First Slim/Stk/Buff token in a name, if any. */
+export function bodyTypeFromName(
+  name: string | null | undefined,
+): BodyType | null {
+  if (!name) return null;
+  const match = name.match(BODY_TYPE_TOKEN);
+  return match ? (match[2] as BodyType) : null;
+}
+
+export function isBodyAppearanceMarker(
+  name: string | null | undefined,
+): name is string {
+  return Boolean(name && BODY_APPEARANCE_MARKER_RE.test(name));
+}
+
+export function bodyAppearanceMarkerName(target: BodyType) {
+  return `${BODY_APPEARANCE_MARKER_PREFIX}${target}`;
 }
 
 export const APPEARANCE_COLORS = [

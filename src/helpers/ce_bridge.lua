@@ -39,6 +39,8 @@ local bridge = {
   running = false,
   timer = nil,
   busy = false,
+  last_orc = 0,
+  last_orc_at = 0,
 }
 _G.__sow_trait_bridge = bridge
 
@@ -145,16 +147,45 @@ end
 -- ---------------------------------------------------------------------------
 -- Memory / game-DB helpers
 -- ---------------------------------------------------------------------------
+local function orc_still_readable(orc)
+  if orc == nil or orc == 0 then
+    return false
+  end
+  local picker = readQword(orc + 0x1E0)
+  local marker = readQword(orc + 0x1B0)
+  local appearance = readQword(orc + 0x2D8)
+  return (picker ~= nil and picker ~= 0)
+    or (marker ~= nil and marker ~= 0)
+    or (appearance ~= nil and appearance ~= 0)
+end
+
 local function get_orc()
   local ok, sym = pcall(getAddress, "p_uruk")
   if not ok or sym == nil or sym == 0 then
     return nil, "symbol p_uruk not found — enable Uruk Pointer"
   end
-  local orc = readQword(sym)
-  if orc == nil or orc == 0 then
-    return nil, "p_uruk is null — select an orc in the army menu"
+
+  -- Uruk Pointer stores rbx on an army-screen path that also runs with rbx = 0,
+  -- so a single read often lands in that gap while an orc is still selected.
+  local deadline = os.clock() + 0.75
+  while true do
+    local orc = readQword(sym)
+    local now = os.clock()
+    if orc ~= nil and orc ~= 0 then
+      bridge.last_orc = orc
+      bridge.last_orc_at = now
+      return orc, nil
+    end
+    if bridge.last_orc ~= 0 and (now - bridge.last_orc_at) <= 3 and orc_still_readable(bridge.last_orc) then
+      print("[sow_trait_bridge] p_uruk blipped null; using the orc selected a moment ago")
+      return bridge.last_orc, nil
+    end
+    if now >= deadline then
+      break
+    end
+    sleep(40)
   end
-  return orc, nil
+  return nil, "p_uruk is null — select an orc in the army menu"
 end
 
 local function gamedb_lists()
@@ -396,6 +427,58 @@ local function clean_val(val)
   return val
 end
 
+-- Wound rows come from the orc list at p_uruk+0x130, not from list_maxlength.
+-- That field is the allocation cap and is often 0 while entries still exist,
+-- which made the old "slot <= list_maxlength" filter drop every wound.
+local function read_wound_export_rows()
+  local orc, err = get_orc()
+  if not orc then
+    return nil, err
+  end
+
+  local list_base = readQword(orc + 0x130)
+  if list_base == nil or list_base == 0 then
+    return nil, "wound list base is null"
+  end
+
+  local list_end = readQword(orc + 0x138)
+  local max_length = readInteger(orc + 0x140) or 0
+  local count = 0
+  if list_end and list_end ~= 0 and list_end >= list_base then
+    count = math.floor((list_end - list_base) / 8)
+  end
+  if count < 0 then
+    count = 0
+  end
+  if count > 8 then
+    count = 8
+  end
+  if max_length > 0 and count > max_length then
+    count = max_length
+  end
+
+  local rows = {}
+  for index = 0, count - 1 do
+    local ptr = readQword(list_base + index * 8) or 0
+    local name = nil
+    if ptr ~= 0 then
+      local ok, resolved = pcall(trait_name_from_ptr, ptr, nil)
+      if ok then
+        name = resolved
+      end
+    end
+    if not name or name == "" then
+      name = ptr == 0 and "<None>" or "<Unresolved>"
+    end
+    rows[#rows + 1] = {
+      slot = string.format("entry %02d", index + 1),
+      name = name,
+      hex = string.format("%016X", ptr),
+    }
+  end
+  return rows, nil
+end
+
 function bridge.exportCsv()
   local al = getAddressList()
   local orcName = "Unknown_Orc"
@@ -464,14 +547,26 @@ function bridge.exportCsv()
             end
           end
         elseif desc == "Wounds" then
-          local maxWounds = math.min(get_max_length(child, 8), 8)
-          for j = 0, child.Count - 1 do
-            local sub = child.Child[j]
-            if sub then
-              local slotNum = tonumber(sub.Description:match("%d+"))
-              if slotNum and slotNum <= maxWounds then
-                local val = clean_val(sub.Value)
-                writeRow("Equipment - Wounds", sub.Description, resolve_gamedb_name(val, sub), val)
+          local woundRows, wound_err = read_wound_export_rows()
+          if woundRows then
+            for j = 1, #woundRows do
+              local row = woundRows[j]
+              writeRow("Equipment - Wounds", row.slot, row.name, row.hex)
+            end
+          else
+            print("[sow_trait_bridge] wound export fallback: " .. tostring(wound_err))
+            local maxWounds = get_max_length(child, 8)
+            if maxWounds <= 0 or maxWounds > 8 then
+              maxWounds = 8
+            end
+            for j = 0, child.Count - 1 do
+              local sub = child.Child[j]
+              if sub then
+                local slotNum = tonumber(sub.Description:match("%d+"))
+                if slotNum and slotNum <= maxWounds then
+                  local val = clean_val(sub.Value)
+                  writeRow("Equipment - Wounds", sub.Description, resolve_gamedb_name(val, sub), val)
+                end
               end
             end
           end
@@ -1279,6 +1374,32 @@ local function catalog_by_name(list_id, cache, lists)
   return by_name, nil
 end
 
+local function pointer_list_is_empty(items)
+  if type(items) ~= "table" then
+    return true
+  end
+  for index = 1, #items do
+    local item = items[index]
+    if type(item) == "table" then
+      local name = item.name
+      if type(name) == "string" and name ~= "" then
+        return false
+      end
+      local address = item.address
+      if type(address) == "number" and address ~= 0 then
+        return false
+      end
+      if type(address) == "string" then
+        local parsed = parse_hex(address)
+        if parsed and parsed ~= 0 then
+          return false
+        end
+      end
+    end
+  end
+  return true
+end
+
 local function prepare_pointer_list(state, items, by_name)
   local capacity = list_capacity(state.max_length, state.hard_cap)
   if #items > capacity then
@@ -1375,20 +1496,40 @@ local function handle_post_appearance(body)
   end
 
   local tag_state, tag_err = read_tag_state(orc)
+  local write_tags = true
   if not tag_state then
-    return 503, string.format('{"error":%s}', json_string(tag_err))
+    if not pointer_list_is_empty(payload.tags) then
+      return 503, string.format('{"error":%s}', json_string(tag_err))
+    end
+    print("[sow_trait_bridge] skip tags: " .. tostring(tag_err))
+    write_tags = false
   end
   local wound_state, wound_err = read_wound_state(orc)
+  local write_wounds = true
   if not wound_state then
-    return 503, string.format('{"error":%s}', json_string(wound_err))
+    -- Some orcs have no wound array. An empty wound list must not block
+    -- equipment writes such as pants.
+    if not pointer_list_is_empty(payload.wounds) then
+      return 503, string.format('{"error":%s}', json_string(wound_err))
+    end
+    print("[sow_trait_bridge] skip wounds: " .. tostring(wound_err))
+    write_wounds = false
   end
-  local tag_names, tag_cat_err = catalog_by_name(TAG_LIST_ID, catalogs, lists)
-  if not tag_names then
-    return 503, string.format('{"error":%s}', json_string(tag_cat_err))
+  local tag_names = nil
+  if write_tags then
+    local tag_cat_err
+    tag_names, tag_cat_err = catalog_by_name(TAG_LIST_ID, catalogs, lists)
+    if not tag_names then
+      return 503, string.format('{"error":%s}', json_string(tag_cat_err))
+    end
   end
-  local wound_names, wound_cat_err = catalog_by_name(WOUND_LIST_ID, catalogs, lists)
-  if not wound_names then
-    return 503, string.format('{"error":%s}', json_string(wound_cat_err))
+  local wound_names = nil
+  if write_wounds then
+    local wound_cat_err
+    wound_names, wound_cat_err = catalog_by_name(WOUND_LIST_ID, catalogs, lists)
+    if not wound_names then
+      return 503, string.format('{"error":%s}', json_string(wound_cat_err))
+    end
   end
 
   local record = readQword(orc + APPEARANCE_RECORD_OFF)
@@ -1428,20 +1569,32 @@ local function handle_post_appearance(body)
     return 503, string.format('{"error":%s}', json_string("Orc Rarity (visual): " .. (rarity_err or "null pointer")))
   end
 
-  local prepared_tags, tag_write_err = prepare_pointer_list(tag_state, payload.tags, tag_names)
-  if tag_write_err then
-    return 400, string.format('{"error":%s}', json_string("Tags: " .. tag_write_err))
+  local prepared_tags = nil
+  if write_tags then
+    local tag_write_err
+    prepared_tags, tag_write_err = prepare_pointer_list(tag_state, payload.tags, tag_names)
+    if tag_write_err then
+      return 400, string.format('{"error":%s}', json_string("Tags: " .. tag_write_err))
+    end
   end
-  local prepared_wounds, wound_write_err = prepare_pointer_list(wound_state, payload.wounds, wound_names)
-  if wound_write_err then
-    return 400, string.format('{"error":%s}', json_string("Wounds: " .. wound_write_err))
+  local prepared_wounds = nil
+  if write_wounds then
+    local wound_write_err
+    prepared_wounds, wound_write_err = prepare_pointer_list(wound_state, payload.wounds, wound_names)
+    if wound_write_err then
+      return 400, string.format('{"error":%s}', json_string("Wounds: " .. wound_write_err))
+    end
   end
 
   for index = 1, #resolved_fields do
     writeQword(resolved_fields[index].addr, resolved_fields[index].ptr or 0)
   end
-  commit_pointer_list(tag_state, prepared_tags)
-  commit_pointer_list(wound_state, prepared_wounds)
+  if write_tags then
+    commit_pointer_list(tag_state, prepared_tags)
+  end
+  if write_wounds then
+    commit_pointer_list(wound_state, prepared_wounds)
+  end
   for index = 1, #colors do
     write_u32(colors[index].addr, colors[index].value)
   end

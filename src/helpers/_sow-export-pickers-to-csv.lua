@@ -61,6 +61,64 @@ local function cleanVal(val)
     return val
 end
 
+-- Filled wounds live between [p_uruk+130] and [p_uruk+138]. list_maxlength
+-- (+140) is only the allocation cap and is often 0, which drops every row.
+local function readWoundExportRows()
+    local ok, sym = pcall(getAddress, "p_uruk")
+    if not ok or sym == nil or sym == 0 then
+        return nil, "symbol p_uruk not found"
+    end
+    local orc = readQword(sym)
+    if orc == nil or orc == 0 then
+        return nil, "p_uruk is null"
+    end
+
+    local listBase = readQword(orc + 0x130)
+    if listBase == nil or listBase == 0 then
+        return nil, "wound list base is null"
+    end
+
+    local listEnd = readQword(orc + 0x138)
+    local maxLength = readInteger(orc + 0x140) or 0
+    local count = 0
+    if listEnd and listEnd ~= 0 and listEnd >= listBase then
+        count = math.floor((listEnd - listBase) / 8)
+    end
+    if count < 0 then count = 0 end
+    if count > 8 then count = 8 end
+    if maxLength > 0 and count > maxLength then
+        count = maxLength
+    end
+
+    local rows = {}
+    for index = 0, count - 1 do
+        local ptr = readQword(listBase + index * 8) or 0
+        local name = "<None>"
+        if ptr ~= 0 then
+            name = "<Unresolved>"
+            local readOk, resolved = pcall(function()
+                local strPtr = readPointer(ptr + 0x20)
+                if strPtr and strPtr ~= 0 then
+                    local s = readString(strPtr, 128)
+                    if s and s ~= "" then
+                        return s
+                    end
+                end
+                return nil
+            end)
+            if readOk and resolved then
+                name = resolved
+            end
+        end
+        rows[#rows + 1] = {
+            slot = string.format("entry %02d", index + 1),
+            name = name,
+            hex = string.format("%016X", ptr),
+        }
+    end
+    return rows, nil
+end
+
 local function exportCompleteOrcProfile()
     local al = getAddressList()
 
@@ -135,14 +193,26 @@ local function exportCompleteOrcProfile()
                     end
 
                 elseif desc == "Wounds" then
-                    local maxWounds = math.min(getMaxLength(child, 8), 8)
-                    for j = 0, child.Count - 1 do
-                        local sub = child.Child[j]
-                        if sub then
-                            local slotNum = tonumber(sub.Description:match("%d+"))
-                            if slotNum and slotNum <= maxWounds then
-                                local val = cleanVal(sub.Value)
-                                writeRow("Equipment - Wounds", sub.Description, resolveGamedbName(val, sub), val)
+                    local woundRows, woundErr = readWoundExportRows()
+                    if woundRows then
+                        for j = 1, #woundRows do
+                            local row = woundRows[j]
+                            writeRow("Equipment - Wounds", row.slot, row.name, row.hex)
+                        end
+                    else
+                        print("Wound export fallback: " .. tostring(woundErr))
+                        local maxWounds = getMaxLength(child, 8)
+                        if maxWounds <= 0 or maxWounds > 8 then
+                            maxWounds = 8
+                        end
+                        for j = 0, child.Count - 1 do
+                            local sub = child.Child[j]
+                            if sub then
+                                local slotNum = tonumber(sub.Description:match("%d+"))
+                                if slotNum and slotNum <= maxWounds then
+                                    local val = cleanVal(sub.Value)
+                                    writeRow("Equipment - Wounds", sub.Description, resolveGamedbName(val, sub), val)
+                                end
                             end
                         end
                     end

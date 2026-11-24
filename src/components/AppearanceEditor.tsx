@@ -23,6 +23,8 @@ import {
   isBodyAppearanceMarker,
   swapBodyTypeName,
   argbParts,
+  lockAlpha,
+  parseColorHex,
   toArgb,
 } from "@/lib/appearance";
 import { OrcCsvAbilityRow, parseOrcCsv } from "@/lib/orc-csv";
@@ -257,8 +259,49 @@ type AppearanceCsvRow = {
 let csvSerial = 0;
 
 function normalizeArgb(value: string) {
-  const clean = value.replace(/^0x/i, "").trim();
-  return /^[0-9a-fA-F]{8}$/.test(clean) ? clean.toUpperCase() : null;
+  return parseColorHex(value);
+}
+
+function HexColorField({
+  argb,
+  disabled,
+  label,
+  onCommit,
+}: {
+  argb: string;
+  disabled: boolean;
+  label: string;
+  onCommit: (argb: string) => void;
+}) {
+  const [draft, setDraft] = useState(argb);
+
+  useEffect(() => {
+    setDraft(argb);
+  }, [argb]);
+
+  return (
+    <label className="flex min-w-48 flex-1 items-center gap-2 text-xs text-muted">
+      ARGB
+      <input
+        value={draft}
+        spellCheck={false}
+        autoCapitalize="characters"
+        aria-label={`${label} hex`}
+        disabled={disabled}
+        onChange={(event) => {
+          const next = event.target.value
+            .toUpperCase()
+            .replace(/[^0-9A-F]/g, "")
+            .slice(0, 8);
+          setDraft(next);
+          const parsed = parseColorHex(next);
+          if (parsed) onCommit(parsed);
+        }}
+        onBlur={() => setDraft(argb)}
+        className="w-full rounded-md border border-line bg-background px-2 py-1.5 font-mono text-sm tracking-wide text-foreground outline-none focus:border-ember disabled:opacity-40"
+      />
+    </label>
+  );
 }
 
 const CSV_GROUP_LABELS: Record<CsvGroupId, string> = {
@@ -404,7 +447,8 @@ export function AppearanceEditor() {
   const [csvOpen, setCsvOpen] = useState(true);
   const [tagsOpen, setTagsOpen] = useState(true);
   const [woundsOpen, setWoundsOpen] = useState(true);
-  const [colorsOpen, setColorsOpen] = useState(true);
+  const [colorsOpen, setColorsOpen] = useState(false);
+  const [colorMode, setColorMode] = useState<"hex" | "rgb">("hex");
   const [bodyMarkerName, setBodyMarkerName] = useState<string | null>(null);
   const [pendingBodyType, setPendingBodyType] = useState<BodyType | "">("");
   const [bodyMenuOpen, setBodyMenuOpen] = useState(false);
@@ -428,7 +472,7 @@ export function AppearanceEditor() {
         rarity,
         tags: tags.map(({ name, address }) => ({ name, address })),
         wounds: wounds.map(({ name, address }) => ({ name, address })),
-        colors: colors.map((color) => ({ id: color.id, argb: color.argb })),
+        colors: colors.map((color) => ({ id: color.id, argb: lockAlpha(color.argb) })),
       }),
     [colors, fields, rarity, tags, wounds],
   );
@@ -562,7 +606,8 @@ export function AppearanceEditor() {
     }
     const nextColors = APPEARANCE_COLORS.map((color) => {
       const found = data.colors.find((item) => item.id === color.id);
-      return found ?? { ...color, argb: "00000000" };
+      const base = found ?? { ...color, argb: "00000000" };
+      return { ...base, argb: lockAlpha(base.argb) };
     });
     const nextTags = data.tags.items.map((item) => nextSlot(item));
     const nextWounds = data.wounds.items.map((item) => nextSlot(item));
@@ -658,7 +703,7 @@ export function AppearanceEditor() {
       }),
       tags: tags.map(({ name, address }) => ({ name, address })),
       wounds: wounds.map(({ name, address }) => ({ name, address })),
-      colors: colors.map((color) => ({ id: color.id, argb: color.argb })),
+      colors: colors.map((color) => ({ id: color.id, argb: lockAlpha(color.argb) })),
     };
     setBusy(true);
     setStatus("Writing appearance to the game…");
@@ -1747,13 +1792,42 @@ export function AppearanceEditor() {
           {colorsOpen ? (
             <>
           <p className="mt-1 text-sm text-muted">
-            Each swatch writes an ARGB hex value, alpha first, such as FF6DA9E8.
-            The unnamed rows keep the cheat table&apos;s &quot;? color&quot; labels
-            and stay in offset order.
+            Paste an ARGB hex value, alpha first, such as FF6DA9E8. Alpha is
+            locked to FF. An all-zero slot stays clear. The unnamed rows keep
+            the cheat table&apos;s &quot;? color&quot; labels and stay in offset order.
           </p>
+          <div className="mt-3 flex gap-2">
+            <button
+              type="button"
+              aria-pressed={colorMode === "hex"}
+              onClick={() => setColorMode("hex")}
+              className={
+                colorMode === "hex"
+                  ? "rounded-md border border-ember bg-ember/15 px-3 py-1.5 text-sm font-medium text-foreground"
+                  : "rounded-md border border-line px-3 py-1.5 text-sm text-muted hover:text-foreground"
+              }
+            >
+              Hex
+            </button>
+            <button
+              type="button"
+              aria-pressed={colorMode === "rgb"}
+              onClick={() => setColorMode("rgb")}
+              className={
+                colorMode === "rgb"
+                  ? "rounded-md border border-ember bg-ember/15 px-3 py-1.5 text-sm font-medium text-foreground"
+                  : "rounded-md border border-line px-3 py-1.5 text-sm text-muted hover:text-foreground"
+              }
+            >
+              RGB
+            </button>
+          </div>
           <div className="mt-4 flex flex-col gap-3">
             {colors.map((color) => {
-              const parts = argbParts(color.argb);
+              const parts = argbParts(lockAlpha(color.argb));
+              const rgbBytes = [1, 3, 5].map((start) =>
+                Number.parseInt(parts.rgb.slice(start, start + 2), 16),
+              );
               return (
                 <div
                   key={color.id}
@@ -1768,7 +1842,9 @@ export function AppearanceEditor() {
                         +{color.offset}
                       </p>
                     </div>
-                    <p className="font-mono text-sm text-foreground">{color.argb}</p>
+                    <p className="font-mono text-sm text-foreground">
+                      {lockAlpha(color.argb)}
+                    </p>
                   </div>
                   <div className="mt-3 flex flex-wrap items-center gap-4">
                     <input
@@ -1777,7 +1853,7 @@ export function AppearanceEditor() {
                       disabled={!loaded || busy}
                       value={parts.rgb}
                       onChange={(event) => {
-                        const argb = toArgb(event.target.value, parts.alpha);
+                        const argb = toArgb(event.target.value, 255);
                         setColors((current) =>
                           current.map((item) =>
                             item.id === color.id ? { ...item, argb } : item,
@@ -1786,29 +1862,59 @@ export function AppearanceEditor() {
                       }}
                       className="h-10 w-14 cursor-pointer rounded border border-line bg-transparent disabled:opacity-40"
                     />
-                    <label className="flex min-w-48 flex-1 items-center gap-3 text-xs text-muted">
-                      Alpha {parts.alpha.toString(16).padStart(2, "0").toUpperCase()}
-                      <input
-                        type="range"
-                        min={0}
-                        max={255}
+                    {colorMode === "hex" ? (
+                      <HexColorField
+                        argb={lockAlpha(color.argb)}
                         disabled={!loaded || busy}
-                        value={parts.alpha}
-                        aria-label={`${color.label} alpha`}
-                        onChange={(event) => {
-                          const argb = toArgb(
-                            parts.rgb,
-                            Number(event.target.value),
-                          );
+                        label={color.label}
+                        onCommit={(argb) =>
                           setColors((current) =>
                             current.map((item) =>
                               item.id === color.id ? { ...item, argb } : item,
                             ),
-                          );
-                        }}
-                        className="w-full accent-[#e08a45]"
+                          )
+                        }
                       />
-                    </label>
+                    ) : (
+                      <div className="flex flex-wrap items-center gap-2">
+                        {(["R", "G", "B"] as const).map((channel, index) => (
+                          <label
+                            key={channel}
+                            className="flex items-center gap-1 text-xs text-muted"
+                          >
+                            {channel}
+                            <input
+                              type="number"
+                              min={0}
+                              max={255}
+                              aria-label={`${color.label} ${channel}`}
+                              disabled={!loaded || busy}
+                              value={rgbBytes[index]}
+                              onChange={(event) => {
+                                const next = [...rgbBytes];
+                                const parsed = Number(event.target.value);
+                                next[index] = Number.isFinite(parsed)
+                                  ? Math.max(0, Math.min(255, Math.round(parsed)))
+                                  : 0;
+                                const hex = next
+                                  .map((byte) =>
+                                    byte.toString(16).padStart(2, "0"),
+                                  )
+                                  .join("");
+                                const argb = toArgb(`#${hex}`, 255);
+                                setColors((current) =>
+                                  current.map((item) =>
+                                    item.id === color.id ? { ...item, argb } : item,
+                                  ),
+                                );
+                              }}
+                              className="w-16 rounded-md border border-line bg-background px-2 py-1.5 font-mono text-sm text-foreground outline-none focus:border-ember disabled:opacity-40"
+                            />
+                          </label>
+                        ))}
+                        <span className="font-mono text-xs text-muted">A FF</span>
+                      </div>
+                    )}
                   </div>
                   {color.error ? (
                     <p className="mt-2 text-xs text-ember">{color.error}</p>

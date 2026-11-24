@@ -1,5 +1,1105 @@
 [
   {
+    "Picker": "DLC4_TripleShot",
+    "Game visual title": "Triple Shot (DLC4)",
+    "Utility": "Notches and fires three high-velocity arrows/bolts in rapid succession per firing cycle; stacks with QuickShot.",
+    "Offensive bonus": "Suppresses targets with multi-projectile bursts.",
+    "Defensive bonus": "Catches dodging players in the throne room with overlapping follow-up bolts.",
+    "Class trait": "Marksman",
+    "Tribe trait": "",
+    "Recommended for": "Throne Room Bodyguards, Wall Defense Warchiefs"
+  },
+  {
+    "Picker": "FastRunner",
+    "Game visual title": "Fast Runner",
+    "Utility": "Mobility / Movement. Boosts sprinting/running speed for rapid pursuit and evasion.",
+    "Offensive bonus": "Chasing down fleeing captains or grunts across open areas.",
+    "Defensive bonus": "Kiting or disengaging quickly when pressured by multiple enemies.",
+    "Class trait": "",
+    "Tribe trait": "",
+    "Recommended for": "Assault Leaders, Throne Room Bodyguards"
+  },
+  {
+    "Picker": "Picker_Adaptable_Med",
+    "Game visual title": "the Adaptable",
+    "Utility": "Medium adaptation speed against player combo patterns, stun loops, and stealth setups.",
+    "Offensive bonus": "Helps attack leaders adjust to enemy Overlord crowd control moves in player-controlled throne rooms.",
+    "Defensive bonus": "Forces attacking players in Online Conquest to continuously switch attack strategies after a few hits.",
+    "Class trait": "",
+    "Tribe trait": "",
+    "Recommended for": "Warchiefs, Victory Point Defenders"
+  },
+  {
+    "Picker": "Picker_Adaptable_MedToHigh",
+    "Game visual title": "Combat Master / Master Adaptation",
+    "Utility": "High-tier rapid adaptation trigger; rapidly immunizes the Captain against repeated player attack types.",
+    "Offensive bonus": "Neutralizes defending Overlord and Warchief special combos quickly.",
+    "Defensive bonus": "Essential defense against high-level online conquerors attempting to freeze-lock or execution-spam.",
+    "Class trait": "Adaptable",
+    "Tribe trait": "",
+    "Recommended for": "Overlord, Throne Room Bodyguards"
+  },
+  {
+    "Picker": "Picker_AntiJumpOver",
+    "Game visual title": "Vault Breaker",
+    "Utility": "Prevents enemies from vaulting over the Captain, triggering an immediate interception check.",
+    "Offensive bonus": "Punishes AI mobility maneuvers.",
+    "Defensive bonus": "Stops attacking players from using Vault Freeze/Vault Execution cycles to lock down defenders.",
+    "Class trait": "",
+    "Tribe trait": "",
+    "Recommended for": "Overlord, Throne Room Bodyguards, Victory Point Defenders"
+  },
+  {
+    "Picker": "Picker_AntiJumpOver_DefenderOnly",
+    "Game visual title": "Shield Wall / Vault Counter",
+    "Utility": "Defender class vault-counter blocking mechanics with shield bash punishment.",
+    "Offensive bonus": "Holds capture zones against defending defenders.",
+    "Defensive bonus": "Prevents vault-initiations against large Defender shields on narrow victory point choke points.",
+    "Class trait": "Defender",
+    "Tribe trait": "",
+    "Recommended for": "Victory Point Defenders, Overlord"
+  },
+  {
+    "Picker": "Picker_AttacksFaster",
+    "Game visual title": "Attacks Faster",
+    "Utility": "Increases overall melee animation attack speed and reduces recovery frames between strikes.",
+    "Offensive bonus": "Overwhelms enemy defenders with fast stagger chains.",
+    "Defensive bonus": "Reduces windows where attacking players can land uninterrupted executions or drain abilities.",
+    "Class trait": "",
+    "Tribe trait": "",
+    "Recommended for": "Throne Room Bodyguards, Assault Leaders"
+  },
+  {
+    "Picker": "Picker_Backlash",
+    "Game visual title": "Backlash",
+    "Utility": "Reactive counter-offensive trait triggering an immediate retaliatory strike or shove right after blocking or parrying an attack.",
+    "Offensive bonus": "Turns defensive blocks into instant offensive openings during Captain duels.",
+    "Defensive bonus": "Breaks attacker combo rhythms and punishes players spamming basic melee strikes.",
+    "Class trait": "",
+    "Tribe trait": "",
+    "Recommended for": "Victory Point Defenders, Throne Room Bodyguards"
+  },
+  {
+    "Picker": "Picker_BaseStrength_Archer",
+    "Game visual title": "Archer Base",
+    "Utility": "Defines base ranged projectile pathing, aim accuracy, and distance scaling for ranged archetype.",
+    "Offensive bonus": "Provides ranged suppression against defending gate guards.",
+    "Defensive bonus": "Snipes attacking players from elevated siege perimeters.",
+    "Class trait": "Archer",
+    "Tribe trait": "",
+    "Recommended for": "Wall Defense Warchiefs"
+  },
+  {
+    "Picker": "Picker_BaseStrength_Assassin",
+    "Game visual title": "Assassin Base",
+    "Utility": "Unlocks No Last Chance finisher mechanics, agile dodge pathing, and high base execution damage.",
+    "Offensive bonus": "Quickly eliminates downed player defenders.",
+    "Defensive bonus": "Presents a high death threat to attacking conquerors in single-player and online siege runs.",
+    "Class trait": "Assassin",
+    "Tribe trait": "",
+    "Recommended for": "Throne Room Bodyguards, Overlord"
+  },
+  {
+    "Picker": "Picker_BaseStrength_BeastMaster",
+    "Game visual title": "Beastmaster Base",
+    "Utility": "Base stat curve and command triggers for beast summoning, caragor riding, and creature buffs.",
+    "Offensive bonus": "Spawns beasts to disrupt enemy defender formations.",
+    "Defensive bonus": "Adds beast wave clutter to throne room encounters.",
+    "Class trait": "BeastMaster",
+    "Tribe trait": "",
+    "Recommended for": "Assault Leaders"
+  },
+  {
+    "Picker": "Picker_BaseStrength_Berserker",
+    "Game visual title": "Berserker Base",
+    "Utility": "High offensive base scaling, dual-weapon rampage capabilities, and aggressive enrage loops.",
+    "Offensive bonus": "Clears grunt clusters and shreds defending Captains rapidly on capture points.",
+    "Defensive bonus": "Maximum DPS output in throne rooms when combined with enrage triggers.",
+    "Class trait": "Berserker",
+    "Tribe trait": "",
+    "Recommended for": "Overlord, Assault Leaders, Victory Point Defenders"
+  },
+  {
+    "Picker": "Picker_BaseStrength_CombatMaster",
+    "Game visual title": "Combat Master Base",
+    "Utility": "Balanced melee block, counter, and execution resistance stat curve.",
+    "Offensive bonus": "Sustains frontline melee combat inside victory circles.",
+    "Defensive bonus": "Resists incoming player combo streams.",
+    "Class trait": "CombatMaster",
+    "Tribe trait": "",
+    "Recommended for": "Victory Point Defenders"
+  },
+  {
+    "Picker": "Picker_BaseStrength_Commander",
+    "Game visual title": "Commander Base",
+    "Utility": "Unlocks squad orders, fanatical gang triggers, and warbanner deployments.",
+    "Offensive bonus": "Rallies assault grunts during fortress courtyard breaches.",
+    "Defensive bonus": "Creates continuous grunt reinforcement streams at victory points.",
+    "Class trait": "Commander",
+    "Tribe trait": "",
+    "Recommended for": "Warchiefs, Victory Point Defenders"
+  },
+  {
+    "Picker": "Picker_BaseStrength_Defender",
+    "Game visual title": "Defender Base",
+    "Utility": "Heavy shield-and-spear archetype providing frontal melee/ranged blocking and physical choke-point anchoring.",
+    "Offensive bonus": "Pushes frontline engagements forward while blocking frontal arrow volleys.",
+    "Defensive bonus": "Forces invading players to waste time vaulting or breaking guards on victory points and throne room doors.",
+    "Class trait": "Defender",
+    "Tribe trait": "",
+    "Recommended for": "Overlord, Victory Point Defenders, Throne Room Bodyguards"
+  },
+  {
+    "Picker": "Picker_BaseStrength_Destroyer",
+    "Game visual title": "Destroyer Base",
+    "Utility": "Bomb throwing, explosive charge plants, and explosive death scaling.",
+    "Offensive bonus": "Breaches gates and clears defense points with heavy explosive AOE.",
+    "Defensive bonus": "Turns tight throne room spaces into high-damage explosive zone traps.",
+    "Class trait": "Destroyer",
+    "Tribe trait": "",
+    "Recommended for": "Assault Leaders, Overlord"
+  },
+  {
+    "Picker": "Picker_BaseStrength_Hunter",
+    "Game visual title": "Hunter Base",
+    "Utility": "Spear throwing, anti-beast bonus damage, and mid-range projectile scaling.",
+    "Offensive bonus": "Knocks down defending siege beasts and mounted Captains.",
+    "Defensive bonus": "Interrupts attacking player movement from mid-range.",
+    "Class trait": "Hunter",
+    "Tribe trait": "",
+    "Recommended for": "Wall Defense Warchiefs"
+  },
+  {
+    "Picker": "Picker_BaseStrength_Infantry",
+    "Game visual title": "Warrior Base",
+    "Utility": "Standard baseline melee archetype with balanced health/damage scaling.",
+    "Offensive bonus": "Standard assault frontliner.",
+    "Defensive bonus": "Standard garrison filler.",
+    "Class trait": "Infantry",
+    "Tribe trait": "",
+    "Recommended for": "Assault Leaders"
+  },
+  {
+    "Picker": "Picker_BaseStrength_Marksman",
+    "Game visual title": "Marksman Base",
+    "Utility": "High ranged damage output, power shot charges, and sniper pathing.",
+    "Offensive bonus": "Snaps to high-ground vantage points to suppress courtyard defenders.",
+    "Defensive bonus": "Deals massive burst damage to attacking players climbing walls or capping points.",
+    "Class trait": "Marksman",
+    "Tribe trait": "",
+    "Recommended for": "Throne Room Bodyguards, Wall Defense Warchiefs"
+  },
+  {
+    "Picker": "Picker_BaseStrength_Olog",
+    "Game visual title": "Olog-Hai Base",
+    "Utility": "Massive health base, unblockable grab attacks, wall destruction, and stun-shake mechanics.",
+    "Offensive bonus": "Smashes fortress gates and interrupts defending Captain combos.",
+    "Defensive bonus": "High health wall that wastes player time during timed online conquest runs.",
+    "Class trait": "Olog",
+    "Tribe trait": "",
+    "Recommended for": "Overlord, Victory Point Defenders, Assault Leaders"
+  },
+  {
+    "Picker": "Picker_BaseStrength_Savage",
+    "Game visual title": "Savage Base",
+    "Utility": "Dual-axe counter strikes against basic frontal melee attacks.",
+    "Offensive bonus": "Punishes defending grunts and Captains in melee duels.",
+    "Defensive bonus": "Forces players to use parries or stuns instead of raw melee strikes.",
+    "Class trait": "Savage",
+    "Tribe trait": "",
+    "Recommended for": "Victory Point Defenders"
+  },
+  {
+    "Picker": "Picker_BaseStrength_Tank",
+    "Game visual title": "Tank Base",
+    "Utility": "Second Wind self-heal capability, high armor scaling, and knockback charges.",
+    "Offensive bonus": "Sustains prolonged siege point battles.",
+    "Defensive bonus": "Extremely effective time-stall tactic to deny Gold ratings in Online Conquests.",
+    "Class trait": "Tank",
+    "Tribe trait": "",
+    "Recommended for": "Overlord, Victory Point Defenders"
+  },
+  {
+    "Picker": "Picker_BaseStrength_Tracker",
+    "Game visual title": "Tracker Base",
+    "Utility": "Snare trap placements and tracking pathfinding against stealth targets.",
+    "Offensive bonus": "Traps fleeing defenders.",
+    "Defensive bonus": "Traps attacking players attempting to utilize stealth setups.",
+    "Class trait": "Tracker",
+    "Tribe trait": "",
+    "Recommended for": "Victory Point Defenders"
+  },
+  {
+    "Picker": "Picker_BaseStrength_Trickster",
+    "Game visual title": "Trickster Base",
+    "Utility": "Elusive movement, smoke bomb escapes, and decoy duplicate triggers.",
+    "Offensive bonus": "Confuses defender focus with clones.",
+    "Defensive bonus": "Wastes attacking player time and breaks lock-on focus in throne rooms.",
+    "Class trait": "Trickster",
+    "Tribe trait": "",
+    "Recommended for": "Throne Room Bodyguards"
+  },
+  {
+    "Picker": "Picker_BeastSlayer",
+    "Game visual title": "Beast Slayer",
+    "Utility": "Grants massive damage multipliers and specialized attack patterns against beasts and mounts.",
+    "Offensive bonus": "Shreds caragors, drakes, and summoned graugs.",
+    "Defensive bonus": "Anti-cheese safeguard against players deploying summoned mounts in the throne room.",
+    "Class trait": "Slayer",
+    "Tribe trait": "",
+    "Recommended for": "Victory Point Defenders, Throne Room Bodyguards"
+  },
+  {
+    "Picker": "Picker_Berserker_Tackle",
+    "Game visual title": "Furious Charge",
+    "Utility": "Charges after opponents, knocking them onto the ground and following up with heavy strikes.",
+    "Offensive bonus": "Closes distance rapidly and knocks targets down to interrupt attacks or set up follow-ups.",
+    "Defensive bonus": "Pressures kiting or ranged attackers and forces dodging when the Captain initiates a charge.",
+    "Class trait": "Berserker",
+    "Tribe trait": "",
+    "Recommended for": "Assault Leaders, Overlord, Throne Room Bodyguards"
+  },
+  {
+    "Picker": "Picker_BestialRoar",
+    "Game visual title": "Bestial Roar",
+    "Utility": "Specialized roar that intimidates nearby combatants while enraging or attracting wild beasts into the fight.",
+    "Offensive bonus": "Draws hostile beasts into courtyard battles to disrupt defender formations.",
+    "Defensive bonus": "Adds chaotic wildlife hazards to outdoor siege defenses and fortress yards.",
+    "Class trait": "BeastMaster",
+    "Tribe trait": "",
+    "Recommended for": "Assault Leaders, Warchiefs"
+  },
+  {
+    "Picker": "Picker_BlockCounter",
+    "Game visual title": "Riposte",
+    "Utility": "Instantly retaliates with a counter-strike after successfully blocking a standard melee attack.",
+    "Offensive bonus": "Turns defensive blocks into instant offensive openings.",
+    "Defensive bonus": "Punishes predictable melee attack strings if engaged up close.",
+    "Class trait": "",
+    "Tribe trait": "",
+    "Recommended for": "Victory Point Defenders, Throne Room Bodyguards"
+  },
+  {
+    "Picker": "Picker_BodyguardCount_2",
+    "Game visual title": "Dual Bodyguards",
+    "Utility": "Assigns two direct bodyguard captains to protect and fight alongside the unit.",
+    "Offensive bonus": "Triples command presence.",
+    "Defensive bonus": "Adds heavy defensive screening in the throne room.",
+    "Class trait": "",
+    "Tribe trait": "",
+    "Recommended for": "Overlord, Throne Room Bodyguards"
+  },
+  {
+    "Picker": "Picker_BodySlam",
+    "Game visual title": "Body Slam",
+    "Utility": "Grabs an opponent, hoists them up, and slams them violently into the ground, bypassing standard blocks.",
+    "Offensive bonus": "Interrupts defending Captain combos and leaves them grounded for allied follow-ups.",
+    "Defensive bonus": "Breaks attacker momentum and creates open damage windows for nearby guards.",
+    "Class trait": "",
+    "Tribe trait": "",
+    "Recommended for": "Victory Point Defenders, Overlord"
+  },
+  {
+    "Picker": "Picker_BonusHealth",
+    "Game visual title": "Extra Health",
+    "Utility": "Flat multiplier increase to the Captain's total maximum health bar.",
+    "Offensive bonus": "Increases survival rate.",
+    "Defensive bonus": "Directly extends defense duration against high-DPS online attackers.",
+    "Class trait": "",
+    "Tribe trait": "",
+    "Recommended for": "Overlord, Throne Room Bodyguards"
+  },
+  {
+    "Picker": "Picker_BoomerangThrow",
+    "Game visual title": "Boomerang Throw",
+    "Utility": "Hurls a returning projectile along a curved/return path that can hit targets on both the outbound throw and the return pass.",
+    "Offensive bonus": "Clips retreating or dodging targets and adds extra mid-range pressure on the return arc.",
+    "Defensive bonus": "Catches attacking players mid-dodge in tight throne rooms or wall lanes and disrupts spacing.",
+    "Class trait": "",
+    "Tribe trait": "",
+    "Recommended for": "Throne Room Bodyguards, Wall Defense Warchiefs"
+  },
+  {
+    "Picker": "Picker_ChargeAttack",
+    "Game visual title": "Charge Attack / Heavy Dash",
+    "Utility": "Executes a high-momentum forward charging strike that breaks standard guard stances and staggers targets.",
+    "Offensive bonus": "Shatters defender posture and closes distance rapidly on victory points.",
+    "Defensive bonus": "Disrupts attacking players trying to hold defensive blocks or control space.",
+    "Class trait": "",
+    "Tribe trait": "",
+    "Recommended for": "Assault Leaders, Victory Point Defenders, Throne Room Bodyguards"
+  },
+  {
+    "Picker": "Picker_CounterStun",
+    "Game visual title": "Counter Stun",
+    "Utility": "Player-facing reactive trait that punishes Talion when attempting stun-lock or vault-stun combos.",
+    "Offensive bonus": "N/A.",
+    "Defensive bonus": "Interrupts invading players relying on vault-stun or wraith-stun spam.",
+    "Class trait": "",
+    "Tribe trait": "",
+    "Recommended for": "Overlord, Throne Room Bodyguards, Victory Point Defenders"
+  },
+  {
+    "Picker": "Picker_D4RES_GangOfDoppelgangers",
+    "Game visual title": "Decoy Gang",
+    "Utility": "Spawns a specialized squad of visual clone decoys alongside the Captain.",
+    "Offensive bonus": "Creates overwhelming visual chaos on assault capture points.",
+    "Defensive bonus": "Forces attackers to hit multiple targets to find the true Captain, wasting precious conquer timer seconds.",
+    "Class trait": "Trickster",
+    "Tribe trait": "",
+    "Recommended for": "Throne Room Bodyguards, Overlord"
+  },
+  {
+    "Picker": "Picker_Deadly",
+    "Game visual title": "Deadly",
+    "Utility": "Global high damage output multiplier applied to all basic attacks and special strikes.",
+    "Offensive bonus": "Accelerates damage output against targets.",
+    "Defensive bonus": "Deals massive burst damage against attacking assault leaders in throne room choke points.",
+    "Class trait": "",
+    "Tribe trait": "",
+    "Recommended for": "Assault Leaders, Overlord, Throne Room Bodyguards"
+  },
+  {
+    "Picker": "Picker_Deadly_Rage",
+    "Game visual title": "Deadly Rage",
+    "Utility": "Applies a severe damage scalar multiplier specifically during Enraged states, turning attack strings into lethal rushes.",
+    "Offensive bonus": "Melts defending Captains rapidly whenever rage triggers.",
+    "Defensive bonus": "Punishes defensive players with overwhelming burst damage when enraged in throne rooms.",
+    "Class trait": "Berserker",
+    "Tribe trait": "",
+    "Recommended for": "Overlord, Throne Room Bodyguards, Assault Leaders"
+  },
+  {
+    "Picker": "Picker_Determination",
+    "Game visual title": "Determination",
+    "Utility": "Triggers a full health regeneration phase when the Captain enters low health.",
+    "Offensive bonus": "Restores full health during prolonged courtyard engagements.",
+    "Defensive bonus": "Requires attackers to execute or burst down the Overlord before they heal back to full.",
+    "Class trait": "Tank",
+    "Tribe trait": "",
+    "Recommended for": "Overlord, Victory Point Defenders"
+  },
+  {
+    "Picker": "Picker_DLC3_SniperShot",
+    "Game visual title": "Sniper Shot (DLC3)",
+    "Utility": "Removes standard telegraph delays, snapping onto targets instantly to fire a hyper-accurate, high-velocity piercing shot.",
+    "Offensive bonus": "Snipes targets instantly without wind-up tells.",
+    "Defensive bonus": "Lethal throne room threat that catches conquerors mid-dodge and drains health rapidly.",
+    "Class trait": "Marksman",
+    "Tribe trait": "",
+    "Recommended for": "Throne Room Bodyguards, Wall Defense Warchiefs"
+  },
+  {
+    "Picker": "Picker_DLC4_TripleShot",
+    "Game visual title": "Triple Shot (DLC4)",
+    "Utility": "Notches and fires three high-velocity arrows/bolts in rapid succession per firing cycle; stacks with QuickShot.",
+    "Offensive bonus": "Suppresses defender squads with multi-projectile bursts.",
+    "Defensive bonus": "Catches dodging players in the throne room with overlapping follow-up bolts.",
+    "Class trait": "Marksman",
+    "Tribe trait": "",
+    "Recommended for": "Throne Room Bodyguards, Wall Defense Warchiefs"
+  },
+  {
+    "Picker": "Picker_DodgeMelee",
+    "Game visual title": "Agile",
+    "Utility": "Enables reactive sidestep dodges against incoming melee swings without abandoning the current combat zone.",
+    "Offensive bonus": "Maintains close-quarters pressure without getting staggered by heavy swings.",
+    "Defensive bonus": "Superior alternative to Reposition for Commanders and Tanks, keeping them anchored on the victory point.",
+    "Class trait": "",
+    "Tribe trait": "",
+    "Recommended for": "Commanders, Victory Point Defenders, Throne Room Bodyguards"
+  },
+  {
+    "Picker": "Picker_DodgeProjectiles",
+    "Game visual title": "Dodge Projectiles",
+    "Utility": "Enables reactive evasive dodges/sidesteps against incoming arrows, spears, bolts, and thrown projectiles.",
+    "Offensive bonus": "Keeps ranged-harassed captains moving and closing distance without getting staggered mid-approach.",
+    "Defensive bonus": "Helps avoid ranged poke and projectile volleys during sieges and open encounters.",
+    "Class trait": "",
+    "Tribe trait": "",
+    "Recommended for": "Assault Leaders, Victory Point Defenders, Throne Room Bodyguards"
+  },
+  {
+    "Picker": "Picker_DyingCommand",
+    "Game visual title": "Dying Command / Final Curse",
+    "Utility": "Triggers a final battle-cry/curse event upon death that marks the killer and shocks surrounding units.",
+    "Offensive bonus": "Forces surviving assault allies to fixate on and enrage against the defending killer.",
+    "Defensive bonus": "Triggers cascading Enraged by Witnessing Death buffs across surviving throne room bodyguards and grunts.",
+    "Class trait": "",
+    "Tribe trait": "",
+    "Recommended for": "Throne Room Bodyguards, Warchiefs"
+  },
+  {
+    "Picker": "Picker_EagleEye",
+    "Game visual title": "Eagle Eye",
+    "Utility": "Extends maximum ranged target acquisition distance and long-range crosshair tracking (negligible value indoors).",
+    "Offensive bonus": "Allows archers to engage wall/courtyard targets from extreme distances.",
+    "Defensive bonus": "Pins down approaching attackers from rooftop perches before they breach outer walls.",
+    "Class trait": "Marksman",
+    "Tribe trait": "",
+    "Recommended for": "Wall Defense Warchiefs (Not recommended for Throne Room)"
+  },
+  {
+    "Picker": "Picker_EnragedBy_Acrobatics",
+    "Game visual title": "Enraged by Acrobatics",
+    "Utility": "Triggers an instant enrage state whenever a player performs a vault or flip nearby.",
+    "Offensive bonus": "Punishes mobile player movement.",
+    "Defensive bonus": "Instantly supercharges the unit when mobile players try to flip around them.",
+    "Class trait": "",
+    "Tribe trait": "",
+    "Recommended for": "Overlord, Throne Room Bodyguards"
+  },
+  {
+    "Picker": "Picker_EnragedBy_WitnessingDeath",
+    "Game visual title": "Enraged by Witnessing Death",
+    "Utility": "Triggers an enrage state when allies or grunts are slain nearby.",
+    "Offensive bonus": "Maintains high rage uptime.",
+    "Defensive bonus": "Keeps the Captain supercharged during chaotic battles where accompanying archers take damage.",
+    "Class trait": "",
+    "Tribe trait": "",
+    "Recommended for": "Overlord, Throne Room Bodyguards"
+  },
+  {
+    "Picker": "Picker_Epic_CurseWarder",
+    "Game visual title": "Curse Warder",
+    "Utility": "Projects a passive damage-reduction aura protecting the Captain and nearby allies from Curse damage and terror drain.",
+    "Offensive bonus": "Prevents assault squads from breaking or losing Might/Wrath against Mystic defenders.",
+    "Defensive bonus": "Hardens defending squads against player curse builds and terror chains.",
+    "Class trait": "",
+    "Tribe trait": "",
+    "Recommended for": "Commanders, Victory Point Defenders"
+  },
+  {
+    "Picker": "Picker_Epic_Determination",
+    "Game visual title": "Determination",
+    "Utility": "Tank class signature ability allowing the Captain to pause and rapidly regenerate a massive portion of their health bar.",
+    "Offensive bonus": "Sustains prolonged frontline brawls without needing external healing.",
+    "Defensive bonus": "Major time-stall mechanic in Online Conquests, forcing attackers to repeatedly burn down a massive health pool.",
+    "Class trait": "Tank",
+    "Tribe trait": "",
+    "Recommended for": "Overlord, Victory Point Defenders"
+  },
+  {
+    "Picker": "Picker_Epic_FireWarder",
+    "Game visual title": "Fire Warder",
+    "Utility": "Projects a passive damage-reduction aura protecting the Captain and all nearby allied grunts from fire damage.",
+    "Offensive bonus": "Protects assaulting grunt waves from wall siege drakes and burning oil traps.",
+    "Defensive bonus": "Keeps defending grunt swarms alive through player fire-bomb and dragon-song spam.",
+    "Class trait": "",
+    "Tribe trait": "",
+    "Recommended for": "Commanders, Victory Point Defenders"
+  },
+  {
+    "Picker": "Picker_ET_ChampionMarksman",
+    "Game visual title": "Champion Marksman (Epic)",
+    "Utility": "Epic trait enhancing specialized marksman capabilities and projectile lethality.",
+    "Offensive bonus": "Maximizes damage output of sniper volleys.",
+    "Defensive bonus": "Turns the throne room Marksman into a high-threat ballistic sentry.",
+    "Class trait": "Marksman",
+    "Tribe trait": "",
+    "Recommended for": "Throne Room Bodyguards"
+  },
+  {
+    "Picker": "Picker_ET_CurseMaster",
+    "Game visual title": "Curse Master (Epic)",
+    "Utility": "Increases Curse elemental damage output and frequency of applying Cursed status.",
+    "Offensive bonus": "Drains enemy defender Wrath and Might bars rapidly.",
+    "Defensive bonus": "Drains attacking player's Might/Wrath and turns Talion's vision dark during throne room fights.",
+    "Class trait": "",
+    "Tribe trait": "",
+    "Recommended for": "Overlord, Throne Room Bodyguards"
+  },
+  {
+    "Picker": "Picker_ET_CurseWarder",
+    "Game visual title": "Curse Warder (Epic)",
+    "Utility": "Grants Curse damage reduction aura to the Captain and all surrounding allies.",
+    "Offensive bonus": "Protects assault squad against Necromancer/Mystic defender traps.",
+    "Defensive bonus": "Mitigates Cursed weapon assaults during throne room breaches.",
+    "Class trait": "",
+    "Tribe trait": "",
+    "Recommended for": "Victory Point Defenders"
+  },
+  {
+    "Picker": "Picker_ET_EliteGang",
+    "Game visual title": "Elite Gang (Epic)",
+    "Utility": "Gives all members of the Captain's assigned gang his elemental weapon and trait perks.",
+    "Offensive bonus": "Spawns 3-5 sub-captains with elemental weapons to rush points.",
+    "Defensive bonus": "Multiplies threat level in throne room by giving grunts Captain-tier traits.",
+    "Class trait": "",
+    "Tribe trait": "",
+    "Recommended for": "Overlord, Warchiefs"
+  },
+  {
+    "Picker": "Picker_ET_FireMaster",
+    "Game visual title": "Fire Master (Epic)",
+    "Utility": "Increases Fire elemental damage output, burn duration, and fire spread radius.",
+    "Offensive bonus": "Melts grouped defender grunts on capture points.",
+    "Defensive bonus": "Applies heavy DOT to attacking players and causes panic among non-immune assault leaders.",
+    "Class trait": "",
+    "Tribe trait": "",
+    "Recommended for": "Victory Point Defenders, Overlord"
+  },
+  {
+    "Picker": "Picker_ET_FireWarder",
+    "Game visual title": "Fire Warder (Epic)",
+    "Utility": "Grants Fire damage reduction aura to the Captain and surrounding allies.",
+    "Offensive bonus": "Protects assault troops from siege drake and oil pot fire.",
+    "Defensive bonus": "Counters fire-heavy assault leader setups.",
+    "Class trait": "",
+    "Tribe trait": "",
+    "Recommended for": "Victory Point Defenders, Warchiefs"
+  },
+  {
+    "Picker": "Picker_ET_GreatStrength",
+    "Game visual title": "Great Strength (Epic)",
+    "Utility": "Epic trait granting a massive +100% damage multiplier to all personal strikes and abilities.",
+    "Offensive bonus": "Allows assault leaders to quickly execute defending Warchiefs.",
+    "Defensive bonus": "Can down invading online players in 1-2 hits on higher difficulties.",
+    "Class trait": "",
+    "Tribe trait": "",
+    "Recommended for": "Overlord, Throne Room Bodyguards, Assault Leaders"
+  },
+  {
+    "Picker": "Picker_ET_GreatToughness",
+    "Game visual title": "Great Toughness (Epic)",
+    "Utility": "Epic trait granting a massive +100% health boost to the total health pool.",
+    "Offensive bonus": "Ensures assault leaders survive defense point AOE damage.",
+    "Defensive bonus": "Core defensive epic trait for denying Gold victory times in Online Siege Defense.",
+    "Class trait": "",
+    "Tribe trait": "",
+    "Recommended for": "Overlord, Victory Point Defenders"
+  },
+  {
+    "Picker": "Picker_ET_MightyArchers",
+    "Game visual title": "Mighty Archers (Epic)",
+    "Utility": "Epic buff increasing overall attack damage of all allied Archers on the field.",
+    "Offensive bonus": "Multiplies baseline pressure of the archer retinue.",
+    "Defensive bonus": "Turns accompanying archer grunts into high-damage firing squads.",
+    "Class trait": "",
+    "Tribe trait": "",
+    "Recommended for": "Throne Room Bodyguards, Wall Defense Warchiefs"
+  },
+  {
+    "Picker": "Picker_ET_MightyDefenders",
+    "Game visual title": "Mighty Defenders (Epic)",
+    "Utility": "Epic buff increasing overall health and defense of all allied Defenders on the field.",
+    "Offensive bonus": "Strengthens frontline capture point pushers.",
+    "Defensive bonus": "Turns victory point shield grunts into wall-like choke barriers.",
+    "Class trait": "",
+    "Tribe trait": "",
+    "Recommended for": "Victory Point Defenders, Warchiefs"
+  },
+  {
+    "Picker": "Picker_ET_MightyHunters",
+    "Game visual title": "Mighty Hunters (Epic)",
+    "Utility": "Epic buff increasing overall damage of all allied Hunter grunts.",
+    "Offensive bonus": "Enhances spear-throwing support against defender beasts.",
+    "Defensive bonus": "Punishes mounted attackers during siege breaches.",
+    "Class trait": "",
+    "Tribe trait": "",
+    "Recommended for": "Victory Point Defenders"
+  },
+  {
+    "Picker": "Picker_ET_MightyOlogs",
+    "Game visual title": "Mighty Ologs (Epic)",
+    "Utility": "Epic buff increasing damage and health of all allied Olog grunts in the area.",
+    "Offensive bonus": "Pushes inner courtyard points with super-buffed Olog squads.",
+    "Defensive bonus": "Creates massive frontline defensive choke blocks in throne rooms.",
+    "Class trait": "",
+    "Tribe trait": "",
+    "Recommended for": "Overlord, Warchiefs"
+  },
+  {
+    "Picker": "Picker_ET_MightySavages",
+    "Game visual title": "Mighty Savages (Epic)",
+    "Utility": "Epic buff increasing attack speed and damage of all allied Savage grunts.",
+    "Offensive bonus": "Clears defender grunts quickly inside victory points.",
+    "Defensive bonus": "Creates high-damage melee blender zones around capture points.",
+    "Class trait": "",
+    "Tribe trait": "",
+    "Recommended for": "Victory Point Defenders"
+  },
+  {
+    "Picker": "Picker_ET_MightyWarriors",
+    "Game visual title": "Mighty Warriors (Epic)",
+    "Utility": "Epic buff increasing combat effectiveness of baseline Warrior grunts.",
+    "Offensive bonus": "General grunt swarm enhancement for offense.",
+    "Defensive bonus": "Improves overall garrison grunt performance on defense points.",
+    "Class trait": "",
+    "Tribe trait": "",
+    "Recommended for": "Victory Point Defenders"
+  },
+  {
+    "Picker": "Picker_ET_PoisonMaster",
+    "Game visual title": "Poison Master (Epic)",
+    "Utility": "Increases Poison damage output, duration, and poison cloud coverage.",
+    "Offensive bonus": "Drains defender health while preventing health regen.",
+    "Defensive bonus": "Steadily drains attacking player health and denies focus regeneration.",
+    "Class trait": "",
+    "Tribe trait": "",
+    "Recommended for": "Overlord, Throne Room Bodyguards, Victory Point Defenders"
+  },
+  {
+    "Picker": "Picker_ET_PoisonWarder",
+    "Game visual title": "Poison Warder (Epic)",
+    "Utility": "Grants Poison damage reduction aura to the Captain and surrounding allies.",
+    "Offensive bonus": "Protects assault troops from poison mine traps at gates.",
+    "Defensive bonus": "Counters poison-focused attacking conquerors.",
+    "Class trait": "",
+    "Tribe trait": "",
+    "Recommended for": "Victory Point Defenders"
+  },
+  {
+    "Picker": "Picker_ET_TeamDamageBoostExploitedEnemies",
+    "Game visual title": "Team Damage Boost (Exploited/Stunned)",
+    "Utility": "Amplifies damage dealt by the Captain and surrounding squad against dazed, staggered, frozen, or downed enemies.",
+    "Offensive bonus": "Turns player-side crowd control (like Elven Light stuns) into an instant execution window for the entire defender squad.",
+    "Defensive bonus": "N/A",
+    "Class trait": "",
+    "Tribe trait": "",
+    "Recommended for": "Siege Defense Anchors, Heavy CC Compositions"
+  },
+  {
+    "Picker": "Picker_ET_TeamDamageBoostOnFireEnemies",
+    "Game visual title": "Team Damage Boost (Burning)",
+    "Utility": "Grants a passive damage multiplier to the Captain and all nearby allied grunts whenever attacking burning targets.",
+    "Offensive bonus": "Massively scales squad DPS against enemies caught in fire weapon or explosive chain reactions.",
+    "Defensive bonus": "N/A",
+    "Class trait": "",
+    "Tribe trait": "",
+    "Recommended for": "Fire-Focused Builds, Fortress Defenders"
+  },
+  {
+    "Picker": "Picker_ExplodesOnDeath_Curse",
+    "Game visual title": "Curse Death Explosion",
+    "Utility": "Triggers a high-yield Cursed blast upon death, damaging and cursing all nearby units.",
+    "Offensive bonus": "Drains defenders upon being downed.",
+    "Defensive bonus": "Surprises attacking players upon killing the Captain, draining their Might/Wrath immediately.",
+    "Class trait": "Destroyer",
+    "Tribe trait": "",
+    "Recommended for": "Throne Room Bodyguards, Victory Point Defenders"
+  },
+  {
+    "Picker": "Picker_ExplodesOnDeath_Fire",
+    "Game visual title": "Fire Death Explosion",
+    "Utility": "Triggers a massive fire blast upon death, igniting all surrounding targets.",
+    "Offensive bonus": "Burns defending Captains upon defeat.",
+    "Defensive bonus": "Sets attacking players on fire, interrupting their tempo right after downing a defender.",
+    "Class trait": "Destroyer",
+    "Tribe trait": "",
+    "Recommended for": "Victory Point Defenders"
+  },
+  {
+    "Picker": "Picker_ExplodesOnDeath_Poison",
+    "Game visual title": "Poison Death Explosion",
+    "Utility": "Causes the Captain to detonate in a cloud of lethal poison when slain.",
+    "Offensive bonus": "Leaves toxic cloud on defeat.",
+    "Defensive bonus": "Punishes melee players who secure a final close-quarters blow without backing away immediately.",
+    "Class trait": "Destroyer",
+    "Tribe trait": "",
+    "Recommended for": "Throne Room Bodyguards, Victory Point Defenders"
+  },
+  {
+    "Picker": "Picker_ExplodesOnDeath_Stun",
+    "Game visual title": "Flashbang Death Explosion",
+    "Utility": "Triggers a blinding flashbang explosion upon death, stunning all nearby targets.",
+    "Offensive bonus": "Stuns surrounding defenders upon death.",
+    "Defensive bonus": "Dazes attacking players, leaving them open to attacks from surviving bodyguards.",
+    "Class trait": "Destroyer",
+    "Tribe trait": "",
+    "Recommended for": "Throne Room Bodyguards"
+  },
+  {
+    "Picker": "Picker_FastRunner",
+    "Game visual title": "Fast Runner",
+    "Utility": "Increases sprinting and pursuit movement speed during combat and traversal.",
+    "Offensive bonus": "Closes distance quickly and chases down fleeing captains or grunts.",
+    "Defensive bonus": "Helps reposition rapidly or disengage when pressured in open areas.",
+    "Class trait": "",
+    "Tribe trait": "",
+    "Recommended for": "Assault Leaders, Throne Room Bodyguards"
+  },
+  {
+    "Picker": "Picker_Fearless",
+    "Game visual title": "Fearless",
+    "Utility": "Removes generic morale-break and battlefield panic triggers (does not override specific hardcoded Marker_ fears).",
+    "Offensive bonus": "Prevents assault leaders from routing when allied Captains fall during a breach.",
+    "Defensive bonus": "Ensures defenders never flee from general battlefield chaos or executions of nearby allies.",
+    "Class trait": "",
+    "Tribe trait": "",
+    "Recommended for": "Overlord, Warchiefs, Victory Point Defenders, Assault Leaders"
+  },
+  {
+    "Picker": "Picker_FuryAttackCombo",
+    "Game visual title": "Fury Attack / Relentless Assault",
+    "Utility": "Grants an extended, high-speed melee barrage that tracks targets forward with rapid alternating strikes.",
+    "Offensive bonus": "Shreds enemy guard stances and dominates 1v1 duels and capture point brawls.",
+    "Defensive bonus": "Applies uninterrupted melee pressure in throne rooms, denying attackers counter windows.",
+    "Class trait": "Berserker / Slayer",
+    "Tribe trait": "",
+    "Recommended for": "Assault Leaders, Overlord, Throne Room Bodyguards"
+  },
+  {
+    "Picker": "Picker_Gang_Defenders",
+    "Game visual title": "Gang of Defenders",
+    "Utility": "Assigns a squad of shield-bearing Defender grunts to accompany the Captain.",
+    "Offensive bonus": "Provides durable frontline screening during courtyard pushes.",
+    "Defensive bonus": "Forms a physical shield wall around Commanders and Tanks, disrupting player combo flow and Might generation.",
+    "Class trait": "",
+    "Tribe trait": "",
+    "Recommended for": "Commanders, Overlord, Victory Point Defenders"
+  },
+  {
+    "Picker": "Picker_GetsUpQuickly",
+    "Game visual title": "Fast Recovery",
+    "Utility": "Shortens the recovery animation when knocked down or staggered.",
+    "Offensive bonus": "N/A.",
+    "Defensive bonus": "Reduces vulnerable downtime on the floor if caught by area explosions.",
+    "Class trait": "",
+    "Tribe trait": "",
+    "Recommended for": "Overlord, Throne Room Bodyguards, Victory Point Defenders"
+  },
+  {
+    "Picker": "Picker_GroundPound",
+    "Game visual title": "Shield Quake",
+    "Utility": "Strikes shield into the ground to generate an outward shockwave that pushes back and stuns nearby foes.",
+    "Offensive bonus": "Breaks enemy guard spacing and stuns nearby targets to set up follow-up attacks.",
+    "Defensive bonus": "Pushes back crowding attackers and interrupts combos at close range.",
+    "Class trait": "",
+    "Tribe trait": "",
+    "Recommended for": "Victory Point Defenders, Throne Room Bodyguards"
+  },
+  {
+    "Picker": "Picker_HasGang_Archer",
+    "Game visual title": "Archer Gang",
+    "Utility": "Spawns a dedicated squad of archer grunts that follow and support the Captain.",
+    "Offensive bonus": "Fills the air with crossfire support.",
+    "Defensive bonus": "Keeps continuous ranged pressure on approaching targets in the throne room.",
+    "Class trait": "Archer",
+    "Tribe trait": "",
+    "Recommended for": "Throne Room Bodyguards, Wall Defense Warchiefs"
+  },
+  {
+    "Picker": "Picker_Hate_BodyguardDamage",
+    "Game visual title": "Enraged by Bodyguard Injury",
+    "Utility": "Triggers an instant enrage when assigned bodyguards take damage.",
+    "Offensive bonus": "Ties unit fury to retinue safety.",
+    "Defensive bonus": "Ensures the sniper enrages when the player targets their bodyguards.",
+    "Class trait": "",
+    "Tribe trait": "",
+    "Recommended for": "Throne Room Bodyguards"
+  },
+  {
+    "Picker": "Picker_Hate_Curse",
+    "Game visual title": "Enraged by Curse",
+    "Utility": "Triggers immediate Enraged state when hit by cursed attacks.",
+    "Offensive bonus": "Gains rage against cursed Mystic defenders.",
+    "Defensive bonus": "Punishes player cursed weapon setups.",
+    "Class trait": "",
+    "Tribe trait": "",
+    "Recommended for": "Overlord, Throne Room Bodyguards"
+  },
+  {
+    "Picker": "Picker_Hate_EnragedOrcs",
+    "Game visual title": "Enraged by Rival Rage",
+    "Utility": "Triggers Enraged state whenever another nearby Captain enrages.",
+    "Offensive bonus": "Chains enrage triggers across units.",
+    "Defensive bonus": "Creates cascading rage loops between bodyguards and the Overlord.",
+    "Class trait": "",
+    "Tribe trait": "",
+    "Recommended for": "Overlord, Throne Room Bodyguards"
+  },
+  {
+    "Picker": "Picker_Hate_ExecutionAttacks",
+    "Game visual title": "Enraged by Executions",
+    "Utility": "Triggers immediate Enraged state whenever hit by or witnessing an Execution strike.",
+    "Offensive bonus": "Gains rage during heavy execution exchanges inside points.",
+    "Defensive bonus": "Directly counters players attempting to execute bodyguards or the Overlord.",
+    "Class trait": "",
+    "Tribe trait": "",
+    "Recommended for": "Overlord, Victory Point Defenders"
+  },
+  {
+    "Picker": "Picker_Hate_Fire",
+    "Game visual title": "Enraged by Fire",
+    "Utility": "Triggers immediate Enraged state whenever ignited or exposed to nearby fire.",
+    "Offensive bonus": "Goes on unstoppable rampages against fire-heavy fort defenses.",
+    "Defensive bonus": "Punishes players who use Elven Light (Fire) or Flame siege engines.",
+    "Class trait": "",
+    "Tribe trait": "",
+    "Recommended for": "Overlord, Victory Point Defenders, Assault Leaders"
+  },
+  {
+    "Picker": "Picker_Hate_Gravewalker",
+    "Game visual title": "Enraged by the Gravewalker",
+    "Utility": "Triggers Enraged state upon sighting Talion/Player character.",
+    "Offensive bonus": "N/A (Offensive captains fight AI).",
+    "Defensive bonus": "Enrages immediately when the invading player enters the throne room or capture point.",
+    "Class trait": "",
+    "Tribe trait": "",
+    "Recommended for": "Overlord, Victory Point Defenders"
+  },
+  {
+    "Picker": "Picker_Hate_Injury",
+    "Game visual title": "Enraged by Injury",
+    "Utility": "Triggers Enraged state upon taking significant damage.",
+    "Offensive bonus": "Maintains high rage uptime.",
+    "Defensive bonus": "Ensures the unit becomes enraged as health drops during combat.",
+    "Class trait": "",
+    "Tribe trait": "",
+    "Recommended for": "Overlord, Throne Room Bodyguards"
+  },
+  {
+    "Picker": "Picker_Hate_LowHealth",
+    "Game visual title": "Enraged at Low Health",
+    "Utility": "Automatically triggers Enraged state when health drops below critical thresholds.",
+    "Offensive bonus": "Clutches clutch situations near death.",
+    "Defensive bonus": "Makes final execution phase difficult for attacking conquerors.",
+    "Class trait": "",
+    "Tribe trait": "",
+    "Recommended for": "Overlord, Throne Room Bodyguards"
+  },
+  {
+    "Picker": "Picker_Hate_Poison",
+    "Game visual title": "Enraged by Poison",
+    "Utility": "Triggers immediate Enraged state whenever poisoned.",
+    "Offensive bonus": "Converts poison traps into offensive rage buffs.",
+    "Defensive bonus": "Counters poison build conquerors by entering uninterrupted rage mode.",
+    "Class trait": "",
+    "Tribe trait": "",
+    "Recommended for": "Overlord, Victory Point Defenders"
+  },
+  {
+    "Picker": "Picker_Humiliator",
+    "Game visual title": "the Humiliator",
+    "Utility": "Refuses to kill down player; performs humiliation taunt and leaves.",
+    "Offensive bonus": "N/A.",
+    "Defensive bonus": "Wastes conquer time by forcing non-lethal reset animations during player downs.",
+    "Class trait": "",
+    "Tribe trait": "",
+    "Recommended for": "Victory Point Defenders"
+  },
+  {
+    "Picker": "Picker_Immune_Stealth",
+    "Game visual title": "Vigilant against Stealth",
+    "Utility": "Complete immunity against stealth attacks, stealth drains, and ambush drops.",
+    "Offensive bonus": "N/A.",
+    "Defensive bonus": "Prevents attacking players from using stealth drop attacks from throne room rafters.",
+    "Class trait": "",
+    "Tribe trait": "",
+    "Recommended for": "Overlord, Victory Point Defenders"
+  },
+  {
+    "Picker": "Picker_InspiringPresence",
+    "Game visual title": "Inspiring Leader",
+    "Utility": "Passive aura that grants bonus defense and attack speed to all nearby allied grunts.",
+    "Offensive bonus": "Sustains allied grunt squads.",
+    "Defensive bonus": "Stabilizes accompanying archer grunts without requiring active casting.",
+    "Class trait": "Commander",
+    "Tribe trait": "",
+    "Recommended for": "Victory Point Defenders, Throne Room Bodyguards"
+  },
+  {
+    "Picker": "Picker_JumpAttack",
+    "Game visual title": "Jump Attack / Leaping Strike",
+    "Utility": "Leaps into the air to deliver a heavy downward cleave onto priority targets, bypassing ground obstacles.",
+    "Offensive bonus": "Bypasses grunt swarms and low walls to strike backline archers or defending Captains.",
+    "Defensive bonus": "Provides sudden vertical gap-closing pressure against kiting attackers.",
+    "Class trait": "",
+    "Tribe trait": "",
+    "Recommended for": "Assault Leaders, Throne Room Bodyguards"
+  },
+  {
+    "Picker": "Picker_LifeSteal",
+    "Game visual title": "Life Steal",
+    "Utility": "Converts a percentage of damage dealt back into restoring health.",
+    "Offensive bonus": "Sustains unit during combat.",
+    "Defensive bonus": "Makes high-threat defenders harder to grind down.",
+    "Class trait": "",
+    "Tribe trait": "",
+    "Recommended for": "Overlord, Throne Room Bodyguards"
+  },
+  {
+    "Picker": "Picker_Mangler",
+    "Game visual title": "Mangler",
+    "Utility": "Enhances basic melee combo strings into punishing, multi-hit flurries that shred enemy blocks.",
+    "Offensive bonus": "Brutalizes defending grunts and overwhelms opposing Captains in melee duels.",
+    "Defensive bonus": "Maintains relentless physical pressure that prevents attacking players from recovering posture.",
+    "Class trait": "",
+    "Tribe trait": "",
+    "Recommended for": "Assault Leaders, Throne Room Bodyguards"
+  },
+  {
+    "Picker": "Picker_MultipleAttack",
+    "Game visual title": "Multiple Attack",
+    "Utility": "Enables sweeping multi-target cleaves and rapid target-switching without resetting combat stance between hits.",
+    "Offensive bonus": "Clears crowds of defender grunts rapidly without getting bogged down on single targets.",
+    "Defensive bonus": "Hits multiple invading attackers simultaneously inside tight victory point circles.",
+    "Class trait": "",
+    "Tribe trait": "",
+    "Recommended for": "Victory Point Defenders, Assault Leaders"
+  },
+  {
+    "Picker": "Picker_NamedEnemy_BonusMorale",
+    "Game visual title": "the Commander / the Herald",
+    "Utility": "Passive aura that boosts grunt morale, preventing retreat and increasing overall aggression.",
+    "Offensive bonus": "Keeps attacking grunt squads aggressively pushing capture points without breaking when assault leaders are downed.",
+    "Defensive bonus": "Forces enemy players and assault leaders to manually clear defenders, preventing fear-shatters from clearing points.",
+    "Class trait": "Commander",
+    "Tribe trait": "",
+    "Recommended for": "Victory Point Defenders, Warchiefs"
+  },
+  {
+    "Picker": "Picker_Necromancer_SelfRes",
+    "Game visual title": "the Necromancer / Undying",
+    "Utility": "Allows the Captain to self-resurrect shortly after being slain in battle.",
+    "Offensive bonus": "Revives on capture points to continue pushing.",
+    "Defensive bonus": "Forces invading players to fight the Captain twice, draining time and resources.",
+    "Class trait": "Necromancer",
+    "Tribe trait": "Mystic",
+    "Recommended for": "Overlord, Victory Point Defenders"
+  },
+  {
+    "Picker": "Picker_NoLastChance",
+    "Game visual title": "No Chance",
+    "Utility": "Removes the player's quick-time event prompt when downing Talion.",
+    "Offensive bonus": "N/A.",
+    "Defensive bonus": "Instant mission fail/death for any invading player who goes down near this unit.",
+    "Class trait": "Assassin",
+    "Tribe trait": "",
+    "Recommended for": "Overlord, Throne Room Bodyguards"
+  },
+  {
+    "Picker": "Picker_OrcRarity_Legendary",
+    "Game visual title": "Legendary Status",
+    "Utility": "Upgrades the Captain to Legendary tier, granting access to multiple epic traits and maxed baseline stat scaling.",
+    "Offensive bonus": "Amplifies overall combat threat, health pool, and damage output.",
+    "Defensive bonus": "Essential scaling for elite fortress leaders and custom bodyguards.",
+    "Class trait": "",
+    "Tribe trait": "",
+    "Recommended for": "Overlord, Throne Room Bodyguards, Assault Leaders"
+  },
+  {
+    "Picker": "Picker_PickupPunch",
+    "Game visual title": "Grab & Pummel / Throat Grab",
+    "Utility": "Grabs target by the throat/chest for a rapid series of unblockable close-range punches before tossing them aside.",
+    "Offensive bonus": "Locks defending Captains in high-damage grapple animations.",
+    "Defensive bonus": "Inflicts heavy single-target damage and drains conquest timer seconds.",
+    "Class trait": "",
+    "Tribe trait": "",
+    "Recommended for": "Throne Room Bodyguards, Overlord, Victory Point Defenders"
+  },
+  {
+    "Picker": "Picker_PlantsMines_Poison",
+    "Game visual title": "Poison Trap Layer",
+    "Utility": "Allows the Captain to place hidden poisonous mines around their combat zone.",
+    "Offensive bonus": "Creates hazardous area-denial zones.",
+    "Defensive bonus": "Punishes rushing players attempting to close distance on the sniper perch.",
+    "Class trait": "",
+    "Tribe trait": "",
+    "Recommended for": "Throne Room Bodyguards, Victory Point Defenders"
+  },
+  {
+    "Picker": "Picker_Poison_Weapon",
+    "Game visual title": "Poison Weapon",
+    "Utility": "Infuses weapon attacks and projectiles with toxic poison status effects.",
+    "Offensive bonus": "Applies stacking damage-over-time status effects.",
+    "Defensive bonus": "Drains player health pools during throne room sieges.",
+    "Class trait": "",
+    "Tribe trait": "",
+    "Recommended for": "Throne Room Bodyguards, Victory Point Defenders"
+  },
+  {
+    "Picker": "Picker_PowerShot",
+    "Game visual title": "Power Shot",
+    "Utility": "Winds up and fires a heavy, high-velocity projectile that inflicts heavy damage and knockdown.",
+    "Offensive bonus": "Knocks down targets from range.",
+    "Defensive bonus": "Punishes players kiting across rooms or attempting to close distance.",
+    "Class trait": "Marksman",
+    "Tribe trait": "",
+    "Recommended for": "Throne Room Bodyguards, Wall Defense Warchiefs"
+  },
+  {
+    "Picker": "Picker_PrimalRoar",
+    "Game visual title": "Rabid",
+    "Utility": "Utters a terrifying battle cry that disorients and intimidates nearby combatants.",
+    "Offensive bonus": "Disorients and intimidates nearby foes during pushes and capture point fights.",
+    "Defensive bonus": "Disrupts surrounding attackers in throne rooms and choke points.",
+    "Class trait": "",
+    "Tribe trait": "",
+    "Recommended for": "Overlord, Throne Room Bodyguards, Victory Point Defenders"
+  },
+  {
+    "Picker": "Picker_QuickMovement",
+    "Game visual title": "Quick Movement",
+    "Utility": "Mobility / Movement. Increases movement speed and agility during combat and traversal.",
+    "Offensive bonus": "Closing distance quickly against ranged or retreating targets.",
+    "Defensive bonus": "Repositioning faster in nemesis missions, pits, or siege defense.",
+    "Class trait": "",
+    "Tribe trait": "",
+    "Recommended for": "Assault Leaders, Throne Room Bodyguards, Victory Point Defenders"
+  },
+  {
+    "Picker": "Picker_QuickShot",
+    "Game visual title": "Quick Shot",
+    "Utility": "Slashes bow-draw wind-up and recovery frames between ranged attacks.",
+    "Offensive bonus": "Increases sustained ranged DPS.",
+    "Defensive bonus": "Eliminates firing cadence gaps, keeping continuous ranged pressure on throne room invaders.",
+    "Class trait": "Marksman",
+    "Tribe trait": "",
+    "Recommended for": "Throne Room Bodyguards, Wall Defense Warchiefs"
+  },
+  {
+    "Picker": "Picker_QuickThrow",
+    "Game visual title": "Quick Throw",
+    "Utility": "Allows the Captain to rapidly hurl daggers or concussive items at medium range.",
+    "Offensive bonus": "Disrupts player casting loops.",
+    "Defensive bonus": "Keeps pressure on players attempting to create distance.",
+    "Class trait": "",
+    "Tribe trait": "",
+    "Recommended for": "Throne Room Bodyguards"
+  },
+  {
+    "Picker": "Picker_RaiseDead",
+    "Game visual title": "Raise Dead",
+    "Utility": "Active spell ability to raise nearby fallen grunts and Captains as Undead allies.",
+    "Offensive bonus": "Recovers fallen assault troops as undead pushers.",
+    "Defensive bonus": "Continuously refills throne room or capture point with undead grunts.",
+    "Class trait": "Necromancer / Mystic",
+    "Tribe trait": "Mystic",
+    "Recommended for": "Overlord, Victory Point Defenders"
+  },
+  {
+    "Picker": "Picker_RecklessAOE",
+    "Game visual title": "Reckless AoE",
+    "Utility": "Recklessly charges into battle, lashing out with wide attacks that hit anyone near the target—including nearby allies.",
+    "Offensive bonus": "Clears dense clusters of foes quickly with wide-sweeping attacks.",
+    "Defensive bonus": "Creates chaotic AoE pressure around the target, though nearby friendly grunts can get caught in the splash.",
+    "Class trait": "Berserker",
+    "Tribe trait": "",
+    "Recommended for": "Assault Leaders, Overlord, Throne Room Bodyguards"
+  },
+  {
+    "Picker": "Picker_Resist_Beast_Immune",
+    "Game visual title": "Beast Proof",
+    "Utility": "Complete immunity against direct beast attacks, fear mechanics from creatures, and heavy caragor/graug damage scaling.",
+    "Offensive bonus": "N/A.",
+    "Defensive bonus": "Protects the Captain from being easily knocked down or overwhelmed if a player deploys mounts inside the fortress.",
+    "Class trait": "",
+    "Tribe trait": "",
+    "Recommended for": "Overlord, Victory Point Defenders, Throne Room Bodyguards"
+  },
+  {
+    "Picker": "Picker_Resist_Combat_Immune",
+    "Game visual title": "Execution Immune",
+    "Utility": "Complete immunity against execution strikes and Might-based melee finishers.",
+    "Offensive bonus": "Ignores defending Overlord execution counters.",
+    "Defensive bonus": "Blocks primary player burst damage mechanics.",
+    "Class trait": "",
+    "Tribe trait": "",
+    "Recommended for": "Overlord, Victory Point Defenders, Throne Room Bodyguards"
+  },
+  {
     "Picker": "Picker_Resist_Curse_Immune",
     "Game visual title": "Curse Proof",
     "Utility": "Complete immunity against Cursed damage, Might drain, and Wrath drain.",
@@ -20,51 +1120,11 @@
     "Recommended for": "Overlord, Victory Point Defenders, Assault Leaders, Throne Room Bodyguards"
   },
   {
-    "Picker": "Picker_Resist_Poison_Immune",
-    "Game visual title": "Poison Proof",
-    "Utility": "Complete immunity against Poison damage and status buildup.",
-    "Offensive bonus": "Pushes through poison mine zones safely.",
-    "Defensive bonus": "Negates Elven Light (Poison) and poison shot setups.",
-    "Class trait": "",
-    "Tribe trait": "",
-    "Recommended for": "Overlord, Victory Point Defenders, Assault Leaders, Throne Room Bodyguards"
-  },
-  {
-    "Picker": "Picker_Resist_Combat_Immune",
-    "Game visual title": "Execution Immune",
-    "Utility": "Complete immunity against execution strikes and Might-based melee finishers.",
-    "Offensive bonus": "Ignores defending Overlord execution counters.",
-    "Defensive bonus": "Blocks primary player burst damage mechanics.",
-    "Class trait": "",
-    "Tribe trait": "",
-    "Recommended for": "Overlord, Victory Point Defenders, Throne Room Bodyguards"
-  },
-  {
-    "Picker": "Picker_Resist_Beast_Immune",
-    "Game visual title": "Beast Proof",
-    "Utility": "Complete immunity against direct beast attacks, fear mechanics from creatures, and heavy caragor/graug damage scaling.",
-    "Offensive bonus": "N/A.",
-    "Defensive bonus": "Protects the Captain from being easily knocked down or overwhelmed if a player deploys mounts inside the fortress.",
-    "Class trait": "",
-    "Tribe trait": "",
-    "Recommended for": "Overlord, Victory Point Defenders, Throne Room Bodyguards"
-  },
-  {
     "Picker": "Picker_Resist_Frost_Immune",
     "Game visual title": "Frost Proof",
     "Utility": "Prevents the Captain from being frozen by ice storms, frost attacks, or Elven Light freeze bursts.",
     "Offensive bonus": "N/A.",
     "Defensive bonus": "One of the most important defensive traits for countering standard player freeze-lock combos.",
-    "Class trait": "",
-    "Tribe trait": "",
-    "Recommended for": "Overlord, Victory Point Defenders, Throne Room Bodyguards"
-  },
-  {
-    "Picker": "Picker_Resist_Ranged_Immune",
-    "Game visual title": "Arrow Proof",
-    "Utility": "Complete immunity against ranged bow shots, shadow strike pulls, and pin shots.",
-    "Offensive bonus": "Ignores wall archer sniping.",
-    "Defensive bonus": "Prevents attackers from using Shadow Pull to isolate Overlord onto throne room ledges or picking off the Marksman.",
     "Class trait": "",
     "Tribe trait": "",
     "Recommended for": "Overlord, Victory Point Defenders, Throne Room Bodyguards"
@@ -90,274 +1150,54 @@
     "Recommended for": "Overlord, Victory Point Defenders, Throne Room Bodyguards"
   },
   {
-    "Picker": "Picker_OrcRarity_Legendary",
-    "Game visual title": "Legendary Status",
-    "Utility": "Upgrades the Captain to Legendary tier, granting access to multiple epic traits and maxed baseline stat scaling.",
-    "Offensive bonus": "Amplifies overall combat threat, health pool, and damage output.",
-    "Defensive bonus": "Essential scaling for elite fortress leaders and custom bodyguards.",
+    "Picker": "Picker_Resist_Poison_Immune",
+    "Game visual title": "Poison Proof",
+    "Utility": "Complete immunity against Poison damage and status buildup.",
+    "Offensive bonus": "Pushes through poison mine zones safely.",
+    "Defensive bonus": "Negates Elven Light (Poison) and poison shot setups.",
     "Class trait": "",
     "Tribe trait": "",
-    "Recommended for": "Overlord, Throne Room Bodyguards, Assault Leaders"
+    "Recommended for": "Overlord, Victory Point Defenders, Assault Leaders, Throne Room Bodyguards"
   },
   {
-    "Picker": "Picker_BaseStrength_Marksman",
-    "Game visual title": "Marksman Base",
-    "Utility": "High ranged damage output, power shot charges, and sniper pathing.",
-    "Offensive bonus": "Snaps to high-ground vantage points to suppress courtyard defenders.",
-    "Defensive bonus": "Deals massive burst damage to attacking players climbing walls or capping points.",
-    "Class trait": "Marksman",
-    "Tribe trait": "",
-    "Recommended for": "Throne Room Bodyguards, Wall Defense Warchiefs"
-  },
-  {
-    "Picker": "Picker_ET_ChampionMarksman",
-    "Game visual title": "Champion Marksman (Epic)",
-    "Utility": "Epic trait enhancing specialized marksman capabilities and projectile lethality.",
-    "Offensive bonus": "Maximizes damage output of sniper volleys.",
-    "Defensive bonus": "Turns the throne room Marksman into a high-threat ballistic sentry.",
-    "Class trait": "Marksman",
-    "Tribe trait": "",
-    "Recommended for": "Throne Room Bodyguards"
-  },
-  {
-    "Picker": "Picker_TribeAttack_Mystic",
-    "Game visual title": "Mystic Teleport Strike",
-    "Utility": "Teleports through shadow space to land unblockable cursed knife strike from behind.",
-    "Offensive bonus": "Bypasses defender frontal shields.",
-    "Defensive bonus": "Tracks invading players anywhere in throne room, ignoring physical barriers.",
-    "Class trait": "",
-    "Tribe trait": "Mystic",
-    "Recommended for": "Overlord, Throne Room Bodyguards"
-  },
-  {
-    "Picker": "Picker_Poison_Weapon",
-    "Game visual title": "Venom Weapon",
-    "Utility": "Infuses weapon attacks and projectiles with toxic poison status effects.",
-    "Offensive bonus": "Applies stacking damage-over-time status effects.",
-    "Defensive bonus": "Drains player health pools during throne room sieges.",
+    "Picker": "Picker_Resist_Ranged_Immune",
+    "Game visual title": "Arrow Proof",
+    "Utility": "Complete immunity against ranged bow shots, shadow strike pulls, and pin shots.",
+    "Offensive bonus": "Ignores wall archer sniping.",
+    "Defensive bonus": "Prevents attackers from using Shadow Pull to isolate Overlord onto throne room ledges or picking off the Marksman.",
     "Class trait": "",
     "Tribe trait": "",
-    "Recommended for": "Throne Room Bodyguards, Victory Point Defenders"
+    "Recommended for": "Overlord, Victory Point Defenders, Throne Room Bodyguards"
   },
   {
-    "Picker": "Picker_ET_PoisonMaster",
-    "Game visual title": "Poison Master (Epic)",
-    "Utility": "Increases Poison damage output, duration, and poison cloud coverage.",
-    "Offensive bonus": "Drains defender health while preventing health regen.",
-    "Defensive bonus": "Steadily drains attacking player health and denies focus regeneration.",
-    "Class trait": "",
-    "Tribe trait": "",
-    "Recommended for": "Overlord, Throne Room Bodyguards, Victory Point Defenders"
-  },
-  {
-    "Picker": "Picker_PlantsMines_Poison",
-    "Game visual title": "Poison Trap Layer",
-    "Utility": "Allows the Captain to place hidden poisonous mines around their combat zone.",
-    "Offensive bonus": "Creates hazardous area-denial zones.",
-    "Defensive bonus": "Punishes rushing players attempting to close distance on the sniper perch.",
-    "Class trait": "",
-    "Tribe trait": "",
-    "Recommended for": "Throne Room Bodyguards, Victory Point Defenders"
-  },
-  {
-    "Picker": "Picker_ExplodesOnDeath_Poison",
-    "Game visual title": "Poison Death Explosion",
-    "Utility": "Causes the Captain to detonate in a cloud of lethal poison when slain.",
-    "Offensive bonus": "Leaves toxic cloud on defeat.",
-    "Defensive bonus": "Punishes melee players who secure a final close-quarters blow without backing away immediately.",
-    "Class trait": "Destroyer",
-    "Tribe trait": "",
-    "Recommended for": "Throne Room Bodyguards, Victory Point Defenders"
-  },
-  {
-    "Picker": "Picker_HasGang_Archer",
-    "Game visual title": "Archer Gang",
-    "Utility": "Spawns a dedicated squad of archer grunts that follow and support the Captain.",
-    "Offensive bonus": "Fills the air with crossfire support.",
-    "Defensive bonus": "Keeps continuous ranged pressure on approaching targets in the throne room.",
-    "Class trait": "Archer",
-    "Tribe trait": "",
-    "Recommended for": "Throne Room Bodyguards, Wall Defense Warchiefs"
-  },
-  {
-    "Picker": "Picker_ET_MightyArchers",
-    "Game visual title": "Mighty Archers (Epic)",
-    "Utility": "Epic buff increasing overall attack damage of all allied Archers on the field.",
-    "Offensive bonus": "Multiplies baseline pressure of the archer retinue.",
-    "Defensive bonus": "Turns accompanying archer grunts into high-damage firing squads.",
-    "Class trait": "",
-    "Tribe trait": "",
-    "Recommended for": "Throne Room Bodyguards, Wall Defense Warchiefs"
-  },
-  {
-    "Picker": "Picker_Summoner_Gang",
-    "Game visual title": "Reinforcement Summoner",
-    "Utility": "Active combat ability to call in fresh waves of reinforcements during extended skirmishes.",
-    "Offensive bonus": "Prevents the Captain from ever getting isolated.",
-    "Defensive bonus": "Maintains grunt swarm presence around the sniper position.",
-    "Class trait": "",
-    "Tribe trait": "",
-    "Recommended for": "Overlord, Throne Room Bodyguards, Victory Point Defenders"
-  },
-  {
-    "Picker": "Picker_Adaptable_MedToHigh",
-    "Game visual title": "Combat Master / Master Adaptation",
-    "Utility": "High-tier rapid adaptation trigger; rapidly immunizes the Captain against repeated player attack types.",
-    "Offensive bonus": "Neutralizes defending Overlord and Warchief special combos quickly.",
-    "Defensive bonus": "Essential defense against high-level online conquerors attempting to freeze-lock or execution-spam.",
-    "Class trait": "Adaptable",
-    "Tribe trait": "",
-    "Recommended for": "Overlord, Throne Room Bodyguards"
-  },
-  {
-    "Picker": "Picker_QuickShot",
-    "Game visual title": "Quick Shot",
-    "Utility": "Slashes bow-draw wind-up and recovery frames between ranged attacks.",
-    "Offensive bonus": "Increases sustained ranged DPS.",
-    "Defensive bonus": "Eliminates firing cadence gaps, keeping continuous ranged pressure on throne room invaders.",
-    "Class trait": "Marksman",
-    "Tribe trait": "",
-    "Recommended for": "Throne Room Bodyguards, Wall Defense Warchiefs"
-  },
-  {
-    "Picker": "Picker_PowerShot",
-    "Game visual title": "Power Shot",
-    "Utility": "Winds up and fires a heavy, high-velocity projectile that inflicts heavy damage and knockdown.",
-    "Offensive bonus": "Knocks down targets from range.",
-    "Defensive bonus": "Punishes players kiting across rooms or attempting to close distance.",
-    "Class trait": "Marksman",
-    "Tribe trait": "",
-    "Recommended for": "Throne Room Bodyguards, Wall Defense Warchiefs"
-  },
-  {
-    "Picker": "Picker_DLC3_SniperShot",
-    "Game visual title": "Sniper Shot (DLC3)",
-    "Utility": "Removes standard telegraph delays, snapping onto targets instantly to fire a hyper-accurate, high-velocity piercing shot.",
-    "Offensive bonus": "Snipes targets instantly without wind-up tells.",
-    "Defensive bonus": "Lethal throne room threat that catches conquerors mid-dodge and drains health rapidly.",
-    "Class trait": "Marksman",
-    "Tribe trait": "",
-    "Recommended for": "Throne Room Bodyguards, Wall Defense Warchiefs"
-  },
-  {
-    "Picker": "DLC4_TripleShot",
-    "Game visual title": "Triple Shot (DLC4)",
-    "Utility": "Notches and fires three high-velocity arrows/bolts in rapid succession per firing cycle; stacks with QuickShot.",
-    "Offensive bonus": "Suppresses targets with multi-projectile bursts.",
-    "Defensive bonus": "Catches dodging players in the throne room with overlapping follow-up bolts.",
-    "Class trait": "Marksman",
-    "Tribe trait": "",
-    "Recommended for": "Throne Room Bodyguards, Wall Defense Warchiefs"
-  },
-  {
-    "Picker": "Picker_AntiJumpOver",
-    "Game visual title": "Vault Breaker",
-    "Utility": "Prevents enemies from vaulting over the Captain, triggering an immediate interception check.",
-    "Offensive bonus": "Punishes AI mobility maneuvers.",
-    "Defensive bonus": "Stops attacking players from using Vault Freeze/Vault Execution cycles to lock down defenders.",
-    "Class trait": "",
-    "Tribe trait": "",
-    "Recommended for": "Overlord, Throne Room Bodyguards, Victory Point Defenders"
-  },
-  {
-    "Picker": "Picker_Deadly",
-    "Game visual title": "the Deadly",
-    "Utility": "Global high damage output multiplier applied to all basic attacks and special strikes.",
-    "Offensive bonus": "Accelerates damage output against targets.",
-    "Defensive bonus": "Deals massive burst damage against attacking assault leaders in throne room choke points.",
-    "Class trait": "",
-    "Tribe trait": "",
-    "Recommended for": "Assault Leaders, Overlord, Throne Room Bodyguards"
-  },
-  {
-    "Picker": "Picker_DodgeMelee",
-    "Game visual title": "Evasive Footwork",
-    "Utility": "Grants the ability to sidestep or backflip away from incoming melee strikes.",
+    "Picker": "Picker_Resist_Stealth_Immune",
+    "Game visual title": "Stealth Proof",
+    "Utility": "Complete immunity against stealth drop-attacks and ambush strikes.",
     "Offensive bonus": "N/A.",
-    "Defensive bonus": "Helps the Marksman maintain spacing against aggressive brawlers who manage to reach the ledge.",
+    "Defensive bonus": "Prevents stealth drop setups in throne rooms and courtyard elevated points.",
     "Class trait": "",
     "Tribe trait": "",
-    "Recommended for": "Throne Room Bodyguards"
+    "Recommended for": "Overlord, Victory Point Defenders"
   },
   {
-    "Picker": "Picker_GetsUpQuickly",
-    "Game visual title": "Fast Recovery",
-    "Utility": "Shortens the recovery animation when knocked down or staggered.",
-    "Offensive bonus": "N/A.",
-    "Defensive bonus": "Reduces vulnerable downtime on the floor if caught by area explosions.",
-    "Class trait": "",
-    "Tribe trait": "",
-    "Recommended for": "Overlord, Throne Room Bodyguards, Victory Point Defenders"
-  },
-  {
-    "Picker": "Picker_InspiringPresence",
-    "Game visual title": "Inspiring Leader",
-    "Utility": "Passive aura that grants bonus defense and attack speed to all nearby allied grunts.",
-    "Offensive bonus": "Sustains allied grunt squads.",
-    "Defensive bonus": "Stabilizes accompanying archer grunts without requiring active casting.",
-    "Class trait": "Commander",
-    "Tribe trait": "",
-    "Recommended for": "Victory Point Defenders, Throne Room Bodyguards"
-  },
-  {
-    "Picker": "Picker_BlockCounter",
-    "Game visual title": "Riposte",
-    "Utility": "Instantly retaliates with a counter-strike after successfully blocking a standard melee attack.",
-    "Offensive bonus": "Turns defensive blocks into instant offensive openings.",
-    "Defensive bonus": "Punishes predictable melee attack strings if engaged up close.",
-    "Class trait": "",
-    "Tribe trait": "",
-    "Recommended for": "Victory Point Defenders, Throne Room Bodyguards"
-  },
-  {
-    "Picker": "Picker_CounterStun",
-    "Game visual title": "Counter Stun",
-    "Utility": "Player-facing reactive trait that punishes Talion when attempting stun-lock or vault-stun combos.",
-    "Offensive bonus": "N/A.",
-    "Defensive bonus": "Interrupts invading players relying on vault-stun or wraith-stun spam.",
-    "Class trait": "",
-    "Tribe trait": "",
-    "Recommended for": "Overlord, Throne Room Bodyguards, Victory Point Defenders"
-  },
-  {
-    "Picker": "Picker_EnragedBy_Acrobatics",
-    "Game visual title": "Enraged by Acrobatics",
-    "Utility": "Triggers an instant enrage state whenever a player performs a vault or flip nearby.",
-    "Offensive bonus": "Punishes mobile player movement.",
-    "Defensive bonus": "Instantly supercharges the unit when mobile players try to flip around them.",
-    "Class trait": "",
+    "Picker": "Picker_SecondWind",
+    "Game visual title": "Second Wind",
+    "Utility": "Triggers a health restoration phase when entering low health thresholds.",
+    "Offensive bonus": "Sustains prolonged engagements.",
+    "Defensive bonus": "Extends survivability under heavy assault.",
+    "Class trait": "Tank",
     "Tribe trait": "",
     "Recommended for": "Overlord, Throne Room Bodyguards"
   },
   {
-    "Picker": "Picker_EnragedBy_WitnessingDeath",
-    "Game visual title": "Enraged by Witnessing Death",
-    "Utility": "Triggers an enrage state when allies or grunts are slain nearby.",
-    "Offensive bonus": "Maintains high rage uptime.",
-    "Defensive bonus": "Keeps the Captain supercharged during chaotic battles where accompanying archers take damage.",
+    "Picker": "Picker_SeismicStrike",
+    "Game visual title": "Seismic Strike",
+    "Utility": "High-force ground-slam variant that channels an explosive earth tremor to fling and knock down surrounding targets.",
+    "Offensive bonus": "Bypasses standard blocking animations to shatter tight defender formations.",
+    "Defensive bonus": "Creates heavy AoE disruption in throne rooms and narrow fortress choke points.",
     "Class trait": "",
     "Tribe trait": "",
-    "Recommended for": "Overlord, Throne Room Bodyguards"
-  },
-  {
-    "Picker": "Picker_QuickThrow",
-    "Game visual title": "Quick Throw",
-    "Utility": "Allows the Captain to rapidly hurl daggers or concussive items at medium range.",
-    "Offensive bonus": "Disrupts player casting loops.",
-    "Defensive bonus": "Keeps pressure on players attempting to create distance.",
-    "Class trait": "",
-    "Tribe trait": "",
-    "Recommended for": "Throne Room Bodyguards"
-  },
-  {
-    "Picker": "Picker_BeastSlayer",
-    "Game visual title": "Monster Hunter",
-    "Utility": "Grants massive damage multipliers and specialized attack patterns against beasts and mounts.",
-    "Offensive bonus": "Shreds caragors, drakes, and summoned graugs.",
-    "Defensive bonus": "Anti-cheese safeguard against players deploying summoned mounts in the throne room.",
-    "Class trait": "Slayer",
-    "Tribe trait": "",
-    "Recommended for": "Victory Point Defenders, Throne Room Bodyguards"
+    "Recommended for": "Overlord, Victory Point Defenders, Throne Room Bodyguards"
   },
   {
     "Picker": "Picker_SimultaneousAttack",
@@ -370,6 +1210,26 @@
     "Recommended for": "Overlord, Throne Room Bodyguards"
   },
   {
+    "Picker": "Picker_Skirmisher",
+    "Game visual title": "Skirmisher",
+    "Utility": "Grants high combat mobility with frequent backward/sideways evasive dodges followed by sudden lunging strikes.",
+    "Offensive bonus": "Closes distance unpredictably and avoids defender AoE traps.",
+    "Defensive bonus": "Makes the Captain difficult to pin down, counter, or hit with ranged attacks during chaotic assaults.",
+    "Class trait": "",
+    "Tribe trait": "",
+    "Recommended for": "Throne Room Bodyguards, Victory Point Defenders"
+  },
+  {
+    "Picker": "Picker_SlayerGiant",
+    "Game visual title": "Giant Slayer",
+    "Utility": "Increases damage multipliers, target prioritization, and takedown animations against large-body entities (Ologs, Graugs, and grounded Drakes).",
+    "Offensive bonus": "Rapidly eliminates defending Olog Captains and siege Graugs.",
+    "Defensive bonus": "Counters attacking Olog assault squads and player-summoned Graugs without getting ragdolled.",
+    "Class trait": "Slayer",
+    "Tribe trait": "",
+    "Recommended for": "Victory Point Defenders, Assault Leaders"
+  },
+  {
     "Picker": "Picker_SlowAdapt",
     "Game visual title": "Slow Adaptation",
     "Utility": "Baseline adaptation pacing flag.",
@@ -380,104 +1240,114 @@
     "Recommended for": "Standard Filler"
   },
   {
-    "Picker": "Picker_WraithStunBlock",
-    "Game visual title": "Frost Proof / Wraith-Shield",
-    "Utility": "Blocks and counters Wraith Flash, Elven Light (Frost), and Ice Stun attempts.",
-    "Offensive bonus": "Ignores freeze effects.",
-    "Defensive bonus": "Core anti-Wrathgiver counter that shuts down infinite Elven Light frost loops.",
+    "Picker": "Picker_Summoner_Gang",
+    "Game visual title": "Call Reinforcements",
+    "Utility": "Active combat ability to call in fresh waves of reinforcements during extended skirmishes.",
+    "Offensive bonus": "Prevents the Captain from ever getting isolated.",
+    "Defensive bonus": "Maintains grunt swarm presence around the sniper position.",
     "Class trait": "",
     "Tribe trait": "",
-    "Recommended for": "Overlord, Throne Room Bodyguards"
+    "Recommended for": "Overlord, Throne Room Bodyguards, Victory Point Defenders"
   },
   {
-    "Picker": "Picker_BodyguardCount_2",
-    "Game visual title": "Dual Bodyguards",
-    "Utility": "Assigns two direct bodyguard captains to protect and fight alongside the unit.",
-    "Offensive bonus": "Triples command presence.",
-    "Defensive bonus": "Adds heavy defensive screening in the throne room.",
-    "Class trait": "",
-    "Tribe trait": "",
-    "Recommended for": "Overlord, Throne Room Bodyguards"
-  },
-  {
-    "Picker": "Picker_Hate_BodyguardDamage",
-    "Game visual title": "Enraged by Bodyguard Injury",
-    "Utility": "Triggers an instant enrage when assigned bodyguards take damage.",
-    "Offensive bonus": "Ties unit fury to retinue safety.",
-    "Defensive bonus": "Ensures the sniper enrages when the player targets their bodyguards.",
-    "Class trait": "",
-    "Tribe trait": "",
-    "Recommended for": "Throne Room Bodyguards"
-  },
-  {
-    "Picker": "Picker_Hate_EnragedOrcs",
-    "Game visual title": "Enraged by Rival Rage",
-    "Utility": "Triggers Enraged state whenever another nearby Captain enrages.",
-    "Offensive bonus": "Chains enrage triggers across units.",
-    "Defensive bonus": "Creates cascading rage loops between bodyguards and the Overlord.",
-    "Class trait": "",
-    "Tribe trait": "",
-    "Recommended for": "Overlord, Throne Room Bodyguards"
-  },
-  {
-    "Picker": "Picker_Hate_Injury",
-    "Game visual title": "Enraged by Injury",
-    "Utility": "Triggers Enraged state upon taking significant damage.",
-    "Offensive bonus": "Maintains high rage uptime.",
-    "Defensive bonus": "Ensures the unit becomes enraged as health drops during combat.",
-    "Class trait": "",
-    "Tribe trait": "",
-    "Recommended for": "Overlord, Throne Room Bodyguards"
-  },
-  {
-    "Picker": "Picker_Hate_LowHealth",
-    "Game visual title": "Enraged at Low Health",
-    "Utility": "Automatically triggers Enraged state when health drops below critical thresholds.",
-    "Offensive bonus": "Clutches clutch situations near death.",
-    "Defensive bonus": "Makes final execution phase difficult for attacking conquerors.",
-    "Class trait": "",
-    "Tribe trait": "",
-    "Recommended for": "Overlord, Throne Room Bodyguards"
-  },
-  {
-    "Picker": "Picker_NoLastChance",
-    "Game visual title": "No Last Chance",
-    "Utility": "Removes the player's quick-time event prompt when downing Talion.",
-    "Offensive bonus": "N/A.",
-    "Defensive bonus": "Instant mission fail/death for any invading player who goes down near this unit.",
-    "Class trait": "Assassin",
-    "Tribe trait": "",
-    "Recommended for": "Overlord, Throne Room Bodyguards"
-  },
-  {
-    "Picker": "Picker_SecondWind",
-    "Game visual title": "Second Wind / Determination",
-    "Utility": "Triggers a health restoration phase when entering low health thresholds.",
-    "Offensive bonus": "Sustains prolonged engagements.",
-    "Defensive bonus": "Extends survivability under heavy assault.",
+    "Picker": "Picker_TankAOE",
+    "Game visual title": "Wave of Might",
+    "Utility": "Unleashes a wave of strength so powerful that it pushes back and disorients nearby enemies.",
+    "Offensive bonus": "Knocks back and disorients clustered foes to break formations and set up follow-up attacks.",
+    "Defensive bonus": "Creates breathing room and disorients nearby attackers crowding victory points or throne room choke points.",
     "Class trait": "Tank",
     "Tribe trait": "",
+    "Recommended for": "Victory Point Defenders, Overlord, Throne Room Bodyguards"
+  },
+  {
+    "Picker": "Picker_TribeAttack_Dark",
+    "Game visual title": "Dark Strike / Dark Tribe Attack",
+    "Utility": "Tribe special ability executing rapid dual-blade dark poison combo strikes.",
+    "Offensive bonus": "Applies quick poison burst to defending Warchiefs.",
+    "Defensive bonus": "Rapid multi-hit attack that locks attacking players in long stagger animations.",
+    "Class trait": "",
+    "Tribe trait": "Dark",
+    "Recommended for": "Throne Room Bodyguards, Victory Point Defenders"
+  },
+  {
+    "Picker": "Picker_TribeAttack_Feral",
+    "Game visual title": "Feral Claws / Feral Leap",
+    "Utility": "Tribe special pounce attack that tackles targets to the ground for claw shredding.",
+    "Offensive bonus": "Pins defending Captains for follow-up attacks from allies.",
+    "Defensive bonus": "Tackles invading players out of attack animations, dealing high burst damage.",
+    "Class trait": "",
+    "Tribe trait": "Feral",
+    "Recommended for": "Throne Room Bodyguards, Assault Leaders"
+  },
+  {
+    "Picker": "Picker_TribeAttack_Machine",
+    "Game visual title": "Machine Hook",
+    "Utility": "Fires a mechanical grappling hook to reel targets in for heavy explosive strike.",
+    "Offensive bonus": "Pulls defending ranged Captains into melee group.",
+    "Defensive bonus": "Pulls invading player directly into throne room trap clusters.",
+    "Class trait": "",
+    "Tribe trait": "Machine",
+    "Recommended for": "Victory Point Defenders, Overlord"
+  },
+  {
+    "Picker": "Picker_TribeAttack_Marauder",
+    "Game visual title": "Marauder Dual Crossbows",
+    "Utility": "Fires a rapid-fire volley of high-damage bolts from dual wrist-crossbows.",
+    "Offensive bonus": "Heavy mid-range burst damage against defender groups.",
+    "Defensive bonus": "Surprises invading players with lethal ranged volley during melee fights.",
+    "Class trait": "",
+    "Tribe trait": "Marauder",
+    "Recommended for": "Throne Room Bodyguards, Wall Defense Warchiefs"
+  },
+  {
+    "Picker": "Picker_TribeAttack_Mystic",
+    "Game visual title": "Mystic Teleport Strike",
+    "Utility": "Teleports through shadow space to land unblockable cursed knife strike from behind.",
+    "Offensive bonus": "Bypasses defender frontal shields.",
+    "Defensive bonus": "Tracks invading players anywhere in throne room, ignoring physical barriers.",
+    "Class trait": "",
+    "Tribe trait": "Mystic",
     "Recommended for": "Overlord, Throne Room Bodyguards"
   },
   {
-    "Picker": "Picker_BonusHealth",
-    "Game visual title": "Extra Health",
-    "Utility": "Flat multiplier increase to the Captain's total maximum health bar.",
-    "Offensive bonus": "Increases survival rate.",
-    "Defensive bonus": "Directly extends defense duration against high-DPS online attackers.",
+    "Picker": "Picker_TribeAttack_Outlaw",
+    "Game visual title": "Outlaw Bolas",
+    "Utility": "Throws entangling bolas that snare and immobilize target momentarily.",
+    "Offensive bonus": "Root defending Captains in place for siege engine shots.",
+    "Defensive bonus": "Locks invading player in place, allowing bodyguards to land heavy executions.",
     "Class trait": "",
-    "Tribe trait": "",
-    "Recommended for": "Overlord, Throne Room Bodyguards"
+    "Tribe trait": "Outlaw",
+    "Recommended for": "Victory Point Defenders, Throne Room Bodyguards"
   },
   {
-    "Picker": "Picker_LifeSteal",
-    "Game visual title": "Vampiric Strikes",
-    "Utility": "Converts a percentage of damage dealt back into restoring health.",
-    "Offensive bonus": "Sustains unit during combat.",
-    "Defensive bonus": "Makes high-threat defenders harder to grind down.",
+    "Picker": "Picker_TribeAttack_Slaughter",
+    "Game visual title": "Slaughter Cleavers",
+    "Utility": "Throws a volley of heavy butcher cleavers that apply bleeds and heavy stagger.",
+    "Offensive bonus": "Softens defender squads at mid-range.",
+    "Defensive bonus": "Interrupts player spell casting and arrow drawing at range.",
     "Class trait": "",
-    "Tribe trait": "",
-    "Recommended for": "Overlord, Throne Room Bodyguards"
+    "Tribe trait": "Slaughter",
+    "Recommended for": "Victory Point Defenders"
+  },
+  {
+    "Picker": "Picker_TribeAttack_Terror",
+    "Game visual title": "Terror Whip",
+    "Utility": "Lashes out with a long-range terror whip that inflicts bleed and daze.",
+    "Offensive bonus": "Disrupts defender shield walls.",
+    "Defensive bonus": "Extremely wide melee attack cone that dazes invading players.",
+    "Class trait": "",
+    "Tribe trait": "Terror",
+    "Recommended for": "Victory Point Defenders, Overlord"
+  },
+  {
+    "Picker": "Picker_TribeAttack_Warmonger",
+    "Game visual title": "Warmonger Gauntlets",
+    "Utility": "Performs a heavy gauntlet clash counter that locks target in physical clash.",
+    "Offensive bonus": "Disarms and counters defending Captain melee strikes.",
+    "Defensive bonus": "Parries basic player sword attacks into automatic counter-grab.",
+    "Class trait": "",
+    "Tribe trait": "Warmonger",
+    "Recommended for": "Victory Point Defenders, Overlord"
   },
   {
     "Picker": "Picker_Unbreakable_Always",
@@ -490,13 +1360,53 @@
     "Recommended for": "Overlord, Throne Room Bodyguards, Victory Point Defenders"
   },
   {
-    "Picker": "Picker_GroundPound",
-    "Game visual title": "Ground Pound",
-    "Utility": "Slams weapon or fists into the ground to generate a localized shockwave ring that staggers nearby enemies.",
-    "Offensive bonus": "Clears grouped defender grunts and knocks down opposing Captains during point captures.",
-    "Defensive bonus": "Punishes melee attackers crowding victory points by interrupting combos with AoE knockdowns.",
+    "Picker": "Picker_Undead",
+    "Game visual title": "Undead / Revenant",
+    "Utility": "Captain becomes Undead; immune to Poison/Curse/Fear, but vulnerable to Fire.",
+    "Offensive bonus": "Immune to defender poison/curse traps.",
+    "Defensive bonus": "Immune to broken state and morale flee triggers.",
     "Class trait": "",
     "Tribe trait": "",
-    "Recommended for": "Victory Point Defenders, Overlord, Assault Leaders"
+    "Recommended for": "Victory Point Defenders, Overlord"
+  },
+  {
+    "Picker": "Picker_WeakMaster",
+    "Game visual title": "Weak Master / Fragile",
+    "Utility": "Strips away staggered resistance thresholds so any elemental or ranged hit immediately triggers a dazed/vulnerable state.",
+    "Offensive bonus": "N/A.",
+    "Defensive bonus": "Used via Cheat Engine to neutralize hacked or broken Overlords for instant single-hit siege completions.",
+    "Class trait": "",
+    "Tribe trait": "",
+    "Recommended for": "Pre-Siege Hacked Overlord Cleanup"
+  },
+  {
+    "Picker": "Picker_WraithStunBlock",
+    "Game visual title": "Frost Proof / Wraith-Shield",
+    "Utility": "Blocks and counters Wraith Flash, Elven Light (Frost), and Ice Stun attempts.",
+    "Offensive bonus": "Ignores freeze effects.",
+    "Defensive bonus": "Core anti-Wrathgiver counter that shuts down infinite Elven Light frost loops.",
+    "Class trait": "",
+    "Tribe trait": "",
+    "Recommended for": "Overlord, Throne Room Bodyguards"
+  },
+  {
+    "Picker": "Picker_Wrecker",
+    "Game visual title": "Wrecker",
+    "Utility": "Defender class ability that executes a heavy shield slam and impale attack to break enemy guard stances.",
+    "Offensive bonus": "Breaks through defending shield walls and staggers opposing Captains on capture points.",
+    "Defensive bonus": "High-impact crowd control that disrupts attacking formations and bypasses standard player parry rhythms.",
+    "Class trait": "Defender",
+    "Tribe trait": "",
+    "Recommended for": "Victory Point Defenders, Assault Leaders"
+  },
+  {
+    "Picker": "WhirlwindAttack_Savage",
+    "Game visual title": "Savage Whirlwind Attack",
+    "Utility": "Executes a spinning multi-strike melee cleave that sweeps around the Captain to hit nearby targets in an arc.",
+    "Offensive bonus": "Clears clustered grunts and punishes close-range defenders during point captures.",
+    "Defensive bonus": "Pushes back or staggers surrounding attackers crowding victory points and throne room choke points.",
+    "Class trait": "Savage",
+    "Tribe trait": "",
+    "Recommended for": "Victory Point Defenders, Throne Room Bodyguards"
   }
 ]

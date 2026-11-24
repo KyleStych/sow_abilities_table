@@ -30,6 +30,6 @@
     ".next/dev/types/**/*.ts",
     "**/*.mts",
     "src/app/api/ce/[...path]/route.ts.old"
-  ],
+, "src/app/api/ce/route.ts.new"  ],
   "exclude": ["node_modules"]
 }

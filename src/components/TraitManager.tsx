@@ -13,6 +13,7 @@ import {
   type RefObject,
 } from "react";
 import {
+  getAppearance,
   getCatalog,
   getHealth,
   getMarkerCatalog,
@@ -20,6 +21,7 @@ import {
   getTraitsFromGame,
   postMarkersToGame,
   postTraitsToGame,
+  type AppearanceResponse,
   type CeCatalogResponse,
   type CeCatalogTrait,
   type CeHealth,
@@ -34,6 +36,19 @@ import {
   swapElementName,
 } from "@/lib/element";
 import { parseOrcCsv, type OrcCsvAbilityRow } from "@/lib/orc-csv";
+import {
+  isElementalPicker,
+  isHatePicker,
+  MARKER_NO_HATES,
+  MARKER_NO_STATUS_EFFECT,
+} from "@/lib/marker-conflicts";
+import {
+  canonicalTribe,
+  tribeAttackPickerName,
+  tribeFromAttackName,
+  tribeFromPropertyName,
+  tribesMatch,
+} from "@/lib/tribe";
 import { displayValue, readableLabel, traitLinkClass, traitRoles } from "@/lib/traits";
 import type { Trait } from "@/types/trait";
 
@@ -558,6 +573,23 @@ function useAbilityEditor({
     return { updated, misses };
   }
 
+  function replaceTribeAttacks(targetName: string, targetAddress: string): string {
+    let updated = 0;
+    const next = slots.map((slot) => {
+      if (!tribeFromAttackName(slot.name) || slot.name === targetName) return slot;
+      updated += 1;
+      return {
+        ...slot,
+        name: targetName,
+        address: targetAddress,
+        title: enrichTitle(targetName, byPicker),
+      };
+    });
+    if (updated === 0) return "Tribe attack already matches Additional Properties.";
+    setSlots(next);
+    return `Updated ${updated} tribe attack picker${updated === 1 ? "" : "s"} to ${targetName}. Apply to Game to write.`;
+  }
+
   function importSelection(
     rows: CsvImportRow[],
     mode: "replace" | "append",
@@ -638,10 +670,26 @@ function useAbilityEditor({
     commitDrop,
     importSelection,
     remapElements,
+    replaceTribeAttacks,
   };
 }
 
 type AbilityEditor = ReturnType<typeof useAbilityEditor>;
+
+function appearanceNameList(data: AppearanceResponse): string[] {
+  const names: string[] = [];
+  for (const field of data.fields) {
+    if (field.name) names.push(field.name);
+  }
+  for (const tag of data.tags.items) {
+    if (tag.name) names.push(tag.name);
+  }
+  for (const wound of data.wounds.items) {
+    if (wound.name) names.push(wound.name);
+  }
+  if (data.rarity) names.push(data.rarity);
+  return names;
+}
 
 export function TraitManager({ traits }: TraitManagerProps) {
   const byPicker = useMemo(() => {
@@ -689,6 +737,9 @@ export function TraitManager({ traits }: TraitManagerProps) {
   const [csvDragOver, setCsvDragOver] = useState(false);
   const [pendingElement, setPendingElement] = useState<ElementType | "">("");
   const [elementMenuOpen, setElementMenuOpen] = useState(false);
+  const [appearanceNames, setAppearanceNames] = useState<string[]>([]);
+  const [propertyTribe, setPropertyTribe] = useState<string | null>(null);
+  const [appearanceReady, setAppearanceReady] = useState(false);
   const [elementConfirm, setElementConfirm] = useState<{
     target: ElementType;
     fromNames: string[];
@@ -710,11 +761,76 @@ export function TraitManager({ traits }: TraitManagerProps) {
     for (const slot of pickers.slots) note(slot.name);
     for (const row of markerCsv) note(row.name);
     for (const row of pickerCsv) note(row.name);
+    for (const name of appearanceNames) note(name);
     const types = ELEMENT_TYPES.filter((type) => found.has(type));
     return {
       types,
       mismatch: types.length > 1,
       current: types.length === 1 ? types[0] : null,
+    };
+  }, [appearanceNames, markerCsv, markers.slots, pickerCsv, pickers.slots]);
+
+  const tribeInsight = useMemo(() => {
+    const attacks: { name: string; tribe: string; source: string }[] = [];
+    const note = (name: string | null | undefined, source: string) => {
+      const tribe = tribeFromAttackName(name);
+      if (tribe && name) attacks.push({ name, tribe, source });
+    };
+    for (const slot of pickers.slots) note(slot.name, "picker");
+    for (const row of pickerCsv) note(row.name, "CSV");
+    const property = tribeFromPropertyName(propertyTribe);
+    const attackTribes = [...new Set(attacks.map((attack) => attack.tribe))];
+    const canonicalAttackTribes = [
+      ...new Set(attackTribes.map((tribe) => canonicalTribe(tribe))),
+    ];
+    const mismatch =
+      appearanceReady &&
+      attacks.length > 0 &&
+      (canonicalAttackTribes.length > 1 ||
+        !property ||
+        attackTribes.some((tribe) => !tribesMatch(tribe, property)));
+    return {
+      attacks,
+      attackTribes,
+      property,
+      propertyName: propertyTribe,
+      mismatch,
+      attackPickerName: property ? tribeAttackPickerName(property) : null,
+    };
+  }, [appearanceReady, pickerCsv, pickers.slots, propertyTribe]);
+
+  const markerConflictInsight = useMemo(() => {
+    const markerNames = new Set(
+      [
+        ...markers.slots.map((slot) => slot.name),
+        ...markerCsv.map((row) => row.name),
+      ].filter((name): name is string => Boolean(name)),
+    );
+    const pickerNames: { name: string; source: string }[] = [];
+    for (const slot of pickers.slots) {
+      if (slot.name) pickerNames.push({ name: slot.name, source: "picker" });
+    }
+    for (const row of pickerCsv) {
+      if (row.name) pickerNames.push({ name: row.name, source: "CSV" });
+    }
+
+    const hasNoStatus = markerNames.has(MARKER_NO_STATUS_EFFECT);
+    const hasNoHates = markerNames.has(MARKER_NO_HATES);
+    const elemental = hasNoStatus
+      ? pickerNames.filter((entry) => isElementalPicker(entry.name))
+      : [];
+    const hates = hasNoHates
+      ? pickerNames.filter((entry) => isHatePicker(entry.name))
+      : [];
+
+    return {
+      noStatusEffect: hasNoStatus && elemental.length > 0,
+      noHates: hasNoHates && hates.length > 0,
+      elemental,
+      hates,
+      mismatch:
+        (hasNoStatus && elemental.length > 0) ||
+        (hasNoHates && hates.length > 0),
     };
   }, [markerCsv, markers.slots, pickerCsv, pickers.slots]);
 
@@ -810,11 +926,25 @@ export function TraitManager({ traits }: TraitManagerProps) {
     await refreshHealth();
     const markerResult = await markers.refreshFromGame();
     const pickerResult = await pickers.refreshFromGame();
+    const appearance = await getAppearance();
+    let appearanceMessage = "";
+    if (appearance.error || !appearance.data) {
+      setAppearanceNames([]);
+      setPropertyTribe(null);
+      setAppearanceReady(false);
+      appearanceMessage = ` Appearance: ${appearance.error || "could not be read."}`;
+    } else {
+      setAppearanceNames(appearanceNameList(appearance.data));
+      setPropertyTribe(
+        appearance.data.fields.find((field) => field.id === "tribe")?.name ?? null,
+      );
+      setAppearanceReady(true);
+    }
     setPendingElement("");
     const markerMessage = /not found/i.test(markerResult.message)
       ? "Markers: re-run src/helpers/ce_bridge.lua in Cheat Engine, then refresh again."
       : markerResult.message;
-    setStatus(`${markerMessage} ${pickerResult.message}`);
+    setStatus(`${markerMessage} ${pickerResult.message}${appearanceMessage}`);
     setBusy(false);
   }
 
@@ -941,6 +1071,33 @@ export function TraitManager({ traits }: TraitManagerProps) {
       return;
     }
     commitElementType(target);
+  }
+
+  function matchTribeAttack() {
+    const tribe = tribeInsight.property;
+    if (!tribe) {
+      setStatus("Additional Properties has no tribe to match.");
+      return;
+    }
+    const targetName = tribeAttackPickerName(tribe);
+    const found = pickers.catalog.find((item) => item.name === targetName);
+    if (!found) {
+      setStatus(`Live catalog has no ${targetName}.`);
+      return;
+    }
+    setStatus(pickers.replaceTribeAttacks(found.name, found.address));
+    setPickersOpen(true);
+  }
+
+  function clearMarkerNamed(markerName: string) {
+    const index = markers.slots.findIndex((slot) => slot.name === markerName);
+    if (index < 0) {
+      setStatus(`${markerName} is not in the loaded markers list.`);
+      return;
+    }
+    markers.clearSlot(index);
+    setMarkersOpen(true);
+    setStatus(`Cleared ${markerName}. Apply to Game to write.`);
   }
 
   function buildCsvRows(
@@ -1108,6 +1265,36 @@ export function TraitManager({ traits }: TraitManagerProps) {
             >
               {elementInsight.mismatch ? "Error" : "Element"}
             </button>
+            <button
+              type="button"
+              onClick={() =>
+                document
+                  .getElementById("tribe-check")
+                  ?.scrollIntoView({ behavior: "smooth", block: "start" })
+              }
+              className={
+                tribeInsight.mismatch
+                  ? "rounded-md border-2 border-red-500 bg-raised/80 px-3 py-2 text-sm font-medium text-red-500"
+                  : "rounded-md border border-line bg-raised/80 px-3 py-2 text-sm font-medium text-muted hover:border-ember/60 hover:text-foreground"
+              }
+            >
+              {tribeInsight.mismatch ? "Error" : "Tribe"}
+            </button>
+            <button
+              type="button"
+              onClick={() =>
+                document
+                  .getElementById("marker-conflicts")
+                  ?.scrollIntoView({ behavior: "smooth", block: "start" })
+              }
+              className={
+                markerConflictInsight.mismatch
+                  ? "rounded-md border-2 border-red-500 bg-raised/80 px-3 py-2 text-sm font-medium text-red-500"
+                  : "rounded-md border border-line bg-raised/80 px-3 py-2 text-sm font-medium text-muted hover:border-ember/60 hover:text-foreground"
+              }
+            >
+              {markerConflictInsight.mismatch ? "Error" : "Conflicts"}
+            </button>
             <JumpButton
               active={sectionInView === "markers"}
               onClick={() => jumpTo("markers")}
@@ -1128,9 +1315,10 @@ export function TraitManager({ traits }: TraitManagerProps) {
           >
             <h2 className="text-sm font-medium text-foreground">Element</h2>
             <p className="mt-1 text-xs text-muted">
-              Swaps Curse, Fire, and Poison across marker and picker names (and
-              CSV rows). Team Damage Boost uses Exploited for Curse, OnFire for
-              Fire, and Poisoned for Poison.
+              Checks Curse, Fire, and Poison on markers, pickers, appearance names,
+              and CSV rows. Apply here updates markers and pickers.
+              Team Damage Boost uses Exploited for Curse, OnFire for Fire, and
+              Poisoned for Poison.
             </p>
             {elementInsight.mismatch ? (
               <p className="mt-2 text-xs font-medium text-red-500">
@@ -1199,6 +1387,116 @@ export function TraitManager({ traits }: TraitManagerProps) {
                 Apply
               </button>
             </div>
+          </section>
+
+          <section
+            id="tribe-check"
+            className="mb-6 scroll-mt-6 rounded-lg border border-line bg-raised/40 px-4 py-4"
+          >
+            <h2 className="text-sm font-medium text-foreground">Tribe attack</h2>
+            <p className="mt-1 text-xs text-muted">
+              Picker_TribeAttack should match the Tribe in Additional Properties.
+              Sorcerous and Mystic are treated as the same tribe.
+            </p>
+            {!appearanceReady ? (
+              <p className="mt-2 text-xs text-muted">
+                Refresh from Game to compare against the orc&apos;s tribe.
+              </p>
+            ) : tribeInsight.mismatch ? (
+              <p className="mt-2 text-xs font-medium text-red-500">
+                {tribeInsight.property
+                  ? `Additional Properties is ${tribeInsight.property}, tribe attack is ${tribeInsight.attackTribes.join(", ")}.`
+                  : `Tribe attack is ${tribeInsight.attackTribes.join(", ")}, and Additional Properties has no tribe.`}
+                {tribeInsight.attacks.some((attack) => attack.source === "CSV")
+                  ? " Includes a CSV row."
+                  : ""}
+              </p>
+            ) : tribeInsight.attacks.length > 0 && tribeInsight.property ? (
+              <p className="mt-2 text-xs text-muted">
+                {tribeInsight.property} matches {tribeInsight.attacks[0]?.name}
+                {tribeInsight.property === "Sorcerous" ? " (Sorcerous ≡ Mystic)." : "."}
+              </p>
+            ) : (
+              <p className="mt-2 text-xs text-muted">
+                {tribeInsight.property
+                  ? `Additional Properties tribe is ${tribeInsight.property}. No tribe attack picker.`
+                  : "No tribe attack picker, and Additional Properties has no tribe."}
+              </p>
+            )}
+            {tribeInsight.mismatch && tribeInsight.property ? (
+              <button
+                type="button"
+                disabled={busy}
+                onClick={matchTribeAttack}
+                className="mt-3 rounded-md bg-ember px-3 py-2 text-sm font-medium text-ink transition-opacity hover:opacity-90 disabled:opacity-40"
+              >
+                Set tribe attack to{" "}
+                {canonicalTribe(tribeInsight.property)}
+              </button>
+            ) : null}
+          </section>
+
+          <section
+            id="marker-conflicts"
+            className="mb-6 scroll-mt-6 rounded-lg border border-line bg-raised/40 px-4 py-4"
+          >
+            <h2 className="text-sm font-medium text-foreground">
+              Marker conflicts
+            </h2>
+            <p className="mt-1 text-xs text-muted">
+              Flags Marker_NoStatusEffect with elemental pickers, and
+              Marker_NoHates with hate pickers.
+            </p>
+            {markerConflictInsight.mismatch ? (
+              <div className="mt-2 space-y-2">
+                {markerConflictInsight.noStatusEffect ? (
+                  <p className="text-xs font-medium text-red-500">
+                    {MARKER_NO_STATUS_EFFECT} conflicts with elemental pickers:{" "}
+                    {[
+                      ...new Set(
+                        markerConflictInsight.elemental.map((entry) => entry.name),
+                      ),
+                    ].join(", ")}
+                    .
+                  </p>
+                ) : null}
+                {markerConflictInsight.noHates ? (
+                  <p className="text-xs font-medium text-red-500">
+                    {MARKER_NO_HATES} conflicts with hate pickers:{" "}
+                    {[
+                      ...new Set(
+                        markerConflictInsight.hates.map((entry) => entry.name),
+                      ),
+                    ].join(", ")}
+                    .
+                  </p>
+                ) : null}
+              </div>
+            ) : (
+              <p className="mt-2 text-xs text-muted">
+                No NoStatusEffect / NoHates conflicts detected.
+              </p>
+            )}
+            {markerConflictInsight.noStatusEffect ? (
+              <button
+                type="button"
+                disabled={busy}
+                onClick={() => clearMarkerNamed(MARKER_NO_STATUS_EFFECT)}
+                className="mt-3 mr-2 rounded-md bg-ember px-3 py-2 text-sm font-medium text-ink transition-opacity hover:opacity-90 disabled:opacity-40"
+              >
+                Clear {MARKER_NO_STATUS_EFFECT}
+              </button>
+            ) : null}
+            {markerConflictInsight.noHates ? (
+              <button
+                type="button"
+                disabled={busy}
+                onClick={() => clearMarkerNamed(MARKER_NO_HATES)}
+                className="mt-3 rounded-md bg-ember px-3 py-2 text-sm font-medium text-ink transition-opacity hover:opacity-90 disabled:opacity-40"
+              >
+                Clear {MARKER_NO_HATES}
+              </button>
+            ) : null}
           </section>
 
           <section
@@ -1323,6 +1621,36 @@ export function TraitManager({ traits }: TraitManagerProps) {
                   if (pendingElement) applyElementType(pendingElement);
                 }}
               />
+              <button
+                type="button"
+                onClick={() =>
+                  document
+                    .getElementById("tribe-check")
+                    ?.scrollIntoView({ behavior: "smooth", block: "start" })
+                }
+                className={
+                  tribeInsight.mismatch
+                    ? "my-[5px] rounded-md border-2 border-red-500 bg-raised/80 px-3 py-2 text-left text-sm font-medium text-red-500"
+                    : "my-[5px] rounded-md border border-line bg-raised/80 px-3 py-2 text-left text-sm font-medium text-muted hover:border-ember/60 hover:text-foreground"
+                }
+              >
+                {tribeInsight.mismatch ? "Error" : "Tribe"}
+              </button>
+              <button
+                type="button"
+                onClick={() =>
+                  document
+                    .getElementById("marker-conflicts")
+                    ?.scrollIntoView({ behavior: "smooth", block: "start" })
+                }
+                className={
+                  markerConflictInsight.mismatch
+                    ? "my-[5px] rounded-md border-2 border-red-500 bg-raised/80 px-3 py-2 text-left text-sm font-medium text-red-500"
+                    : "my-[5px] rounded-md border border-line bg-raised/80 px-3 py-2 text-left text-sm font-medium text-muted hover:border-ember/60 hover:text-foreground"
+                }
+              >
+                {markerConflictInsight.mismatch ? "Error" : "Conflicts"}
+              </button>
               <JumpButton
                 active={sectionInView === "markers"}
                 onClick={() => jumpTo("markers")}
@@ -1514,6 +1842,17 @@ function ElementNavControl({
   );
 }
 
+function extraDuplicateIds(slots: ManagedSlot[]): Set<string> {
+  const seen = new Set<string>();
+  const extra = new Set<string>();
+  for (const slot of slots) {
+    if (!slot.name) continue;
+    if (seen.has(slot.name)) extra.add(slot.id);
+    else seen.add(slot.name);
+  }
+  return extra;
+}
+
 function AbilitySection({
   editor,
   open,
@@ -1532,6 +1871,7 @@ function AbilitySection({
   emptyMessage: string;
 }) {
   const sectionId = editor.noun === "marker" ? "markers" : "pickers";
+  const duplicateIds = extraDuplicateIds(editor.slots);
 
   return (
     <section
@@ -1557,6 +1897,12 @@ function AbilitySection({
           <span className="font-sans font-mono text-sm tracking-normal text-muted">
             {editor.slots.length}/{editor.slotCap}
           </span>
+          {editor.duplicateCount > 0 ? (
+            <span className="font-sans text-sm font-medium tracking-normal text-red-500">
+              {editor.duplicateCount} duplicate
+              {editor.duplicateCount === 1 ? "" : "s"}
+            </span>
+          ) : null}
         </button>
         {open ? (
           <div className="mt-3 flex flex-wrap gap-2">
@@ -1588,7 +1934,11 @@ function AbilitySection({
                   : `Remove ${editor.duplicateCount} later duplicate(s)`
               }
               onClick={() => onStatus(editor.removeDuplicateTraits())}
-              className="rounded-md border border-line px-3 py-2 text-sm text-muted transition-colors hover:border-ember/60 hover:text-foreground disabled:opacity-50"
+              className={
+                editor.duplicateCount > 0
+                  ? "rounded-md border-2 border-red-500 px-3 py-2 text-sm font-medium text-red-500 transition-colors hover:bg-red-500/10 disabled:opacity-50"
+                  : "rounded-md border border-line px-3 py-2 text-sm text-muted transition-colors hover:border-ember/60 hover:text-foreground disabled:opacity-50"
+              }
             >
               Remove duplicates
               {editor.duplicateCount > 0 ? ` (${editor.duplicateCount})` : ""}
@@ -1648,6 +1998,7 @@ function AbilitySection({
           {editor.slots.map((slot, index) => {
             const isSelected = editor.selectedIds.has(slot.id);
             const isDragging = editor.draggingIds.has(slot.id);
+            const isDuplicate = duplicateIds.has(slot.id);
             const detailOpen = editor.detailSlotId === slot.id;
             const definition = slot.name
               ? editor.byPicker.get(slot.name)
@@ -1692,9 +2043,11 @@ function AbilitySection({
                 ) : null}
                 <div
                   className={
-                    detailOpen || isSelected || !slot.name
-                      ? "overflow-hidden rounded-lg border border-ember bg-raised/70"
-                      : "overflow-hidden rounded-lg border border-line bg-raised/70"
+                    isDuplicate
+                      ? "overflow-hidden rounded-lg border-2 border-red-500 bg-raised/70"
+                      : detailOpen || isSelected || !slot.name
+                        ? "overflow-hidden rounded-lg border border-ember bg-raised/70"
+                        : "overflow-hidden rounded-lg border border-line bg-raised/70"
                   }
                 >
                   <div
@@ -1739,6 +2092,11 @@ function AbilitySection({
                     <div className="min-w-0 flex-1">
                       <p className="font-medium text-foreground">
                         {slot.title}
+                        {isDuplicate ? (
+                          <span className="ml-2 text-xs font-medium text-red-500">
+                            Duplicate
+                          </span>
+                        ) : null}
                       </p>
                       <p className="truncate font-mono text-xs text-muted">
                         {slot.name || "(none)"} · {slot.address}

@@ -275,9 +275,23 @@ export type BodyType = (typeof BODY_TYPES)[number];
 /** Marker ability that records the orc's appearance body tag. */
 export const BODY_APPEARANCE_MARKER_PREFIX = "Marker_AppearanceTag_";
 
+/** In-name tokens stay Slim/Stk/Buff; the stocky marker uses Stocky. */
+const BODY_APPEARANCE_MARKER_SUFFIX: Record<BodyType, string> = {
+  Slim: "Slim",
+  Stk: "Stocky",
+  Buff: "Buff",
+};
+
 const BODY_TYPE_TOKEN = /(^|_)(Slim|Stk|Buff)(?=_|$)/;
 const BODY_APPEARANCE_MARKER_RE =
-  /^Marker_AppearanceTag_(Slim|Stk|Buff)$/;
+  /^Marker_AppearanceTag_(Slim|Stocky|Buff|Stk)$/;
+
+const MARKER_SUFFIX_TO_BODY_TYPE: Record<string, BodyType> = {
+  Slim: "Slim",
+  Stocky: "Stk",
+  Stk: "Stk",
+  Buff: "Buff",
+};
 
 /** Replace Slim, Stk, or Buff tokens. Returns null when the name does not change. */
 export function swapBodyTypeName(name: string, target: BodyType): string | null {
@@ -291,6 +305,8 @@ export function bodyTypeFromName(
   name: string | null | undefined,
 ): BodyType | null {
   if (!name) return null;
+  const marker = name.match(BODY_APPEARANCE_MARKER_RE);
+  if (marker) return MARKER_SUFFIX_TO_BODY_TYPE[marker[1]] ?? null;
   const match = name.match(BODY_TYPE_TOKEN);
   return match ? (match[2] as BodyType) : null;
 }
@@ -302,7 +318,7 @@ export function isBodyAppearanceMarker(
 }
 
 export function bodyAppearanceMarkerName(target: BodyType) {
-  return `${BODY_APPEARANCE_MARKER_PREFIX}${target}`;
+  return `${BODY_APPEARANCE_MARKER_PREFIX}${BODY_APPEARANCE_MARKER_SUFFIX[target]}`;
 }
 
 export const APPEARANCE_COLORS = [
@@ -339,4 +355,21 @@ export function toArgb(rgb: string, alpha: number): string {
   const hex = rgb.replace("#", "").slice(0, 6).padStart(6, "0");
   const a = Math.max(0, Math.min(255, Math.round(alpha)));
   return a.toString(16).padStart(2, "0").toUpperCase() + hex.toUpperCase();
+}
+
+/** Opaque ARGB. An all-zero slot stays clear; every other color is forced to FF. */
+export function lockAlpha(argb: string): string {
+  const parts = argbParts(argb);
+  if (parts.alpha === 0 && parts.rgb.toLowerCase() === "#000000") {
+    return "00000000";
+  }
+  return toArgb(parts.rgb, 255);
+}
+
+/** Accept RRGGBB or AARRGGBB. Alpha is written as FF, except an all-zero value. */
+export function parseColorHex(input: string): string | null {
+  const clean = input.replace(/^#/, "").replace(/^0x/i, "").replace(/[^0-9a-f]/gi, "");
+  if (/^[0-9a-fA-F]{6}$/.test(clean)) return lockAlpha(`FF${clean}`);
+  if (/^[0-9a-fA-F]{8}$/.test(clean)) return lockAlpha(clean);
+  return null;
 }

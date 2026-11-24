@@ -490,6 +490,16 @@
     "Recommended for": "Commanders, Victory Point Defenders"
   },
   {
+    "Picker": "Picker_ET_ChampionCommander",
+    "Game visual title": "Champion Commander (Epic)",
+    "Utility": "Epic trait enhancing Commander leadership capabilities, squad morale/rally pressure, and command presence.",
+    "Offensive bonus": "Strengthens assault squads and keeps allied troops pushing aggressively across capture points.",
+    "Defensive bonus": "Reinforces throne room or victory point formations with steadier squad support.",
+    "Class trait": "Commander",
+    "Tribe trait": "",
+    "Recommended for": "Overlord, Warchiefs, Victory Point Defenders"
+  },
+  {
     "Picker": "Picker_ET_ChampionMarksman",
     "Game visual title": "Champion Marksman (Epic)",
     "Utility": "Epic trait enhancing specialized marksman capabilities and projectile lethality.",
@@ -790,6 +800,16 @@
     "Recommended for": "Throne Room Bodyguards"
   },
   {
+    "Picker": "Picker_Hate_BodyguardDefeat",
+    "Game visual title": "Enraged by Bodyguard Death",
+    "Utility": "Triggers an immediate Enraged state when an assigned bodyguard or allied captain is defeated nearby.",
+    "Offensive bonus": "Turns ally losses during a push into an immediate rage damage spike.",
+    "Defensive bonus": "Punishes invading players who pick off bodyguards first in the throne room or on points.",
+    "Class trait": "",
+    "Tribe trait": "",
+    "Recommended for": "Overlord, Throne Room Bodyguards, Victory Point Defenders"
+  },
+  {
     "Picker": "Picker_Hate_Curse",
     "Game visual title": "Enraged by Curse",
     "Utility": "Triggers immediate Enraged state when hit by cursed attacks.",
@@ -930,6 +950,16 @@
     "Recommended for": "Assault Leaders, Throne Room Bodyguards"
   },
   {
+    "Picker": "Picker_MultiAttack",
+    "Game visual title": "Multiple Attack",
+    "Utility": "Enables sweeping multi-target cleaves and rapid target-switching without resetting combat stance between hits.",
+    "Offensive bonus": "Clears crowds of defender grunts rapidly without getting bogged down on single targets.",
+    "Defensive bonus": "Hits multiple invading attackers simultaneously inside tight victory point circles.",
+    "Class trait": "",
+    "Tribe trait": "",
+    "Recommended for": "Victory Point Defenders, Assault Leaders"
+  },
+  {
     "Picker": "Picker_MultipleAttack",
     "Game visual title": "Multiple Attack",
     "Utility": "Enables sweeping multi-target cleaves and rapid target-switching without resetting combat stance between hits.",
@@ -980,6 +1010,16 @@
     "Recommended for": "Overlord, Throne Room Bodyguards, Assault Leaders"
   },
   {
+    "Picker": "Picker_OrcSapper",
+    "Game visual title": "Sappers",
+    "Utility": "Equips the Captain with sapper explosive charges/bombs to blast gates, barricades, and clustered targets.",
+    "Offensive bonus": "Accelerates gate/wall breaches and clears packed defender groups with explosive splash.",
+    "Defensive bonus": "Adds volatile explosive burst and crowd stagger when pressured in close quarters.",
+    "Class trait": "",
+    "Tribe trait": "",
+    "Recommended for": "Assault Leaders, Victory Point Defenders, Throne Room Bodyguards"
+  },
+  {
     "Picker": "Picker_PickupPunch",
     "Game visual title": "Grab & Pummel / Throat Grab",
     "Utility": "Grabs target by the throat/chest for a rapid series of unblockable close-range punches before tossing them aside.",
@@ -988,6 +1028,16 @@
     "Class trait": "",
     "Tribe trait": "",
     "Recommended for": "Throne Room Bodyguards, Overlord, Victory Point Defenders"
+  },
+  {
+    "Picker": "Picker_PlantsMines_Fire",
+    "Game visual title": "Fire Trap Layer",
+    "Utility": "Allows the Captain to place hidden explosive fire mines around their combat zone that detonate on proximity or impact.",
+    "Offensive bonus": "Creates burning hazard zones that ignite grouped defenders and disrupt positioning.",
+    "Defensive bonus": "Punishes rushing attackers closing distance on capture points, siege lanes, or throne room approaches.",
+    "Class trait": "",
+    "Tribe trait": "",
+    "Recommended for": "Throne Room Bodyguards, Victory Point Defenders"
   },
   {
     "Picker": "Picker_PlantsMines_Poison",
@@ -1248,6 +1298,16 @@
     "Class trait": "",
     "Tribe trait": "",
     "Recommended for": "Overlord, Throne Room Bodyguards, Victory Point Defenders"
+  },
+  {
+    "Picker": "Picker_TankAOE",
+    "Game visual title": "Wave of Might",
+    "Utility": "Unleashes a wave of strength so powerful that it pushes back and disorients nearby enemies.",
+    "Offensive bonus": "Knocks back and disorients clustered foes to break formations and set up follow-up attacks.",
+    "Defensive bonus": "Creates breathing room and disorients nearby attackers crowding victory points or throne room choke points.",
+    "Class trait": "Tank",
+    "Tribe trait": "",
+    "Recommended for": "Victory Point Defenders, Overlord, Throne Room Bodyguards"
   },
   {
     "Picker": "Picker_TribeAttack_Dark",
